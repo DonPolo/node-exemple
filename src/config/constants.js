@@ -34,14 +34,26 @@ const defaultConfig = {
     consoleServiceId: process.env.DIALOG_FLOW_CONSOLE_SERVICE_ID || '6910',
     consoleUserId: process.env.DIALOG_FLOW_CONSOLE_USER_ID || '0DHSENJP9Z',
     consoleUserType: process.env.DIALOG_FLOW_USER_TYPE || 'userId',
-    intentContact: process.env.DIALOG_FLOW_INTENT_CONTACT,
-    intentRelaisColis: process.env.DIALOG_FLOW_INTENT_RELAIS_COLIS,
-    intentSchedule: process.env.DIALOG_FLOW_INTENT_SCHEDULE,
-    intentServices: process.env.DIALOG_FLOW_INTENT_SERVICES,
-    intentInfos: process.env.DIALOG_FLOW_INTENT_INFOS,
-    intentGlobalRequest: process.env.DIALOG_FLOW_INTENT_GLOBAL_REQUEST,
-    intentUserAskMail: process.env.DIALOG_FLOW_INTENT_ASK_MAIL,
-    contextUserAskMail: process.env.DIALOG_FLOW_CONTEXT_USER_ASK_MAIL
+    intent: {
+      contact: process.env.DIALOG_FLOW_INTENT_CONTACT,
+      relaisColis: process.env.DIALOG_FLOW_INTENT_RELAIS_COLIS,
+      schedule: process.env.DIALOG_FLOW_INTENT_SCHEDULE,
+      services: process.env.DIALOG_FLOW_INTENT_SERVICES,
+      infos: process.env.DIALOG_FLOW_INTENT_INFOS,
+      globalRequest: process.env.DIALOG_FLOW_INTENT_GLOBAL_REQUEST,
+      searchUserByMail: process.env.DIALOG_FLOW_INTENT_SEARCH_BY_MAIL,
+      needRegistration: process.env.DIALOG_FLOW_INTENT_NEED_REGISTRATION,
+      registration: process.env.DIALOG_FLOW_INTENT_REGISTRATION,
+      registerLastName: process.env.DIALOG_FLOW_INTENT_REGISTER_LAST_NAME,
+      registerGivenName: process.env.DIALOG_FLOW_INTENT_REGISTER_GIVEN_NAME
+    },
+    context: {
+      askUserMail: process.env.DIALOG_FLOW_CONTEXT_USER_ASK_MAIL,
+      needRegistration: process.env.DIALOG_FLOW_CONTEXT_USER_NEED_REGISTRATION,
+      userRegistration: process.env.DIALOG_FLOW_CONTEXT_USER_REGISTRATION,
+      userRegisterGivenName:
+        process.env.DIALOG_FLOW_CONTEXT_USER_REGISTER_GIVEN_NAME
+    }
   },
   SLACK: {
     apiToken: process.env.SLACK_API_TOKEN || 'slack_token'

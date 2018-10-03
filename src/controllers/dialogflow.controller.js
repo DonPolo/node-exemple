@@ -109,7 +109,7 @@ const recordGlobalRequest = async (
   ) {
     numLocker = parseInt(params.numeroCasier, 10);
   }
-
+  const { email } = ctx.email ? ctx : params;
   const newRequest = {
     text: request,
     type: numLocker ? 'casier' : 'SMS',
@@ -145,7 +145,7 @@ const recordGlobalRequest = async (
           service ? `de ${service} ` : ''
         }est enregistrée et disponible dans votre Espace Conciergerie en Ligne.`
       );
-    } else if (ctx.email) {
+    } else if (email) {
       // Send request by mail
       await sendMessage({
         from: config.MAIL.sender,
@@ -157,13 +157,13 @@ const recordGlobalRequest = async (
             newRequest.type
           } suivante:\n\n` +
           `${newRequest.text}` +
-          `${ctx.email ? `\n\nSon e-mail : ${ctx.email}` : ''}` +
+          `\n\nSon e-mail : ${email}` +
           `\n\nBonne journée !`
       });
       msg.push(
-        `Votre demande ${
+        `De plus votre demande ${
           service ? `de ${service} ` : ''
-        }est quand même enregistrée.`
+        }a été envoyée à ${Ecl.getPrenomConcierge(ctx.concierges, false)}.`
       );
     }
     if (numLocker)
@@ -200,6 +200,31 @@ const recordGlobalRequest = async (
       msg.push(
         "Ouhla, j'ai eu un souci ! Pouvez-vous contacter le concierge ?"
       );
+    }
+  }
+};
+
+const checkOriginalIntent = async (ctx, msg: string[], context) => {
+  // Restore original data from context in case of previous intent before registration
+  const original =
+    context && context.parameters ? context.parameters.original : null;
+  if (original) {
+    // Get user email from Dialogflow Context params if not in ECL Context
+    if (
+      !ctx.user &&
+      !ctx.email &&
+      context &&
+      context.parameters &&
+      context.parameters.email
+    ) {
+      ctx.email = context.parameters.email;
+    }
+    switch (original.intent) {
+      case config.DIALOG_FLOW.intent.globalRequest:
+        await recordGlobalRequest(ctx, msg, original.request, original.params);
+        break;
+      default:
+        break;
     }
   }
 };
@@ -305,7 +330,7 @@ const intentUserAskMail = async agent => {
     if (!ctx) return;
     logger.info('Context', ctx);
     const contextUserAskMail = agent.getContext(
-      config.DIALOG_FLOW.contextUserAskMail
+      config.DIALOG_FLOW.context.askUserMail
     );
     // Restore original data from context in case of unknown user
     const original =
@@ -317,35 +342,47 @@ const intentUserAskMail = async agent => {
       if (!email) {
         contextUserAskMail.lifespan = MAX_LIFESPAN;
         agent.setContext(contextUserAskMail);
-        agent.add('Quelle est votre adresse e-mail ?');
-        return;
+        msg.push('Quelle est votre adresse e-mail ?');
+      } else {
+        let contextNeedRegistration = agent.getContext(
+          config.DIALOG_FLOW.context.needRegistration
+        );
+        msg.push(
+          `Apparemment vous n'êtes pas inscrit.\nSouhaitez-vous essayer un autre e-mail ou préférez-vous que je vous inscrive avec ${email} ?`
+        );
+        if (!contextNeedRegistration) {
+          contextNeedRegistration = {
+            name: config.DIALOG_FLOW.context.needRegistration,
+            lifespan: MAX_LIFESPAN,
+            parameters: {
+              email
+            }
+          };
+        } else {
+          contextNeedRegistration.lifespan = MAX_LIFESPAN;
+          contextNeedRegistration.parameters = {
+            email
+          };
+        }
+        agent.setContext(contextNeedRegistration);
       }
-      msg.push(
-        "Apparemment vous n'êtes pas inscrit." /* \nPeut-être une autre adresse e-mail ?" */
-      );
-      // // TODO inscription lite
-    } else if (email) {
-      // TODO save mobile number
-      // msg.push(
-      //   `Super je vous ai retrouvé !\nJe note votre numéro de téléphone pour plus tard (si vous ne le voulez pas, dites-le à ${Ecl.getPrenomConcierge(
-      //     ctx.concierges,
-      //     false
-      //   )})`
-      // );
-      msg.push('Super je vous ai retrouvé !');
-    }
-    switch (original.intent) {
-      case config.DIALOG_FLOW.intentGlobalRequest:
-        await recordGlobalRequest(ctx, msg, original.request, original.params);
-        break;
-      default:
-        return;
+    } else {
+      if (email) {
+        // TODO save mobile number
+        // msg.push(
+        //   `Super je vous ai retrouvé !\nJe note votre numéro de téléphone pour plus tard (si vous ne le voulez pas, dites-le à ${Ecl.getPrenomConcierge(
+        //     ctx.concierges,
+        //     false
+        //   )})`
+        // );
+        msg.push('Super je vous ai retrouvé !');
+      }
+      await checkOriginalIntent(ctx, msg, contextUserAskMail);
+      // Remove outgoing ask mail context used to keep initial request
+      agent.setContext({ name: contextUserAskMail.name, lifespan: '0' });
     }
     logger.info('UserAskMail response', { text: msg.join('\n') });
     if (msg.length) agent.add(msg.join('\n'));
-
-    // Remove outgoing ask mail context used to keep initial request
-    agent.setContext({ name: contextUserAskMail.name, lifespan: '0' });
   } catch (error) {
     logger.error('UserAskMail', error);
   }
@@ -362,7 +399,7 @@ const intentGlobalRequest = async agent => {
     if (!ctx) return;
     logger.info('Context', ctx);
     let contextUserAskMail = agent.getContext(
-      config.DIALOG_FLOW.contextUserAskMail
+      config.DIALOG_FLOW.context.askUserMail
     );
     if (!ctx.user) {
       agent.add(
@@ -370,12 +407,12 @@ const intentGlobalRequest = async agent => {
       );
       if (!contextUserAskMail) {
         contextUserAskMail = {
-          name: config.DIALOG_FLOW.contextUserAskMail,
+          name: config.DIALOG_FLOW.context.askUserMail,
           lifespan: MAX_LIFESPAN,
           parameters: {
             original: {
               request: agent.query,
-              intent: config.DIALOG_FLOW.intentGlobalRequest,
+              intent: config.DIALOG_FLOW.intent.globalRequest,
               params: agent.parameters
             }
           }
@@ -397,6 +434,222 @@ const intentGlobalRequest = async agent => {
   }
 };
 
+const intentNeedRegistration = async agent => {
+  try {
+    logger.info('==> Dialogflow Intent: Need Registration', {
+      query: agent.query,
+      params: agent.parameters
+    });
+    const msg = [];
+    // User email is needed
+    const context = agent.getContext(
+      config.DIALOG_FLOW.context.needRegistration
+    );
+    if (!context) return;
+    const { email } = context.parameters;
+    if (!email) return;
+    const ctx = await getContext(agent, true, email);
+    if (!ctx) return;
+    logger.info('Context', ctx);
+
+    if (ctx.user) {
+      // Already registered
+      msg.push("Ce n'est pas la peine, vous êtes déjà inscrit");
+    } else {
+      const contextUserAskMail = agent.getContext(
+        config.DIALOG_FLOW.context.askUserMail
+      );
+      // Restore original data from context in case of unknown user
+      const original =
+        contextUserAskMail && contextUserAskMail.parameters
+          ? contextUserAskMail.parameters.original
+          : null;
+      // // Go to registration intent using event
+      // agent.setFollowupEvent({
+      //   name: config.DIALOG_FLOW.event.userRegistration,
+      //   parameters: {
+      //     email
+      //   },
+      //   languageCode: agent.locale
+      // });
+      msg.push('Ok, allons-y !\nQuel est votre nom de famille ?');
+      const contextUserRegistration = {
+        name: config.DIALOG_FLOW.context.userRegistration,
+        lifespan: MAX_LIFESPAN,
+        parameters: {
+          email,
+          original
+        }
+      };
+      agent.setContext(contextUserRegistration);
+      // Clear previous context
+      agent.setContext({
+        name: config.DIALOG_FLOW.context.askUserMail,
+        lifespan: '0'
+      });
+      agent.setContext({
+        name: config.DIALOG_FLOW.context.needRegistration,
+        lifespan: '0'
+      });
+    }
+    logger.info('Need Registration response', { text: msg.join('\n') });
+    if (msg.length) agent.add(msg.join('\n'));
+  } catch (error) {
+    logger.error('Need Registration', error);
+  }
+};
+
+const intentRegistration = async agent => {
+  try {
+    logger.info('==> Dialogflow Intent: Registration', {
+      query: agent.query,
+      params: agent.parameters
+    });
+    const msg = [];
+    const ctx = await getContext(agent, true);
+    if (!ctx) return;
+    logger.info('Context', ctx);
+
+    if (ctx.user) {
+      // Already registered
+      msg.push("Ce n'est pas la peine, vous êtes déjà inscrit");
+    } else {
+      // User email is needed
+      const email = hasParameters(agent.parameters.email)
+        ? agent.parameters.email
+        : null;
+      if (!email) {
+        // Seems to occur only when user try to cancel since email is a required parameter
+        msg.push('Ok, pas de problème. On en reste là !');
+        // TODO clear all contexts
+      } else {
+        msg.push('Ok, allons-y !\nQuel est votre nom de famille ?');
+        const contextUserRegistration = {
+          name: config.DIALOG_FLOW.context.userRegistration,
+          lifespan: MAX_LIFESPAN,
+          parameters: {
+            email
+          }
+        };
+        agent.setContext(contextUserRegistration);
+      }
+      logger.info('Registration response', { text: msg.join('\n') });
+      if (msg.length) agent.add(msg.join('\n'));
+    }
+  } catch (error) {
+    logger.error('Registration', error);
+  }
+};
+
+const intentRegisterLastName = async agent => {
+  try {
+    logger.info('==> Dialogflow Intent: Register Last Name', {
+      query: agent.query,
+      params: agent.parameters
+    });
+    const msg = [];
+    const ctx = await getContext(agent, true);
+    if (!ctx) return;
+    logger.info('Context', ctx);
+
+    if (ctx.user) {
+      // Already registered
+      msg.push("Ce n'est pas la peine, vous êtes déjà inscrit");
+    } else {
+      // User lastName is needed
+      const lastName = hasParameters(agent.parameters['last-name'])
+        ? agent.parameters['last-name']
+        : null;
+      if (!lastName) {
+        msg.push('Quel est votre nom de famille ?');
+      } else {
+        const contextUserRegistration = agent.getContext(
+          config.DIALOG_FLOW.context.userRegistration
+        );
+        if (contextUserRegistration) {
+          msg.push('Quel est votre prénom ?');
+          contextUserRegistration.lifespan = MAX_LIFESPAN;
+          contextUserRegistration.parameters.lastName = lastName;
+          // Switch to context 'register given name' and remove previous one 'user registration'
+          contextUserRegistration.name =
+            config.DIALOG_FLOW.context.userRegisterGivenName;
+          agent.setContext(contextUserRegistration);
+          agent.setContext({
+            name: config.DIALOG_FLOW.context.userRegistration,
+            lifespan: '0'
+          });
+        }
+      }
+      logger.info('Register Last Name response', { text: msg.join('\n') });
+      if (msg.length) agent.add(msg.join('\n'));
+    }
+  } catch (error) {
+    logger.error('Register Last Name', error);
+  }
+};
+
+const intentRegisterGivenName = async agent => {
+  try {
+    logger.info('==> Dialogflow Intent: Register Given Name', {
+      query: agent.query,
+      params: agent.parameters
+    });
+    const msg = [];
+    const ctx = await getContext(agent, true);
+    if (!ctx) return;
+    logger.info('Context', ctx);
+
+    if (ctx.user) {
+      // Already registered
+      msg.push("Ce n'est pas la peine, vous êtes déjà inscrit");
+    } else {
+      // User givenName is needed
+      const givenName = hasParameters(agent.parameters['given-name'])
+        ? agent.parameters['given-name']
+        : null;
+      if (!givenName) {
+        msg.push('Quel est votre prénom ?');
+      } else {
+        const context = agent.getContext(
+          config.DIALOG_FLOW.context.userRegisterGivenName
+        );
+        if (
+          context &&
+          context.parameters.email &&
+          context.parameters.lastName
+        ) {
+          // Send registration request by mail
+          await sendMessage({
+            from: config.MAIL.sender,
+            to: ctx.site.email,
+            subject: `[Lifee] Nouvelle inscription à saisir`,
+            text:
+              `Bonjour ${Ecl.getPrenomConcierge(ctx.concierges, false)},\n\n` +
+              `L'utilisateur suivant souhaite s'inscrire:\n\n` +
+              `Nom: ${context.parameters.lastName}\n` +
+              `Prénom: ${givenName}\n` +
+              `E-mail: ${context.parameters.email}` +
+              `\n\nMerci de procéder à son inscription.\n\nBonne journée !`
+          });
+          msg.push(
+            `Super ! Votre inscription est enregistrée. ${Ecl.getPrenomConcierge(
+              ctx.concierges,
+              true
+            )} la validera dans les 48h.`
+          );
+          await checkOriginalIntent(ctx, msg, context);
+          // Remove outgoing ask mail context used to keep initial request
+          agent.setContext({ name: context.name, lifespan: '0' });
+        }
+      }
+      logger.info('Register Given Name response', { text: msg.join('\n') });
+      if (msg.length) agent.add(msg.join('\n'));
+    }
+  } catch (error) {
+    logger.error('Register Given Name', error);
+  }
+};
+
 export async function webhook(
   req: $Subtype<express$Request>,
   res: express$Response,
@@ -410,13 +663,29 @@ export async function webhook(
     });
 
     const intentMap = new Map();
-    intentMap.set(config.DIALOG_FLOW.intentContact, intentContact);
-    intentMap.set(config.DIALOG_FLOW.intentSchedule, intentSchedule);
-    intentMap.set(config.DIALOG_FLOW.intentRelaisColis, intentRelaisColis);
-    intentMap.set(config.DIALOG_FLOW.intentServices, intentServices);
-    intentMap.set(config.DIALOG_FLOW.intentInfos, intentInfos);
-    intentMap.set(config.DIALOG_FLOW.intentGlobalRequest, intentGlobalRequest);
-    intentMap.set(config.DIALOG_FLOW.intentUserAskMail, intentUserAskMail);
+    intentMap.set(config.DIALOG_FLOW.intent.contact, intentContact);
+    intentMap.set(config.DIALOG_FLOW.intent.schedule, intentSchedule);
+    intentMap.set(config.DIALOG_FLOW.intent.relaisColis, intentRelaisColis);
+    intentMap.set(config.DIALOG_FLOW.intent.services, intentServices);
+    intentMap.set(config.DIALOG_FLOW.intent.infos, intentInfos);
+    intentMap.set(config.DIALOG_FLOW.intent.globalRequest, intentGlobalRequest);
+    intentMap.set(
+      config.DIALOG_FLOW.intent.searchUserByMail,
+      intentUserAskMail
+    );
+    intentMap.set(
+      config.DIALOG_FLOW.intent.needRegistration,
+      intentNeedRegistration
+    );
+    intentMap.set(config.DIALOG_FLOW.intent.registration, intentRegistration);
+    intentMap.set(
+      config.DIALOG_FLOW.intent.registerLastName,
+      intentRegisterLastName
+    );
+    intentMap.set(
+      config.DIALOG_FLOW.intent.registerGivenName,
+      intentRegisterGivenName
+    );
 
     await agent.handleRequest(intentMap);
     return res;

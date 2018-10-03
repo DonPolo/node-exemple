@@ -16,7 +16,7 @@ import db from '../models';
 import Ecl from '../models/ecl';
 import protobuf from '../services/protobuf';
 import APIError from '../services/error';
-import EngieFix from '../../db/engie-fix';
+// import EngieFix from '../../db/engie-fix';
 
 const { MessagingResponse } = twilio.twiml;
 const dialogflow = Dialogflow.v2beta1;
@@ -66,17 +66,20 @@ type EngieUser = {
 
 type EngieTask = {
   msg: string,
-  num?: number
+  num?: number,
+  lifee?: string
 };
 
 const engieQueue = new Queue(async (task: EngieTask, cb) => {
-  const { msg, num } = task;
+  const { msg, num, lifee } = task;
   try {
     logger.info('Queue task started', { task });
     // const client = twilio(config.TWILIO.accountId, config.TWILIO.authToken);
     const msgName = num ? `${msg}${num}` : msg;
     const users: EngieUser[] = await db.find(db.model.Engie, {
-      [`messages.${msgName}`]: { $ne: true }
+      // 'messages.welcome': true,
+      [`messages.${msgName}`]: { $ne: true },
+      lifee: lifee || { $exists: true }
     });
 
     logger.info(`Queue task found ${users.length} user(s)`);
@@ -277,7 +280,8 @@ export async function engieGame(
 
       engieQueue.push({
         msg,
-        num
+        num,
+        lifee: req.body.lifee
       });
 
       return res.sendStatus(HTTPStatus.CREATED);
@@ -295,33 +299,33 @@ export async function engieGame(
   }
 }
 
-export async function engieFix(
-  req: $Subtype<express$Request>,
-  res: express$Response,
-  next: express$NextFunction
-) {
-  try {
-    await db.update(
-      db.model.Engie,
-      { messages: { $exists: true } },
-      { $set: { 'messages.welcome': false } },
-      { multi: true }
-    );
-    EngieFix.reduce(async (previous, tel) => {
-      await previous;
-      await db.update(
-        db.model.Engie,
-        { tel },
-        { $set: { 'messages.welcome': true } },
-        {}
-      );
-    }, Promise.resolve());
-    return res.sendStatus(HTTPStatus.OK);
-  } catch (err) {
-    err.status = HTTPStatus.INTERNAL_SERVER_ERROR;
-    return next(err);
-  }
-}
+// export async function engieFix(
+//   req: $Subtype<express$Request>,
+//   res: express$Response,
+//   next: express$NextFunction
+// ) {
+//   try {
+//     await db.update(
+//       db.model.Engie,
+//       { messages: { $exists: true } },
+//       { $set: { 'messages.welcome': false } },
+//       { multi: true }
+//     );
+//     EngieFix.reduce(async (previous, tel) => {
+//       await previous;
+//       await db.update(
+//         db.model.Engie,
+//         { tel },
+//         { $set: { 'messages.welcome': true } },
+//         {}
+//       );
+//     }, Promise.resolve());
+//     return res.sendStatus(HTTPStatus.OK);
+//   } catch (err) {
+//     err.status = HTTPStatus.INTERNAL_SERVER_ERROR;
+//     return next(err);
+//   }
+// }
 
 export async function engieSync(
   req: $Subtype<express$Request>,
@@ -350,7 +354,7 @@ export async function engieSync(
     //     /* Flavien */
     //     tel: '+33621543841',
     //     twilio: '+33755536910'
-    //   }];
+    //   },
     //   {
     //     /* Camille */
     //     tel: '+33625280799',
