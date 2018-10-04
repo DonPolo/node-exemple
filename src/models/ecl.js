@@ -176,13 +176,11 @@ export default class Ecl {
     let addition;
     switch (request.type) {
       case 'casier':
-        if (request.numLocker == null)
-          throw Error("Cannot save request: missing 'numLocker'");
         requestType = 'Demande casier';
         requestType2 = request.type;
         typeCode = 'casi';
-        detail = `casier:${request.numLocker} ${request.text}`;
-        addition = request.text;
+        detail = `casier:${request.numLocker || ''} ${request.text}`;
+        addition = '';
         break;
       case 'SMS':
       default:
@@ -220,12 +218,35 @@ export default class Ecl {
           detail,
           addition,
           userId: user.id,
-          numLocker: request.numLocker || ''
+          numLocker: `${request.numLocker || ''}`
         }
       }
     );
 
     return requestRef;
+  }
+
+  async updateRequest(requestRef: string, request: Request) {
+    const replace = request.numLocker
+      ? `\`de_re_08_u\`=REPLACE(\`de_re_08_u\`, 'casier:', 'casier:${
+          request.numLocker
+        }'), `
+      : '';
+    this.ecl.query(
+      'UPDATE `demande` SET ' +
+        `${replace}` +
+        '`de_re_09_u`=:addition, ' +
+        '`de_ca_01_u`=:numLocker ' +
+        'WHERE `de_re_03_u`=:requestRef',
+      {
+        type: this.ecl.QueryTypes.UPDATE,
+        replacements: {
+          requestRef,
+          addition: request.text,
+          numLocker: `${request.numLocker || ''}`
+        }
+      }
+    );
   }
 
   async getSiteUsers(sites: string[]) {

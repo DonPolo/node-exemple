@@ -18,7 +18,8 @@ const defaultConfig = {
     port: process.env.MAIL_SMTP_PORT || 25,
     secure: process.env.MAIL_SMTP_SECURE === 'true' || false,
     recipient: process.env.MAIL_RECIPIENT || undefined,
-    sender: process.env.MAIL_SENDER || ''
+    sender: process.env.MAIL_SENDER || '',
+    sav: process.env.MAIL_SAV || 'service-si@easy-life.fr'
   },
   TWILIO: {
     accountId: process.env.TWILIO_ACCOUNT_ID || 'twilio_account',
@@ -41,18 +42,22 @@ const defaultConfig = {
       services: process.env.DIALOG_FLOW_INTENT_SERVICES,
       infos: process.env.DIALOG_FLOW_INTENT_INFOS,
       globalRequest: process.env.DIALOG_FLOW_INTENT_GLOBAL_REQUEST,
+      globalRequestLocker: process.env.DIALOG_FLOW_INTENT_GLOBAL_REQUEST_LOCKER,
       searchUserByMail: process.env.DIALOG_FLOW_INTENT_SEARCH_BY_MAIL,
       needRegistration: process.env.DIALOG_FLOW_INTENT_NEED_REGISTRATION,
       registration: process.env.DIALOG_FLOW_INTENT_REGISTRATION,
       registerLastName: process.env.DIALOG_FLOW_INTENT_REGISTER_LAST_NAME,
-      registerGivenName: process.env.DIALOG_FLOW_INTENT_REGISTER_GIVEN_NAME
+      registerGivenName: process.env.DIALOG_FLOW_INTENT_REGISTER_GIVEN_NAME,
+      fallback: process.env.DIALOG_FLOW_INTENT_FALLBACK
     },
     context: {
       askUserMail: process.env.DIALOG_FLOW_CONTEXT_USER_ASK_MAIL,
       needRegistration: process.env.DIALOG_FLOW_CONTEXT_USER_NEED_REGISTRATION,
       userRegistration: process.env.DIALOG_FLOW_CONTEXT_USER_REGISTRATION,
       userRegisterGivenName:
-        process.env.DIALOG_FLOW_CONTEXT_USER_REGISTER_GIVEN_NAME
+        process.env.DIALOG_FLOW_CONTEXT_USER_REGISTER_GIVEN_NAME,
+      userRequestLocker:
+        process.env.DIALOG_FLOW_CONTEXT_USER_GLOBAL_REQUEST_LOCKER
     }
   },
   SLACK: {

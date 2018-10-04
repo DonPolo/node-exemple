@@ -81,7 +81,8 @@ const recordGlobalRequest = async (
   ctx,
   msg: string[],
   request: string,
-  params: Object
+  params: Object,
+  context: any[]
 ) => {
   let service;
   let numLocker;
@@ -100,25 +101,20 @@ const recordGlobalRequest = async (
   // } else if (hasParameters(params.Service_MidiMalin)) {
   //   service = 'midi malin';
   // }
-  if (
-    params.PickupOrDelivery &&
-    params.PickupOrDelivery === 'Delivery' &&
-    params.Location &&
-    params.Location === 'Casier' &&
-    params.numeroCasier
-  ) {
+  if (params.Location && params.Location === 'Casier' && params.numeroCasier) {
     numLocker = parseInt(params.numeroCasier, 10);
   }
-  const { email } = ctx.email ? ctx : params;
+  const { email } = ctx;
   const newRequest = {
     text: request,
-    type: numLocker ? 'casier' : 'SMS',
+    type: params.Location && params.Location === 'Casier' ? 'casier' : 'SMS',
     numLocker
   };
   try {
+    let requestRef;
     if (ctx.user) {
       // Save request in ECL
-      const requestRef = await ecl.saveRequest(
+      requestRef = await ecl.saveRequest(
         newRequest,
         ctx.site,
         ctx.concierges,
@@ -172,8 +168,27 @@ const recordGlobalRequest = async (
           Ecl.isMultipleConcierges(ctx.concierges) ? 'vont' : 'va'
         } passer récupérer vos affaires dans le casier ${numLocker}.`
       );
+    else if (params.Location && params.Location === 'Casier') {
+      context.push({
+        name: config.DIALOG_FLOW.context.userRequestLocker,
+        lifespan: 1,
+        parameters: {
+          requestRef,
+          email
+        }
+      });
+      msg.push(
+        `S'il s'agit de quelque chose que ${Ecl.getPrenomConcierge(
+          ctx.concierges,
+          false
+        )} ${
+          Ecl.isMultipleConcierges(ctx.concierges) ? 'doivent' : 'doit'
+        } récupérer, pensez à m'indiquer le numéro du casier.`
+      );
+    }
   } catch (error) {
     try {
+      logger.error('Error', error);
       // Send mail in case of failure
       await sendMessage({
         from: config.MAIL.sender,
@@ -204,7 +219,12 @@ const recordGlobalRequest = async (
   }
 };
 
-const checkOriginalIntent = async (ctx, msg: string[], context) => {
+const checkOriginalIntent = async (
+  ctx,
+  msg: string[],
+  context: Object,
+  agent: WebhookClient
+) => {
   // Restore original data from context in case of previous intent before registration
   const original =
     context && context.parameters ? context.parameters.original : null;
@@ -219,13 +239,21 @@ const checkOriginalIntent = async (ctx, msg: string[], context) => {
     ) {
       ctx.email = context.parameters.email;
     }
+    const contexts = [];
     switch (original.intent) {
       case config.DIALOG_FLOW.intent.globalRequest:
-        await recordGlobalRequest(ctx, msg, original.request, original.params);
+        await recordGlobalRequest(
+          ctx,
+          msg,
+          original.request,
+          original.params,
+          contexts
+        );
         break;
       default:
         break;
     }
+    contexts.forEach(item => agent.setContext(item));
   }
 };
 
@@ -377,7 +405,7 @@ const intentUserAskMail = async agent => {
         // );
         msg.push('Super je vous ai retrouvé !');
       }
-      await checkOriginalIntent(ctx, msg, contextUserAskMail);
+      await checkOriginalIntent(ctx, msg, contextUserAskMail, agent);
       // Remove outgoing ask mail context used to keep initial request
       agent.setContext({ name: contextUserAskMail.name, lifespan: '0' });
     }
@@ -421,7 +449,15 @@ const intentGlobalRequest = async agent => {
       agent.setContext(contextUserAskMail);
       return;
     }
-    await recordGlobalRequest(ctx, msg, agent.query, agent.parameters);
+    const contexts = [];
+    await recordGlobalRequest(
+      ctx,
+      msg,
+      agent.query,
+      agent.parameters,
+      contexts
+    );
+    contexts.forEach(item => agent.setContext(item));
     logger.info('GlobalRequest response', { text: msg.join('\n') });
     if (msg.length) agent.add(msg.join('\n'));
 
@@ -434,6 +470,84 @@ const intentGlobalRequest = async agent => {
   }
 };
 
+const intentGlobalRequestLocker = async agent => {
+  try {
+    logger.info('==> Dialogflow Intent: GlobalRequest Locker Followup', {
+      query: agent.query,
+      params: agent.parameters
+    });
+    const msg = [];
+    const ctx = await getContext(agent, true);
+    if (!ctx) return;
+    logger.info('Context', ctx);
+    const context = agent.getContext(
+      config.DIALOG_FLOW.context.userRequestLocker
+    );
+    if (!context) return;
+
+    const { requestRef, email } = context.parameters;
+    let numLocker;
+    if (agent.parameters.numeroCasier)
+      numLocker = parseInt(agent.parameters.numeroCasier, 10);
+
+    if (requestRef) {
+      // Update request in ECL
+      await ecl.updateRequest(requestRef, {
+        text: agent.query,
+        type: 'casier',
+        numLocker
+      });
+      // Send request by mail
+      await sendMessage({
+        from: config.MAIL.sender,
+        to: ctx.site.email,
+        subject: `[Lifee] Suite de la demande ${requestRef}`,
+        text:
+          `Bonjour ${Ecl.getPrenomConcierge(ctx.concierges, false)},\n\n` +
+          `${
+            ctx.user ? `${ctx.user.prenom} ${ctx.user.nom}` : 'Un utilisateur'
+          } m'a chargé de mettre à jour la demande ${requestRef}, avec le complément suivant :\n\n` +
+          `${agent.query}` +
+          `\n\nLa demande est mise à jour dans l'ECL` +
+          `\n\nBonne journée !`
+      });
+      msg.push(`Ok c'est ajouté !`);
+      if (numLocker)
+        msg.push(
+          `${Ecl.getPrenomConcierge(ctx.concierges, true)} ${
+            Ecl.isMultipleConcierges(ctx.concierges) ? 'vont' : 'va'
+          } passer récupérer vos affaires dans le casier ${numLocker}.`
+        );
+    } else if (email) {
+      // Send request by mail
+      await sendMessage({
+        from: config.MAIL.sender,
+        to: ctx.site.email,
+        subject: `[Lifee] Suite d'une demande à saisir`,
+        text:
+          `Bonjour ${Ecl.getPrenomConcierge(ctx.concierges, false)},\n\n` +
+          `Un utilisateur non inscrit m'a chargé de vous préciser sa demande:\n\n` +
+          `${agent.query}` +
+          `\n\nSon e-mail : ${email}` +
+          `\n\nBonne journée !`
+      });
+      msg.push(
+        `Ok, cette précision a été envoyée à ${Ecl.getPrenomConcierge(
+          ctx.concierges,
+          false
+        )}.`
+      );
+    }
+    // Remove outgoing locker followup context used to keep request ref or user email
+    agent.setContext({ name: context.name, lifespan: '0' });
+    logger.info('GlobalRequest Locker Followup response', {
+      text: msg.join('\n')
+    });
+    if (msg.length) agent.add(msg.join('\n'));
+  } catch (error) {
+    logger.error('GlobalRequest Locker Followup', error);
+  }
+};
 const intentNeedRegistration = async agent => {
   try {
     logger.info('==> Dialogflow Intent: Need Registration', {
@@ -521,7 +635,6 @@ const intentRegistration = async agent => {
       if (!email) {
         // Seems to occur only when user try to cancel since email is a required parameter
         msg.push('Ok, pas de problème. On en reste là !');
-        // TODO clear all contexts
       } else {
         msg.push('Ok, allons-y !\nQuel est votre nom de famille ?');
         const contextUserRegistration = {
@@ -637,7 +750,7 @@ const intentRegisterGivenName = async agent => {
               true
             )} la validera dans les 48h.`
           );
-          await checkOriginalIntent(ctx, msg, context);
+          await checkOriginalIntent(ctx, msg, context, agent);
           // Remove outgoing ask mail context used to keep initial request
           agent.setContext({ name: context.name, lifespan: '0' });
         }
@@ -650,6 +763,51 @@ const intentRegisterGivenName = async agent => {
   }
 };
 
+const intentFallback = async agent => {
+  try {
+    logger.info('==> Dialogflow Intent: Fallback', {
+      query: agent.query,
+      params: agent.parameters
+    });
+    const ctx = await getContext(agent, true);
+    if (!ctx) return;
+    logger.info('Context', ctx);
+
+    // Send unmatched query by mail
+    await sendMessage({
+      from: config.MAIL.sender,
+      to: config.MAIL.sav,
+      subject: `[Lifee] Nouvelle demande incomprise`,
+      text:
+        'Bonjour,\n\n' +
+        `${
+          ctx.user
+            ? `${ctx.user.prenom} ${ctx.user.nom}`
+            : 'Un utilisateur non inscrit'
+        } du site ${
+          ctx.site.code
+        } a fait la demande suivante à Lifee qui ne l'a malheureusement pas comprise:\n\n` +
+        `${agent.query}` +
+        `\n\nE-mail du site: ${ctx.site.email}` +
+        `\n\nBonne journée !`
+    });
+
+    const msg = [];
+    msg.push(
+      "Je n'ai pas bien compris ce que vous m'avez dit. Mais je suis encore jeune, j'apprends."
+    );
+    msg.push(
+      `En attendant je transmets à ${Ecl.getPrenomConcierge(
+        ctx.concierges,
+        false
+      )} qui un cerveau de toute beauté.`
+    );
+    logger.info('Fallback response', { text: msg.join('\n') });
+    if (msg.length) agent.add(msg.join('\n'));
+  } catch (error) {
+    logger.error('Fallback', error);
+  }
+};
 export async function webhook(
   req: $Subtype<express$Request>,
   res: express$Response,
@@ -670,6 +828,10 @@ export async function webhook(
     intentMap.set(config.DIALOG_FLOW.intent.infos, intentInfos);
     intentMap.set(config.DIALOG_FLOW.intent.globalRequest, intentGlobalRequest);
     intentMap.set(
+      config.DIALOG_FLOW.intent.globalRequestLocker,
+      intentGlobalRequestLocker
+    );
+    intentMap.set(
       config.DIALOG_FLOW.intent.searchUserByMail,
       intentUserAskMail
     );
@@ -686,6 +848,7 @@ export async function webhook(
       config.DIALOG_FLOW.intent.registerGivenName,
       intentRegisterGivenName
     );
+    intentMap.set(config.DIALOG_FLOW.intent.fallback, intentFallback);
 
     await agent.handleRequest(intentMap);
     return res;
