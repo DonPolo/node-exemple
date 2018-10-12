@@ -13,7 +13,7 @@ import constants from './config/constants';
 import ApiRoutes from './routes';
 import { ensureIndexes } from './models';
 
-// Ensure all indexes
+// Ensure all indexes for nedb
 ensureIndexes();
 
 const app = express();

@@ -25,36 +25,34 @@ const ecl = new Ecl();
 const messages = {
   welcome: (site, concierges) =>
     `Bonjour, je suis Lifee, l'assistant virtuel Easylife de ${Ecl.getPrenomConcierge(
-      concierges,
-      false
+      concierges
     )}, votre concierge.\n` +
     'Nous inaugurons une nouvelle formule : je pourrai prendre vos demandes 7j/7 et 24h/24 ' +
     `et aiderai ${Ecl.getPrenomConcierge(
-      concierges,
-      false
+      concierges
     )} à les traiter. Enregistrez bien mon numéro pour pouvoir faire vos demandes : ` +
     `${
       site.botNumber
     }\n\nUn évènement convivial sera organisé très prochainement pour ` +
     'vous expliquer en détail le fonctionnement de cette nouvelle formule ! A très vite.',
   start:
-    'L’escape game digital de la conciergerie, c’est parti !!\n' +
+    "L'escape game digital de la conciergerie, c'est parti !!\n" +
     'Vous allez recevoir 4 questions dans la matinée. ' +
     'Répondez en live, rapprochez-vous de vos collègues pour mutualiser vos chances de gagner !\n' +
-    'Si besoin, votre concierge a peut-être des indices !\n' +
-    'A partir de 12h quand vous aurez les 4 réponses, ' +
-    'vous pourrez ouvrir la case magique du casier et tenter de gagner des chèques cadeau.',
+    'Si besoin, votre concierge a probablement des indices !\n' +
+    'A partir de 12h, quand vous aurez les 4 mots et chiffres mystères, ' +
+    'venez près des casiers pour reconstituer la phrase magique et ouvrir un casier pour tenter de gagner des chèques cadeau !',
   question: [
-    'Qui apparait pour la 1ère fois ?',
-    'Concept qui vous facilite la vie au quotidien ?',
-    'Le plus beau sourire du site ?',
+    'Quel est le synonyme de « neuve » ?',
+    'Quel est le concept qui vous facilite la vie au quotidien ?',
+    'Qui a le plus beau sourire du site ?',
     'Qui suis-je ?'
   ],
-  end: 'Venez tenter votre chance à la conciergerie à partir de 12h !'
+  end: 'Venez tenter votre chance près des casiers à partir de 12h !'
 };
 
-const timeoutPromise = timeout =>
-  new Promise(resolve => setTimeout(resolve, timeout));
+// const timeoutPromise = timeout =>
+//   new Promise(resolve => setTimeout(resolve, timeout));
 
 type EngieUser = {
   tel: string,
@@ -74,12 +72,12 @@ const engieQueue = new Queue(async (task: EngieTask, cb) => {
   const { msg, num, lifee } = task;
   try {
     logger.info('Queue task started', { task });
-    // const client = twilio(config.TWILIO.accountId, config.TWILIO.authToken);
+    const client = twilio(config.TWILIO.accountId, config.TWILIO.authToken);
     const msgName = num ? `${msg}${num}` : msg;
     const users: EngieUser[] = await db.find(db.model.Engie, {
-      // 'messages.welcome': true,
+      'messages.welcome': true,
       [`messages.${msgName}`]: { $ne: true },
-      lifee: lifee || { $exists: true }
+      lifee: lifee && lifee.length ? { $in: lifee } : { $exists: true }
     });
 
     logger.info(`Queue task found ${users.length} user(s)`);
@@ -112,17 +110,17 @@ const engieQueue = new Queue(async (task: EngieTask, cb) => {
       } else if (num) message = `${prefix}${messages[msg][newNum]}`;
       else message = messages[msg];
       try {
-        // await client.messages.create({
-        //   body: message,
-        //   from: user.lifee,
-        //   to: user.tel
-        // });
-        await timeoutPromise(25);
-        logger.info('SMS sent:', {
+        await client.messages.create({
           body: message,
           from: user.lifee,
           to: user.tel
         });
+        // await timeoutPromise(50);
+        // logger.info('SMS sent:', {
+        //   body: message,
+        //   from: user.lifee,
+        //   to: user.tel
+        // });
         if (num && !user.sent.includes(newNum + 1))
           await db.update(
             db.model.Engie,
@@ -327,6 +325,55 @@ export async function engieGame(
 //   }
 // }
 
+export async function engieStop(
+  req: $Subtype<express$Request>,
+  res: express$Response,
+  next: express$NextFunction
+) {
+  if (!req.body.sessionId)
+    return res
+      .status(HTTPStatus.BAD_REQUEST)
+      .end("Missing 'sessionId' parameter");
+  const { sessionId } = req.body;
+  try {
+    const user = await db.findOne(db.model.Dialogflow, { uuid: sessionId });
+    if (!user)
+      return res.status(HTTPStatus.BAD_REQUEST).end("Unknown 'sessionId'");
+    await db.update(
+      db.model.Engie,
+      { tel: user.tel },
+      { $set: { 'messages.welcome': false } },
+      { multi: false }
+    );
+    return res.sendStatus(HTTPStatus.OK);
+  } catch (err) {
+    err.status = HTTPStatus.INTERNAL_SERVER_ERROR;
+    return next(err);
+  }
+}
+
+export async function engieEnd(
+  req: $Subtype<express$Request>,
+  res: express$Response,
+  next: express$NextFunction
+) {
+  if (!req.body.lifee)
+    return res.status(HTTPStatus.BAD_REQUEST).end("Missing 'lifee' parameter");
+  const { lifee } = req.body;
+  try {
+    await db.update(
+      db.model.Engie,
+      { lifee },
+      { $set: { sent: [] } },
+      { multi: true }
+    );
+    return res.sendStatus(HTTPStatus.OK);
+  } catch (err) {
+    err.status = HTTPStatus.INTERNAL_SERVER_ERROR;
+    return next(err);
+  }
+}
+
 export async function engieSync(
   req: $Subtype<express$Request>,
   res: express$Response,
@@ -395,7 +442,7 @@ export async function engieSync(
             lifee,
             offset,
             sent: [],
-            messages: {}
+            messages: { welcome: true }
           }: EngieUser)
         );
         // Shift question offset index for each new user

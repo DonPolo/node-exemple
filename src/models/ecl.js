@@ -5,14 +5,22 @@ import moment from 'moment';
 
 import config from '../config/constants';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const ecl = new Sequelize(
   config.DB.database,
   config.DB.username,
   config.DB.password,
-  config.DB
+  {
+    ...config.DB,
+    dialectOptions: {
+      charset: 'latin1'
+    },
+    logging: isDev
+  }
 );
 
-type Site = {
+export type Site = {
   id: string,
   code: string,
   libelle: string,
@@ -25,13 +33,13 @@ type Site = {
   relaisColis: string
 };
 
-type Concierge = {
+export type Concierge = {
   prenom: string,
   nom: string,
   trigramme: string
 };
 
-type User = {
+export type User = {
   id: string,
   nom: string,
   prenom: string,
@@ -54,7 +62,7 @@ export default class Ecl {
     this.ecl = ecl;
   }
 
-  async getSiteInfos(service: string, serviceId: string): Promise<?Site> {
+  async getSiteInfos(service: string, serviceId: string): Promise<Site | null> {
     let serviceColumn;
     // Cas de la console. On fait un remplacement de valeur pour aller chercher un code site
     if (service === 'console') serviceColumn = 'corresp_04';
@@ -77,32 +85,33 @@ export default class Ecl {
     return Promise.resolve(null);
   }
 
-  async getConciergeList(siteCode: string): Promise<Array<Concierge>> {
-    return this.ecl.query(
+  async getConciergeList(siteCode: string): Promise<Concierge[]> {
+    const concierges: Concierge[] = await this.ecl.query(
       'SELECT `coord`.`co_re_03_u` as prenom, `coord`.`co_re_02_u` as nom, `coord`.`co_re_01` as trigramme ' +
         'FROM `coordinateur` as `coord` ' +
-        'LEFT JOIN `client` ON `client`.`co_re_01`=`coord`.`co_re_01` ' +
+        'LEFT JOIN `client` ON `client`.`id_re_03`=`coord`.`id_re_03FK` ' +
         'WHERE `client`.`corresp_04`=:siteCode',
       {
         type: this.ecl.QueryTypes.SELECT,
         replacements: { siteCode }
       }
     );
+    return concierges;
   }
 
   static getPrenomConcierge(
     concierges: ?Array<Concierge>,
-    withCapFirstLetter: boolean
+    forUser: boolean = true
   ) {
     if (!concierges || !concierges.length) {
-      return `${withCapFirstLetter ? 'V' : 'v'}otre concierge`;
+      return forUser ? 'votre concierge' : '';
     }
     if (concierges.length === 1) {
       return concierges[0].prenom;
     }
     if (concierges.length === 2)
       return `${concierges[0].prenom} et ${concierges[1].prenom}`;
-    return `${withCapFirstLetter ? 'V' : 'v'}os concierges`;
+    return forUser ? 'votre concierge' : '';
   }
 
   static isMultipleConcierges(concierges: ?Array<Concierge>) {
@@ -114,7 +123,11 @@ export default class Ecl {
     return concierges[0].trigramme;
   }
 
-  async getUser(identifier: string, value: string, site: Site): Promise<?User> {
+  async getUser(
+    identifier: string,
+    value: string,
+    site: Site
+  ): Promise<User | null> {
     let where;
     switch (identifier) {
       case 'userId':
@@ -147,10 +160,20 @@ export default class Ecl {
     return Promise.resolve(null);
   }
 
-  // async saveUserMobile(user) {
-
-  // }
-
+  async saveUserMobile(user: User) {
+    return this.ecl.query(
+      'UPDATE `utilisateur` SET ' +
+        '`id_co_06_u`=:telephone ' +
+        'WHERE `id_re_04`=:id',
+      {
+        type: this.ecl.QueryTypes.UPDATE,
+        replacements: {
+          id: user.id,
+          telephone: user.telephone
+        }
+      }
+    );
+  }
   async saveRequest(
     request: Request,
     site: Site,
@@ -232,7 +255,7 @@ export default class Ecl {
           request.numLocker
         }'), `
       : '';
-    this.ecl.query(
+    return this.ecl.query(
       'UPDATE `demande` SET ' +
         `${replace}` +
         '`de_re_09_u`=:addition, ' +

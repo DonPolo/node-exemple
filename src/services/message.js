@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 import mailer from 'nodemailer';
 
+import { logger } from '../config/winston';
 import config from '../config/constants';
 
 const transporter = mailer.createTransport({
@@ -14,38 +15,39 @@ const transporter = mailer.createTransport({
   // }
 });
 
-export const sendMessage = async (options: {
-  from: string,
-  to: string | string[],
-  cc?: string | string[],
-  bcc?: string | string[],
-  subject: string,
-  text: string,
-  html?: string,
-  attachments?: Object[]
-}) => {
+export const sendMessage = async (
+  options: {
+    from: string,
+    to: string | string[],
+    cc?: string | string[],
+    bcc?: string | string[],
+    subject: string,
+    text: string,
+    html?: string,
+    attachments?: Object[]
+  },
+  throwError: boolean = true
+) => {
   try {
     if (config.MAIL.enable) {
       const mailOptions = {
         ...options,
         to: config.MAIL.recipient || options.to
       };
-      console.log('Try to send mail: ', options);
+      logger.info('Try to send mail', options);
       const result = await transporter.sendMail(mailOptions);
-      console.log('Mail sent, result: ', result);
+      logger.info('Mail sent, result', result);
     } else {
-      console.log('Mail to send:');
-      console.log('\tFrom: ', options.from);
-      console.log(
-        '\tTo: ',
-        Array.isArray(options.to) ? options.to.join(',') : options.to
+      logger.info('Mail to send:');
+      logger.info(`\tFrom: ${options.from}`);
+      logger.info(
+        `\tTo: ${Array.isArray(options.to) ? options.to.join(',') : options.to}`
       );
-      console.log('\tSubject: ', options.subject);
-      console.log('\tMessage: ', options.text);
-      console.log();
+      logger.info(`\tSubject: ${options.subject}`);
+      logger.info(`\tMessage: ${options.text}`);
     }
   } catch (e) {
-    console.error('Unable to send mail: ', e);
-    throw e;
+    logger.error('Unable to send mail', e);
+    if (throwError) throw e;
   }
 };

@@ -1,15 +1,14 @@
 {
   "name": "lifee",
   "version": "0.1.0",
-  "description": "Salut  moi c'est Lifee, l'assistant virtuel de votre concierge !",
+  "description": "Salut, moi c'est Lifee, l'assistant virtuel de votre concierge !",
   "main": "./src/index.js",
-  "author": "",
-  "license": "ISC",
+  "private": true,
   "scripts": {
     "build": "nps build",
     "start": "nps dev",
     "start:debug": "nps dev.debug",
-    "flow": "flow status",
+    "flow": "flow",
     "typed": "flow-typed install"
   },
   "devDependencies": {
@@ -58,6 +57,9 @@
     "express-winston": "^3.0.0",
     "helmet": "^3.8.1",
     "http-status": "^1.0.1",
+    "i18next": "^11.9.0",
+    "i18next-express-middleware": "^1.4.0",
+    "i18next-node-fs-backend": "^2.1.0",
     "method-override": "^2.3.8",
     "moment": "^2.22.2",
     "morgan": "^1.8.1",

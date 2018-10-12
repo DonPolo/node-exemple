@@ -1,0 +1,49 @@
+{
+  "intent": {
+    "contact": "Vous pouvez contacter {{conciergeGivenName}} par email à {{siteEmail}} ou par téléphone au {{siteTelephone}}\n\nVous pouvez aussi passer à la conciergerie {{siteSchedules}}",
+    "infos": "{{conciergeGivenName, capitalize}} vous accueille {{siteSchedules}}\n\nEn-dehors des heures d’ouverture, vous pouvez envoyer un mail à {{siteEmail}}\n\nOu appeler le {{siteTelephone}}\n\nVous pouvez également consulter la carte des services sur {{-siteServices}}\n\nPour connaître la liste des points relais pour vos retraits de colis, vous pouvez aller sur {{-siteRelaisColis}}",
+    "infos_plural": "{{conciergeGivenName, capitalize}} vous accueillent {{siteSchedules}}\n\nEn-dehors des heures d’ouverture, vous pouvez envoyer un mail à {{siteEmail}}\n\nOu appeler le {{siteTelephone}}\n\nVous pouvez également consulter la carte des services sur {{-siteServices}}\n\nPour connaître la liste des points relais pour vos retraits de colis, vous pouvez aller sur {{-siteRelaisColis}}",
+    "schedule": "{{conciergeGivenName, capitalize}} vous accueille {{siteSchedules}}",
+    "schedule_plural": "{{conciergeGivenName, capitalize}} vous accueillent {{siteSchedules}}",
+    "services": "Vous trouverez la carte de nos services ici {{-siteServices}}",
+    "relaisColis": "Voici la liste des relais 📦 que vous pouvez utiliser pour que {{conciergeGivenName}} récupère vos colis {{-siteRelaisColis}}",
+    "relaisColis_plural": "Voici la liste des relais 📦 que vous pouvez utiliser pour que {{conciergeGivenName}} récupèrent vos colis {{-siteRelaisColis}}",
+    "globalRequest": {
+      "user_unknown": "Apparemment on ne se connaît pas encore.",
+      "done": "Ok c'est noté !",
+      "recorded": "Votre demande est enregistrée et disponible dans votre Espace Conciergerie en Ligne.",
+      "unregistered_recorded": "Pas besoin d'attendre pour ta demande, je l'ai transmise.",
+      "recorded_with_locker": "{{conciergeGivenName, capitalize}} va passer récupérer vos affaires dans le casier {{numLocker}}.",
+      "recorded_with_locker_plural": "{{conciergeGivenName, capitalize}} vont passer récupérer vos affaires dans le casier {{numLocker}}.",
+      "recorded_ask_locker": "S'il s'agit de quelque chose que {{conciergeGivenName}} doit récupérer, pensez à m'indiquer le numéro du casier.",
+      "recorded_ask_locker_plural": "S'il s'agit de quelque chose que {{conciergeGivenName}} doivent récupérer, pensez à m'indiquer le numéro du casier.",
+      "recorded_mail_only": "Je n'ai pas réussi à enregistrer la demande. Mais j'ai bien noté ce que vous m'aviez dit, et j'ai transmis à {{conciergeGivenName}}.",
+      "recorded_error": "Ouhla, j'ai eu un souci ! Pouvez-vous contacter {{conciergeGivenName}} ?"
+    },
+    "globalRequest_locker": {
+      "updated": "Ok c'est ajouté !",
+      "update_sent": "Ok, cette précision a été envoyée à {{conciergeGivenName}}"
+    },
+    "searchByMail": {
+      "ask_email": "Quelle est votre adresse e-mail ?",
+      "found": "Super je vous ai retrouvé !",
+      "save_mobile": "Je note votre numéro de téléphone pour plus tard (Si vous ne le voulez pas, dites-le à {{conciergeGivenName}}).",
+      "other_mobile": "Vous avez déjà un autre numéro de téléphone enregistré. Je vous laisse le mettre à jour si besoin.",
+      "not_found": "Apparemment vous n'êtes pas inscrit.",
+      "register_or_try_again": "Souhaitez-vous essayer un autre e-mail ou préférez-vous que je vous inscrive avec {{email}} ?"
+    },
+    "register": {
+      "ask_email": "Je peux vous inscrire. Quelle est votre adresse e-mail ?",
+      "start": "Ok, allons-y !",
+      "ask_last_name": "Quel est votre nom de famille ?",
+      "ask_given_name": "Quel est votre prénom ?",
+      "already_registered": "Ce n'est pas la peine, vous êtes déjà inscrit",
+      "done": "Super ! Plus que 48h pour la validation de votre inscription."
+    },
+    "fallback": {
+      "not_for_me": "Ce n'est plus de mon ressort. Mais je suis encore jeune, j'apprends.",
+      "transmitted": "En attendant je transmets à {{conciergeGivenName}} qui a un cerveau de toute beauté.",
+      "transmitted_plural": "En attendant je transmets à {{conciergeGivenName}} qui ont un cerveau de toute beauté."
+    }
+  }
+}

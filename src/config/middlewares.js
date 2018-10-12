@@ -11,7 +11,7 @@ import expressWinston from 'express-winston';
 import methodOverride from 'method-override';
 import helmet from 'helmet';
 import expressStatusMonitor from 'express-status-monitor';
-
+import { middleware as i18n } from './i18n';
 import { logger } from './winston';
 
 const isTest = process.env.NODE_ENV === 'test';
@@ -24,6 +24,7 @@ export default (app: express$Application) => {
   app.use(helmet());
   app.use(expressStatusMonitor());
   app.use(methodOverride());
+  app.use(i18n);
   if (isDev && !isTest) {
     app.use(morgan('dev'));
     expressWinston.requestWhitelist.push('body');

@@ -5,7 +5,7 @@ import config from '../config/constants';
 
 const getUserURL = 'https://slack.com/api/users.profile.get';
 
-export const getSlackEmail = (userId: string): Promise<?string> =>
+export const getSlackEmail = (userId: string): Promise<string | null> =>
   new Promise((resolve, reject) => {
     request.get(
       {

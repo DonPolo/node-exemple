@@ -33,7 +33,6 @@ const isDev = process.env.NODE_ENV === 'development';
 export const logger = winston.createLogger({
   level: isDev ? 'debug' : 'info',
   format: winston.format.combine(
-    winston.format.colorize(),
     // $FlowFixMe
     winston.format.splat(),
     winston.format.printf(info => formatter(info, isDev))

@@ -5,16 +5,6 @@ import httpStatus from 'http-status';
 /**
  * @extends Error
  */
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-  }
-}
-
-/**
- * @extends Error
- */
 class ExtendableError extends Error {
   status: number;
   isPublic: boolean;

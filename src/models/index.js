@@ -4,7 +4,7 @@ import type { Nedb } from 'nedb';
 import Dialogflow, { indexes as dialogflowIndexes } from './dialogflow.models';
 import Engie, { indexes as engieIndexes } from './engie.models';
 
-const insert = (db: Nedb, doc: Object) =>
+const insert = async (db: Nedb, doc: Object) =>
   new Promise((resolve, reject) => {
     db.insert(doc, (err, res: Object) => {
       if (err) {
@@ -15,7 +15,12 @@ const insert = (db: Nedb, doc: Object) =>
     });
   });
 
-const update = (db: Nedb, query: Object, updateQuery: Object, opt: Object) =>
+const update = async (
+  db: Nedb,
+  query: Object,
+  updateQuery: Object,
+  opt: Object
+) =>
   new Promise((resolve, reject) => {
     db.update(
       query,
@@ -31,7 +36,7 @@ const update = (db: Nedb, query: Object, updateQuery: Object, opt: Object) =>
     );
   });
 
-const find = (db: Nedb, opt: Object) =>
+const find = async (db: Nedb, opt: Object) =>
   new Promise((resolve, reject) => {
     db.find(opt, (err, res: Object[]) => {
       if (err) {
@@ -42,7 +47,7 @@ const find = (db: Nedb, opt: Object) =>
     });
   });
 
-const findOne = (db: Nedb, opt: Object) =>
+const findOne = async (db: Nedb, opt: Object) =>
   new Promise((resolve, reject) => {
     db.findOne(opt, (err, res: ?Object) => {
       if (err) {
@@ -53,7 +58,7 @@ const findOne = (db: Nedb, opt: Object) =>
     });
   });
 
-const count = (db: Nedb, opt: Object) =>
+const count = async (db: Nedb, opt: Object) =>
   new Promise((resolve, reject) => {
     db.count(opt, (err, res: number) => {
       if (err) {
@@ -64,7 +69,7 @@ const count = (db: Nedb, opt: Object) =>
     });
   });
 
-const ensureIndex = (db: Nedb, opt: Object) =>
+const ensureIndex = async (db: Nedb, opt: Object) =>
   new Promise((resolve, reject) => {
     db.ensureIndex(opt, err => {
       if (err) {

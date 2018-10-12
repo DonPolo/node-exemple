@@ -18,6 +18,8 @@ routes.post('/', authBasicEnv, TwilioController.webhook);
  */
 routes.post('/engie', authBasicEnv, TwilioController.engieGame);
 routes.get('/engie-sync', authBasicEnv, TwilioController.engieSync);
+routes.post('/engie-stop', authBasicEnv, TwilioController.engieStop);
+routes.post('/engie-end', authBasicEnv, TwilioController.engieEnd);
 // routes.get('/engie-fix', authBasicEnv, TwilioController.engieFix);
 
 export default routes;
