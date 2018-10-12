@@ -86,10 +86,12 @@ export default class Ecl {
   }
 
   async getConciergeList(siteCode: string): Promise<Concierge[]> {
+    // 'LEFT JOIN `client` ON `client`.`id_re_03`=`coord`.`id_re_03FK` ' +
+    // 'WHERE `client`.`corresp_04`=:siteCode and `coord`.`co_ge_03`=0',
     const concierges: Concierge[] = await this.ecl.query(
       'SELECT `coord`.`co_re_03_u` as prenom, `coord`.`co_re_02_u` as nom, `coord`.`co_re_01` as trigramme ' +
         'FROM `coordinateur` as `coord` ' +
-        'LEFT JOIN `client` ON `client`.`id_re_03`=`coord`.`id_re_03FK` ' +
+        'LEFT JOIN `client` ON `client`.`co_re_01`=`coord`.`co_re_01` ' +
         'WHERE `client`.`corresp_04`=:siteCode',
       {
         type: this.ecl.QueryTypes.SELECT,
@@ -111,7 +113,7 @@ export default class Ecl {
     }
     if (concierges.length === 2)
       return `${concierges[0].prenom} et ${concierges[1].prenom}`;
-    return forUser ? 'votre concierge' : '';
+    return forUser ? 'vos concierges' : '';
   }
 
   static isMultipleConcierges(concierges: ?Array<Concierge>) {

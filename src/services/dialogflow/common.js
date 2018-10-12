@@ -161,6 +161,7 @@ const intentFallback = async (
     {
       from: config.MAIL.sender,
       to: config.MAIL.sav,
+      replyTo: ctx.site.email,
       subject: `[Lifee] Nouvelle demande incomprise`,
       text:
         'Bonjour,\n\n' +
