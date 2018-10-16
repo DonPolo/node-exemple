@@ -212,8 +212,8 @@ export default class Ecl {
         requestType = 'Autre';
         requestType2 = request.type;
         typeCode = 'sms';
-        detail = request.text;
-        addition = '';
+        detail = '';
+        addition = request.text;
         break;
     }
 
