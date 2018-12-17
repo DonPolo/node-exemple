@@ -155,37 +155,41 @@ const intentFallback = async (
   req: $Subtype<express$Request>,
   res: string[]
 ) => {
-  const ctx = await getContext(agent, true);
-  // Send unmatched query by mail
-  await sendMessage(
-    {
-      from: config.MAIL.sender,
-      to: config.MAIL.sav,
-      replyTo: ctx.site.email,
-      subject: `[Lifee] Nouvelle demande incomprise`,
-      text:
-        'Bonjour,\n\n' +
-        `${
-          ctx.user
-            ? `${ctx.user.prenom} ${ctx.user.nom}`
-            : 'Un utilisateur non inscrit'
-        } du site ${
-          ctx.site.code
-        } a fait la demande suivante à Lifee qui ne l'a malheureusement pas comprise:\n\n` +
-        `${agent.query}` +
-        `\n\nE-mail du site: ${ctx.site.email}` +
-        `\n\nBonne journée !`
-    },
-    true
-  );
+  const ctx: EclContext = await getContext(agent, true);
+  if (ctx.site) {
+    // Send unmatched query by mail
+    await sendMessage(
+      {
+        from: config.MAIL.sender,
+        to: config.MAIL.sav,
+        replyTo: ctx.site.email,
+        subject: `[Lifee] Nouvelle demande incomprise`,
+        text:
+          "Salut, c'est Lifee !\n\n" +
+          `${
+            ctx.user
+              ? `${ctx.user.prenom} ${ctx.user.nom}`
+              : 'Un utilisateur non inscrit'
+          } du site ${
+            ctx.site.code
+          } a fait une demande à Lifee qui ne l'a malheureusement pas comprise.` +
+          `\n\nE-mail du site: ${ctx.site.email}` +
+          `\nSon identifiant: ${ctx.userId || '?'}` +
+          `\nSon message: ${agent.query}` +
+          `\n\nBonne journée !`
+      },
+      true
+    );
 
-  res.push(req.t('intent.fallback.not_for_me'));
-  res.push(
-    req.t('intent.fallback.transmitted', {
-      count: ctx.concierges.length,
-      conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges)
-    })
-  );
+    res.push(req.t('intent.fallback.not_for_me'));
+    res.push(
+      req.t('intent.fallback.transmitted', {
+        count: ctx.concierges.length,
+        conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges)
+      })
+    );
+  }
+  // No (=Default) response for unknown site
 };
 
 export default {

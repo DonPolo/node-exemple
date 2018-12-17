@@ -57,13 +57,19 @@ export const recordGlobalRequest = async (
           to: site.email,
           subject: `[Lifee] Nouvelle demande ${newRequest.type}`,
           text:
-            `Bonjour ${Ecl.getPrenomConcierge(concierges, false)},\n\n` +
+            `Salut ${Ecl.getPrenomConcierge(
+              concierges,
+              false
+            )}, c'est Lifee !\n\n` +
             `${user.prenom} ${
               user.nom
-            } m'a chargé de vous transmettre la demande ${
+            } m'a chargé de te transmettre une demande ${
               newRequest.type
-            } suivante:\n\n` +
-            `${newRequest.text}` +
+            }.\n\n` +
+            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+            `\n\nSon Email: ${user.email}` +
+            `\nSon N°: ${user.telephone || ctx.userId || '?'}` +
+            `\nSon message: ${newRequest.text}` +
             `\n\nLa demande est enregistrée dans l'ECL sous la référence ${requestRef}` +
             `\n\nBonne journée !`
         },
@@ -79,12 +85,17 @@ export const recordGlobalRequest = async (
           to: site.email,
           subject: `[Lifee] Nouvelle demande ${newRequest.type} à saisir`,
           text:
-            `Bonjour ${Ecl.getPrenomConcierge(concierges, false)},\n\n` +
-            `Un utilisateur non inscrit m'a chargé de vous transmettre la demande ${
+            `Salut ${Ecl.getPrenomConcierge(
+              concierges,
+              false
+            )}, c'est Lifee !\n\n` +
+            `Un utilisateur non inscrit m'a chargé de vous transmettre une demande ${
               newRequest.type
-            } suivante:\n\n` +
-            `${newRequest.text}` +
-            `\n\nSon e-mail : ${email}` +
+            }.\n\n` +
+            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+            `\n\nSon Email: ${email}` +
+            `\nSon N°: ${ctx.userId || '?'}` +
+            `\nSon message: ${newRequest.text}` +
             `\n\nBonne journée !`
         },
         true
@@ -97,6 +108,7 @@ export const recordGlobalRequest = async (
       );
     }
     if (numLocker)
+      // Indicates understood locker number
       res.push(
         req.t('intent.globalRequest.recorded_with_locker', {
           count: ctx.concierges.length,
@@ -105,6 +117,7 @@ export const recordGlobalRequest = async (
         })
       );
     else if (params.Location && params.Location === 'Casier') {
+      // Ask locker number
       contexts.push({
         name: config.DIALOG_FLOW.context.userRequestLocker,
         lifespan: 1,
@@ -119,6 +132,17 @@ export const recordGlobalRequest = async (
           conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges)
         })
       );
+    } else {
+      // Offer a chance to add details to the request
+      contexts.push({
+        name: config.DIALOG_FLOW.context.userRequestDetails,
+        lifespan: 1,
+        parameters: {
+          requestRef,
+          email
+        }
+      });
+      res.push(req.t('intent.globalRequest.recorded_ask_details'));
     }
   } catch (error) {
     try {
@@ -130,16 +154,20 @@ export const recordGlobalRequest = async (
           to: site.email,
           subject: `[Lifee] Nouvelle demande ${newRequest.type} à saisir`,
           text:
-            `Bonjour ${Ecl.getPrenomConcierge(concierges, false)},\n\n` +
+            `Salut ${Ecl.getPrenomConcierge(
+              concierges,
+              false
+            )}, c'est Lifee !\n\n` +
             `${
-              ctx.user
-                ? `${ctx.user.prenom} ${ctx.user.nom}`
-                : 'Un utilisateur non inscrit'
+              user ? `${user.prenom} ${user.nom}` : 'Un utilisateur non inscrit'
             } m'a chargé de vous transmettre une demande ${
               newRequest.type
-            } que je n'ai pas pu enregistrer dans l'ECL:\n\n` +
-            `${newRequest.text}` +
-            `${ctx.email && !ctx.user ? `\n\nSon e-mail : ${ctx.email}` : ''}` +
+            } que je n'ai pas pu enregistrer dans l'ECL.\n\n` +
+            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+            `\n\nSon Email: ${email ||
+              (user && user.email ? user.email : '?')}` +
+            `\nSon N°: ${ctx.userId || '?'}` +
+            `\nSon message: ${newRequest.text}` +
             `\n\nBonne journée !`
         },
         true
@@ -237,11 +265,22 @@ const intentGlobalRequestLocker = async (
           to: ctx.site.email,
           subject: `[Lifee] Suite de la demande ${requestRef}`,
           text:
-            `Bonjour ${Ecl.getPrenomConcierge(ctx.concierges, false)},\n\n` +
+            `Salut ${Ecl.getPrenomConcierge(
+              ctx.concierges,
+              false
+            )}, c'est Lifee !\n\n` +
             `${
               ctx.user ? `${ctx.user.prenom} ${ctx.user.nom}` : 'Un utilisateur'
-            } m'a chargé de mettre à jour la demande ${requestRef}, avec le complément suivant :\n\n` +
-            `${agent.query}` +
+            } m'a chargé de mettre à jour la demande ${requestRef}, avec un complément.\n\n` +
+            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+            `\n\nSon Email: ${email ||
+              (ctx.user && ctx.user.email ? ctx.user.email : '?')}` +
+            `\nSon N°: ${
+              ctx.user && ctx.user.telephone
+                ? ctx.user.telephone
+                : ctx.userId || '?'
+            }` +
+            `\nSon message: ${agent.query}` +
             `\n\nLa demande est mise à jour dans l'ECL` +
             `\n\nBonne journée !`
         },
@@ -258,12 +297,18 @@ const intentGlobalRequestLocker = async (
           to: ctx.site.email,
           subject: `[Lifee] Suite d'une demande à saisir`,
           text:
-            `Bonjour ${Ecl.getPrenomConcierge(ctx.concierges, false)},\n\n` +
+            `Salut ${Ecl.getPrenomConcierge(
+              ctx.concierges,
+              false
+            )}, c'est Lifee !\n\n` +
             `${
               ctx.user ? `${ctx.user.prenom} ${ctx.user.nom}` : 'Un utilisateur'
-            } m'a chargé de préciser la demande ${requestRef}, que je n'ai pas pu enregistrer dans l'ECL:\n\n` +
-            `${agent.query}` +
-            `\n\nSon e-mail : ${email}` +
+            } m'a chargé de préciser la demande ${requestRef}, que je n'ai pas pu enregistrer dans l'ECL.\n\n` +
+            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+            `\n\nSon Email: ${email ||
+              (ctx.user && ctx.user.email ? ctx.user.email : '?')}` +
+            `\nSon N°: ${ctx.userId || '?'}` +
+            `\nSon message: ${agent.query}` +
             `\n\nBonne journée !`
         },
         true
@@ -292,10 +337,15 @@ const intentGlobalRequestLocker = async (
         to: ctx.site.email,
         subject: `[Lifee] Suite d'une demande à saisir`,
         text:
-          `Bonjour ${Ecl.getPrenomConcierge(ctx.concierges, false)},\n\n` +
-          `Un utilisateur non inscrit m'a chargé de vous préciser sa demande:\n\n` +
-          `${agent.query}` +
-          `\n\nSon e-mail : ${email}` +
+          `Salut ${Ecl.getPrenomConcierge(
+            ctx.concierges,
+            false
+          )}, c'est Lifee !\n\n` +
+          `Un utilisateur non inscrit m'a chargé de vous préciser sa demande.\n\n` +
+          "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+          `\n\nSon Email: ${email}` +
+          `\nSon N°: ${ctx.userId || '?'}` +
+          `\nSon message: ${agent.query}` +
           `\n\nBonne journée !`
       },
       true

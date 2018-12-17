@@ -141,11 +141,15 @@ const intentRegisterGivenName = async (
             to: ctx.site.email,
             subject: `[Lifee] Nouvelle inscription à saisir`,
             text:
-              `Bonjour ${Ecl.getPrenomConcierge(ctx.concierges, false)},\n\n` +
-              `L'utilisateur suivant souhaite s'inscrire:\n\n` +
-              `Nom: ${context.parameters.lastName}\n` +
-              `Prénom: ${givenName}\n` +
-              `E-mail: ${context.parameters.email}` +
+              `Salut ${Ecl.getPrenomConcierge(
+                ctx.concierges,
+                false
+              )}, c'est Lifee !\n\n` +
+              "L'utilisateur suivant souhaite s'inscrire:" +
+              `\n\nSon nom: ${context.parameters.lastName}` +
+              `\nSon Prénom: ${givenName}` +
+              `\nSon Email: ${context.parameters.email}` +
+              `\nSon N°: ${ctx.userId || '?'}` +
               `\n\nMerci de procéder à son inscription.\n\nBonne journée !`
           },
           true
