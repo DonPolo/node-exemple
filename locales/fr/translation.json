@@ -15,12 +15,12 @@
       "unregistered_recorded": "Pas besoin d'attendre pour ta demande, je l'ai transmise.",
       "recorded_with_locker": "{{conciergeGivenName, capitalize}} va passer récupérer vos affaires dans le casier {{numLocker}}.",
       "recorded_with_locker_plural": "{{conciergeGivenName, capitalize}} vont passer récupérer vos affaires dans le casier {{numLocker}}.",
+      "recorded_ask_details": "Souhaitez-vous ajouter des précisions à la demande (détails complémentaires, numéro de casier, etc) ?",
+      "recorded_ask_locker_details": "Souhaitez-vous ajouter des précisions à la demande ?",
       "recorded_ask_locker": "S'il s'agit de quelque chose que {{conciergeGivenName}} doit récupérer, pensez à m'indiquer le numéro du casier.",
       "recorded_ask_locker_plural": "S'il s'agit de quelque chose que {{conciergeGivenName}} doivent récupérer, pensez à m'indiquer le numéro du casier.",
       "recorded_mail_only": "Je n'ai pas réussi à enregistrer la demande. Mais j'ai bien noté ce que vous m'aviez dit, et j'ai transmis à {{conciergeGivenName}}.",
-      "recorded_error": "Ouhla, j'ai eu un souci ! Pouvez-vous contacter {{conciergeGivenName}} ?"
-    },
-    "globalRequest_locker": {
+      "recorded_error": "Ouhla, j'ai eu un souci ! Pouvez-vous contacter {{conciergeGivenName}} ?",
       "updated": "Ok c'est ajouté !",
       "update_sent": "Ok, cette précision a été envoyée à {{conciergeGivenName}}"
     },

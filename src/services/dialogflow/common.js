@@ -12,6 +12,7 @@ import {
   checkOriginalIntent
 } from '.';
 import { startRegistration } from './registration';
+import { updateGlobalRequest } from './request';
 
 import type { EclContext } from '.';
 
@@ -156,7 +157,23 @@ const intentFallback = async (
   res: string[]
 ) => {
   const ctx: EclContext = await getContext(agent, true);
-  if (ctx.site) {
+  // Check also here if it's a request details
+  const contextRequestDetails = agent.getContext(
+    config.DIALOG_FLOW.context.userRequestDetails
+  );
+  if (contextRequestDetails) {
+    // Add details to the request
+    await updateGlobalRequest(
+      ctx,
+      agent.query,
+      agent.parameters,
+      contextRequestDetails.parameters,
+      req,
+      res
+    );
+    // Remove outgoing details followup context used to keep request ref or user email
+    agent.setContext({ name: contextRequestDetails.name, lifespan: '0' });
+  } else if (ctx.site) {
     // Send unmatched query by mail
     await sendMessage(
       {
@@ -173,9 +190,9 @@ const intentFallback = async (
           } du site ${
             ctx.site.code
           } a fait une demande à Lifee qui ne l'a malheureusement pas comprise.` +
-          `\n\nE-mail du site: ${ctx.site.email}` +
-          `\nSon identifiant: ${ctx.userId || '?'}` +
-          `\nSon message: ${agent.query}` +
+          `\n\n  E-mail du site: ${ctx.site.email}` +
+          `\n  Son identifiant: ${ctx.userId || '?'}` +
+          `\n  Son message: ${agent.query}` +
           `\n\nBonne journée !`
       },
       true

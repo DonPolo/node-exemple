@@ -146,10 +146,10 @@ const intentRegisterGivenName = async (
                 false
               )}, c'est Lifee !\n\n` +
               "L'utilisateur suivant souhaite s'inscrire:" +
-              `\n\nSon nom: ${context.parameters.lastName}` +
-              `\nSon Prénom: ${givenName}` +
-              `\nSon Email: ${context.parameters.email}` +
-              `\nSon N°: ${ctx.userId || '?'}` +
+              `\n\n  Son nom: ${context.parameters.lastName}` +
+              `\n  Son Prénom: ${givenName}` +
+              `\n  Son Email: ${context.parameters.email}` +
+              `\n  Son N°: ${ctx.userId || '?'}` +
               `\n\nMerci de procéder à son inscription.\n\nBonne journée !`
           },
           true

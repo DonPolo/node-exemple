@@ -88,8 +88,8 @@ export async function webhook(
         func: intentRequest.globalRequest
       },
       {
-        name: config.DIALOG_FLOW.intent.globalRequestLocker,
-        func: intentRequest.locker
+        name: config.DIALOG_FLOW.intent.globalRequestDetails,
+        func: intentRequest.details
       },
       {
         name: config.DIALOG_FLOW.intent.searchUserByMail,

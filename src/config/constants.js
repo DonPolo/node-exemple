@@ -42,7 +42,8 @@ const defaultConfig = {
       services: process.env.DIALOG_FLOW_INTENT_SERVICES,
       infos: process.env.DIALOG_FLOW_INTENT_INFOS,
       globalRequest: process.env.DIALOG_FLOW_INTENT_GLOBAL_REQUEST,
-      globalRequestLocker: process.env.DIALOG_FLOW_INTENT_GLOBAL_REQUEST_LOCKER,
+      globalRequestDetails:
+        process.env.DIALOG_FLOW_INTENT_GLOBAL_REQUEST_DETAILS,
       searchUserByMail: process.env.DIALOG_FLOW_INTENT_SEARCH_BY_MAIL,
       needRegistration: process.env.DIALOG_FLOW_INTENT_NEED_REGISTRATION,
       registration: process.env.DIALOG_FLOW_INTENT_REGISTRATION,
@@ -56,8 +57,8 @@ const defaultConfig = {
       userRegistration: process.env.DIALOG_FLOW_CONTEXT_USER_REGISTRATION,
       userRegisterGivenName:
         process.env.DIALOG_FLOW_CONTEXT_USER_REGISTER_GIVEN_NAME,
-      userRequestLocker:
-        process.env.DIALOG_FLOW_CONTEXT_USER_GLOBAL_REQUEST_LOCKER
+      userRequestDetails:
+        process.env.DIALOG_FLOW_CONTEXT_USER_GLOBAL_REQUEST_DETAILS
     }
   },
   SLACK: {

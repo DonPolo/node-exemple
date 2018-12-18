@@ -67,9 +67,9 @@ export const recordGlobalRequest = async (
               newRequest.type
             }.\n\n` +
             "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
-            `\n\nSon Email: ${user.email}` +
-            `\nSon N°: ${user.telephone || ctx.userId || '?'}` +
-            `\nSon message: ${newRequest.text}` +
+            `\n\n  Son Email: ${user.email}` +
+            `\n  Son N°: ${user.telephone || ctx.userId || '?'}` +
+            `\n  Son message: ${newRequest.text}` +
             `\n\nLa demande est enregistrée dans l'ECL sous la référence ${requestRef}` +
             `\n\nBonne journée !`
         },
@@ -93,9 +93,9 @@ export const recordGlobalRequest = async (
               newRequest.type
             }.\n\n` +
             "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
-            `\n\nSon Email: ${email}` +
-            `\nSon N°: ${ctx.userId || '?'}` +
-            `\nSon message: ${newRequest.text}` +
+            `\n\n  Son Email: ${email}` +
+            `\n  Son N°: ${ctx.userId || '?'}` +
+            `\n  Son message: ${newRequest.text}` +
             `\n\nBonne journée !`
         },
         true
@@ -107,7 +107,7 @@ export const recordGlobalRequest = async (
         })
       );
     }
-    if (numLocker)
+    if (numLocker) {
       // Indicates understood locker number
       res.push(
         req.t('intent.globalRequest.recorded_with_locker', {
@@ -116,16 +116,11 @@ export const recordGlobalRequest = async (
           numLocker
         })
       );
-    else if (params.Location && params.Location === 'Casier') {
-      // Ask locker number
-      contexts.push({
-        name: config.DIALOG_FLOW.context.userRequestLocker,
-        lifespan: 1,
-        parameters: {
-          requestRef,
-          email
-        }
-      });
+      // Offer a chance to add details to the request
+      res.push(req.t('intent.globalRequest.recorded_ask_locker_details'));
+    } else if (params.Location && params.Location === 'Casier') {
+      // Ask locker number and / or request details
+      res.push(req.t('intent.globalRequest.recorded_ask_locker_details'));
       res.push(
         req.t('intent.globalRequest.recorded_ask_locker', {
           count: ctx.concierges.length,
@@ -134,16 +129,16 @@ export const recordGlobalRequest = async (
       );
     } else {
       // Offer a chance to add details to the request
-      contexts.push({
-        name: config.DIALOG_FLOW.context.userRequestDetails,
-        lifespan: 1,
-        parameters: {
-          requestRef,
-          email
-        }
-      });
       res.push(req.t('intent.globalRequest.recorded_ask_details'));
     }
+    contexts.push({
+      name: config.DIALOG_FLOW.context.userRequestDetails,
+      lifespan: 1,
+      parameters: {
+        requestRef,
+        email
+      }
+    });
   } catch (error) {
     try {
       logger.error('Global Request Error', error);
@@ -164,10 +159,10 @@ export const recordGlobalRequest = async (
               newRequest.type
             } que je n'ai pas pu enregistrer dans l'ECL.\n\n` +
             "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
-            `\n\nSon Email: ${email ||
+            `\n\n  Son Email: ${email ||
               (user && user.email ? user.email : '?')}` +
-            `\nSon N°: ${ctx.userId || '?'}` +
-            `\nSon message: ${newRequest.text}` +
+            `\n  Son N°: ${ctx.userId || '?'}` +
+            `\n  Son message: ${newRequest.text}` +
             `\n\nBonne journée !`
         },
         true
@@ -187,6 +182,127 @@ export const recordGlobalRequest = async (
         })
       );
     }
+  }
+};
+
+export const updateGlobalRequest = async (
+  ctx: EclContext,
+  request: string,
+  params: Object,
+  ctxParams: Object,
+  req: $Subtype<express$Request>,
+  res: string[]
+) => {
+  const { requestRef, email } = ctxParams;
+  let numLocker;
+  if (params.numeroCasier) numLocker = parseInt(params.numeroCasier, 10);
+
+  if (requestRef) {
+    try {
+      // Update request in ECL
+      await ecl.updateRequest(requestRef, {
+        text: request,
+        type: numLocker ? 'casier' : 'SMS',
+        numLocker
+      });
+      // Send request by mail
+      await sendMessage(
+        {
+          from: config.MAIL.sender,
+          to: ctx.site.email,
+          subject: `[Lifee] Suite de la demande ${requestRef}`,
+          text:
+            `Salut ${Ecl.getPrenomConcierge(
+              ctx.concierges,
+              false
+            )}, c'est Lifee !\n\n` +
+            `${
+              ctx.user ? `${ctx.user.prenom} ${ctx.user.nom}` : 'Un utilisateur'
+            } m'a chargé de mettre à jour la demande ${requestRef}, avec un complément.\n\n` +
+            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+            `\n\n  Son Email: ${email ||
+              (ctx.user && ctx.user.email ? ctx.user.email : '?')}` +
+            `\n  Son N°: ${
+              ctx.user && ctx.user.telephone
+                ? ctx.user.telephone
+                : ctx.userId || '?'
+            }` +
+            `\n  Son message: ${request}` +
+            `\n\nLa demande est mise à jour dans l'ECL` +
+            `\n\nBonne journée !`
+        },
+        false
+      );
+
+      res.push(req.t('intent.globalRequest.updated'));
+    } catch (error) {
+      logger.error('Global Request Details error', error);
+      // Send request update by mail
+      await sendMessage(
+        {
+          from: config.MAIL.sender,
+          to: ctx.site.email,
+          subject: `[Lifee] Suite d'une demande à saisir`,
+          text:
+            `Salut ${Ecl.getPrenomConcierge(
+              ctx.concierges,
+              false
+            )}, c'est Lifee !\n\n` +
+            `${
+              ctx.user ? `${ctx.user.prenom} ${ctx.user.nom}` : 'Un utilisateur'
+            } m'a chargé de préciser la demande ${requestRef}, que je n'ai pas pu enregistrer dans l'ECL.\n\n` +
+            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+            `\n\n  Son Email: ${email ||
+              (ctx.user && ctx.user.email ? ctx.user.email : '?')}` +
+            `\n  Son N°: ${ctx.userId || '?'}` +
+            `\n  Son message: ${request}` +
+            `\n\nBonne journée !`
+        },
+        true
+      );
+      res.push(
+        req.t('intent.globalRequest.update_sent', {
+          count: ctx.concierges.length,
+          conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges)
+        })
+      );
+    } finally {
+      if (numLocker)
+        res.push(
+          req.t('intent.globalRequest.recorded_with_locker', {
+            count: ctx.concierges.length,
+            conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges),
+            numLocker
+          })
+        );
+    }
+  } else if (email) {
+    // Send request by mail
+    await sendMessage(
+      {
+        from: config.MAIL.sender,
+        to: ctx.site.email,
+        subject: `[Lifee] Suite d'une demande à saisir`,
+        text:
+          `Salut ${Ecl.getPrenomConcierge(
+            ctx.concierges,
+            false
+          )}, c'est Lifee !\n\n` +
+          `Un utilisateur non inscrit m'a chargé de vous préciser sa demande.\n\n` +
+          "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
+          `\n\n  Son Email: ${email}` +
+          `\n  Son N°: ${ctx.userId || '?'}` +
+          `\n  Son message: ${request}` +
+          `\n\nBonne journée !`
+      },
+      true
+    );
+    res.push(
+      req.t('intent.globalRequest.update_sent', {
+        count: ctx.concierges.length,
+        conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges)
+      })
+    );
   }
 };
 
@@ -217,151 +333,66 @@ const intentGlobalRequest = async (
     } else contextUserAskMail.lifespan = MAX_LIFESPAN;
     agent.setContext(contextUserAskMail);
   } else {
-    const contexts = [];
-    await recordGlobalRequest(
-      ctx,
-      agent.query,
-      agent.parameters,
-      req,
-      res,
-      contexts
+    const contextRequestDetails = agent.getContext(
+      config.DIALOG_FLOW.context.userRequestDetails
     );
-    contexts.forEach(item => agent.setContext(item));
-    if (contextUserAskMail) {
-      // Remove outgoing ask mail context used to keep initial request
-      agent.setContext({ name: contextUserAskMail.name, lifespan: '0' });
+    if (!contextRequestDetails) {
+      // Initial request
+      const contexts = [];
+      await recordGlobalRequest(
+        ctx,
+        agent.query,
+        agent.parameters,
+        req,
+        res,
+        contexts
+      );
+      contexts.forEach(item => agent.setContext(item));
+      if (contextUserAskMail) {
+        // Remove outgoing ask mail context used to keep initial request
+        agent.setContext({ name: contextUserAskMail.name, lifespan: '0' });
+      }
+    } else {
+      // Add details to the request
+      await updateGlobalRequest(
+        ctx,
+        agent.query,
+        agent.parameters,
+        contextRequestDetails.parameters,
+        req,
+        res
+      );
+      // Remove outgoing details followup context used to keep request ref or user email
+      agent.setContext({ name: contextRequestDetails.name, lifespan: '0' });
     }
   }
 };
 
-const intentGlobalRequestLocker = async (
+const intentGlobalRequestDetails = async (
   agent: WebhookClient,
   req: $Subtype<express$Request>,
   res: string[]
 ) => {
   const ctx = await getContext(agent, true);
   const context = agent.getContext(
-    config.DIALOG_FLOW.context.userRequestLocker
+    config.DIALOG_FLOW.context.userRequestDetails
   );
   if (!context) throw Error('Missing context');
 
-  const { requestRef, email } = context.parameters;
-  let numLocker;
-  if (agent.parameters.numeroCasier)
-    numLocker = parseInt(agent.parameters.numeroCasier, 10);
-
-  if (requestRef) {
-    try {
-      // Update request in ECL
-      await ecl.updateRequest(requestRef, {
-        text: agent.query,
-        type: 'casier',
-        numLocker
-      });
-      // Send request by mail
-      await sendMessage(
-        {
-          from: config.MAIL.sender,
-          to: ctx.site.email,
-          subject: `[Lifee] Suite de la demande ${requestRef}`,
-          text:
-            `Salut ${Ecl.getPrenomConcierge(
-              ctx.concierges,
-              false
-            )}, c'est Lifee !\n\n` +
-            `${
-              ctx.user ? `${ctx.user.prenom} ${ctx.user.nom}` : 'Un utilisateur'
-            } m'a chargé de mettre à jour la demande ${requestRef}, avec un complément.\n\n` +
-            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
-            `\n\nSon Email: ${email ||
-              (ctx.user && ctx.user.email ? ctx.user.email : '?')}` +
-            `\nSon N°: ${
-              ctx.user && ctx.user.telephone
-                ? ctx.user.telephone
-                : ctx.userId || '?'
-            }` +
-            `\nSon message: ${agent.query}` +
-            `\n\nLa demande est mise à jour dans l'ECL` +
-            `\n\nBonne journée !`
-        },
-        false
-      );
-
-      res.push(req.t('intent.globalRequest_locker.updated'));
-    } catch (error) {
-      logger.error('Global Request Locker error', error);
-      // Send request update by mail
-      await sendMessage(
-        {
-          from: config.MAIL.sender,
-          to: ctx.site.email,
-          subject: `[Lifee] Suite d'une demande à saisir`,
-          text:
-            `Salut ${Ecl.getPrenomConcierge(
-              ctx.concierges,
-              false
-            )}, c'est Lifee !\n\n` +
-            `${
-              ctx.user ? `${ctx.user.prenom} ${ctx.user.nom}` : 'Un utilisateur'
-            } m'a chargé de préciser la demande ${requestRef}, que je n'ai pas pu enregistrer dans l'ECL.\n\n` +
-            "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
-            `\n\nSon Email: ${email ||
-              (ctx.user && ctx.user.email ? ctx.user.email : '?')}` +
-            `\nSon N°: ${ctx.userId || '?'}` +
-            `\nSon message: ${agent.query}` +
-            `\n\nBonne journée !`
-        },
-        true
-      );
-      res.push(
-        req.t('intent.globalRequest_locker.update_sent', {
-          count: ctx.concierges.length,
-          conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges)
-        })
-      );
-    } finally {
-      if (numLocker)
-        res.push(
-          req.t('intent.globalRequest.recorded_with_locker', {
-            count: ctx.concierges.length,
-            conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges),
-            numLocker
-          })
-        );
-    }
-  } else if (email) {
-    // Send request by mail
-    await sendMessage(
-      {
-        from: config.MAIL.sender,
-        to: ctx.site.email,
-        subject: `[Lifee] Suite d'une demande à saisir`,
-        text:
-          `Salut ${Ecl.getPrenomConcierge(
-            ctx.concierges,
-            false
-          )}, c'est Lifee !\n\n` +
-          `Un utilisateur non inscrit m'a chargé de vous préciser sa demande.\n\n` +
-          "Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin." +
-          `\n\nSon Email: ${email}` +
-          `\nSon N°: ${ctx.userId || '?'}` +
-          `\nSon message: ${agent.query}` +
-          `\n\nBonne journée !`
-      },
-      true
-    );
-    res.push(
-      req.t('intent.globalRequest_locker.update_sent', {
-        count: ctx.concierges.length,
-        conciergeGivenName: Ecl.getPrenomConcierge(ctx.concierges)
-      })
-    );
-  }
-  // Remove outgoing locker followup context used to keep request ref or user email
+  // Add details to the request
+  await updateGlobalRequest(
+    ctx,
+    agent.query,
+    agent.parameters,
+    context.parameters,
+    req,
+    res
+  );
+  // Remove outgoing details followup context used to keep request ref or user email
   agent.setContext({ name: context.name, lifespan: '0' });
 };
 
 export default {
   globalRequest: intentGlobalRequest,
-  locker: intentGlobalRequestLocker
+  details: intentGlobalRequestDetails
 };

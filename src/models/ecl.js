@@ -204,15 +204,19 @@ export default class Ecl {
         requestType = 'Demande casier';
         requestType2 = request.type;
         typeCode = 'casi';
-        detail = `casier:${request.numLocker || ''} ${request.text}`;
-        addition = '';
+        detail = request.numLocker
+          ? `casier:${request.numLocker} ${request.text}`
+          : request.text;
+        addition = request.numLocker
+          ? `casier:${request.numLocker} ${request.text}`
+          : request.text;
         break;
       case 'SMS':
       default:
         requestType = 'Autre';
         requestType2 = request.type;
         typeCode = 'sms';
-        detail = '';
+        detail = request.text;
         addition = request.text;
         break;
     }
@@ -243,7 +247,7 @@ export default class Ecl {
           detail,
           addition,
           userId: user.id,
-          numLocker: `${request.numLocker || ''}`
+          numLocker: request.numLocker || ''
         }
       }
     );
@@ -252,23 +256,42 @@ export default class Ecl {
   }
 
   async updateRequest(requestRef: string, request: Request) {
-    const replace = request.numLocker
-      ? `\`de_re_08_u\`=REPLACE(\`de_re_08_u\`, 'casier:', 'casier:${
-          request.numLocker
-        }'), `
-      : '';
+    function addNumLocker(field, numLocker) {
+      return `\`${field}\`=CONCAT('casier:${numLocker || ''} ', \`${field}\`)`;
+    }
+    function addDetails(field, paramName) {
+      return `\`${field}\`=CONCAT(\`${field}\`, ' ', ${paramName})`;
+    }
+    // Update num locker if added in request details
+    if (request.numLocker) {
+      await this.ecl.query(
+        'UPDATE `demande` SET ' +
+          `${addNumLocker('de_re_08_u', request.numLocker)}, ` +
+          `${addNumLocker('de_re_09_u', request.numLocker)}, ` +
+          "`de_re_06_u`='Demande casier', " +
+          "`de_re_07_u`='casier', " +
+          '`de_ca_01_u`=:numLocker ' +
+          'WHERE `de_re_03_u`=:requestRef',
+        {
+          type: this.ecl.QueryTypes.UPDATE,
+          replacements: {
+            requestRef,
+            numLocker: request.numLocker
+          }
+        }
+      );
+    }
+    // Add request details
     return this.ecl.query(
       'UPDATE `demande` SET ' +
-        `${replace}` +
-        '`de_re_09_u`=:addition, ' +
-        '`de_ca_01_u`=:numLocker ' +
+        `${addDetails('de_re_08_u', ':details')}, ` +
+        `${addDetails('de_re_09_u', ':details')} ` +
         'WHERE `de_re_03_u`=:requestRef',
       {
         type: this.ecl.QueryTypes.UPDATE,
         replacements: {
           requestRef,
-          addition: request.text,
-          numLocker: `${request.numLocker || ''}`
+          details: request.text
         }
       }
     );
