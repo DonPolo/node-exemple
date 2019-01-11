@@ -79,6 +79,8 @@ const intentUserAskMail = async (
         };
       }
       agent.setContext(contextNeedRegistration);
+      // Remove outgoing ask mail context used to keep initial request
+      agent.setContext({ name: contextUserAskMail.name, lifespan: '0' });
     }
   } else {
     if (email) {
@@ -99,7 +101,7 @@ const intentUserAskMail = async (
               })
             );
           } catch (error) {
-            logger.error('Cannot save new user mobile number', error);
+            logger.error('Cannot save new user mobile number:', error);
           }
         }
       }

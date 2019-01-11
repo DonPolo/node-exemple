@@ -37,8 +37,12 @@
       "start": "Ok, allons-y !",
       "ask_last_name": "Quel est votre nom de famille ?",
       "ask_given_name": "Quel est votre prénom ?",
+      "ask_site_group": "A quelle catégorie d'utilisateurs appartenez-vous ?",
+      "give_site_group_choice": "\nTapez {{number}} pour {{name}}.",
+      "ask_site_group_again": "Veuillez faire un choix entre 1 et {{max}} !",
       "already_registered": "Ce n'est pas la peine, vous êtes déjà inscrit",
-      "done": "Super ! Plus que 48h pour la validation de votre inscription."
+      "done_after_validation": "Ça y est, on a déjà terminé :)\nIl va vous être demandé de valider votre adresse mail, vous pouvez donc surveiller votre boîte dès maintenant.",
+      "done": "Ça y est, on a déjà terminé :)\nPlus que 48h pour la validation de votre inscription."
     },
     "fallback": {
       "not_for_me": "Ce n'est plus de mon ressort. Mais je suis encore jeune, j'apprends.",

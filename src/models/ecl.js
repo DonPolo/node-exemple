@@ -2,6 +2,7 @@
 
 import Sequelize from 'sequelize';
 import moment from 'moment';
+import uuid from 'node-uuid';
 
 import config from '../config/constants';
 
@@ -31,6 +32,11 @@ export type Site = {
   infos: string,
   guideServices: string,
   relaisColis: string
+};
+
+export type SiteGroup = {
+  id: string,
+  nom: string
 };
 
 export type Concierge = {
@@ -83,6 +89,17 @@ export default class Ecl {
         relaisColis: `http://ecl.easy-life.fr/gds/${sites[0].code}_RC.pdf`
       };
     return Promise.resolve(null);
+  }
+
+  async getSiteGroups(siteId: string) {
+    const groups: SiteGroup[] = await this.ecl.query(
+      'SELECT `corresp_01` as id, `corresp_02` as nom FROM `correspondance_client` WHERE `id_re_03`=:siteId',
+      {
+        type: this.ecl.QueryTypes.SELECT,
+        replacements: { siteId }
+      }
+    );
+    return groups;
   }
 
   async getConciergeList(siteCode: string): Promise<Concierge[]> {
@@ -162,6 +179,65 @@ export default class Ecl {
     return Promise.resolve(null);
   }
 
+  /**
+   * Save user registration
+   * @return token to be used in user mail validation
+   * @param {*} site
+   * @param {*} userId
+   * @param {*} email
+   * @param {*} lastName
+   * @param {*} givenName
+   * @param {*} siteGroup
+   */
+  async saveRegistration(
+    site: Site,
+    userId: string,
+    email: string,
+    lastName: string,
+    givenName: string,
+    siteGroup: SiteGroup
+  ) {
+    // Get needed site info
+    const sitesInfo = await this.ecl.query(
+      'SELECT `id_re_03` as id, `fi_de_03` as `category`, `fi_de_04` as `group` FROM `form_inscription` WHERE `id_re_03`=:siteId',
+      {
+        type: this.ecl.QueryTypes.SELECT,
+        replacements: { siteId: site.id }
+      }
+    );
+    if (!sitesInfo && !sitesInfo.length)
+      throw Error(
+        `Cannot save registration: unable to find site info for '${site.id}'`
+      );
+
+    const siteInfo = sitesInfo[0];
+    // Generate a token for user mail validation
+    const token = uuid.v4();
+    // Insert registration in database
+    await this.ecl.query(
+      'INSERT INTO `form_inscription_util`(`id_re_03`,`id_re_01_u`,`id_re_06_u`,`id_re_07_u`,`id_re_08`,`id_co_06_u`,`id_ge_04`,`iu_to_01`,`id_re_10`,`id_in_01`,`id_in_02`,`id_co_02_u`) ' +
+        'VALUES (:siteId,:email,:lastName,:givenName,:fullName,:mobile,DATE_FORMAT(NOW(), "%Y-%m-%d"),:token,:client,:category,:group,:cp)',
+      {
+        type: this.ecl.QueryTypes.INSERT,
+        replacements: {
+          siteId: site.id,
+          email,
+          lastName: lastName.trim().toUpperCase(),
+          givenName: givenName.trim(),
+          fullName: `${lastName.trim().toUpperCase()} ${givenName.trim()}`,
+          mobile: userId,
+          token,
+          client: siteGroup ? siteGroup.nom : null,
+          category: siteInfo.category,
+          group: siteInfo.group,
+          cp: `${site.code.substr(0, 2)}000` // Take the department from site code and add three 0
+        }
+      }
+    );
+
+    return token;
+  }
+
   async saveUserMobile(user: User) {
     return this.ecl.query(
       'UPDATE `utilisateur` SET ' +
@@ -176,6 +252,7 @@ export default class Ecl {
       }
     );
   }
+
   async saveRequest(
     request: Request,
     site: Site,

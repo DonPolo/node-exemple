@@ -23,7 +23,7 @@ export const sendMessage = async (
     bcc?: string | string[],
     replyTo?: string,
     subject: string,
-    text: string,
+    text?: string,
     html?: string,
     attachments?: Object[]
   },
@@ -45,10 +45,10 @@ export const sendMessage = async (
         `\tTo: ${Array.isArray(options.to) ? options.to.join(',') : options.to}`
       );
       logger.info(`\tSubject: ${options.subject}`);
-      logger.info(`\tMessage: ${options.text}`);
+      logger.info(`\tMessage: ${options.text || options.html}`);
     }
   } catch (e) {
-    logger.error('Unable to send mail', e);
+    logger.error('Unable to send mail:', e);
     if (throwError) throw e;
   }
 };

@@ -112,6 +112,10 @@ export async function webhook(
         func: intentRegistration.registerGivenName
       },
       {
+        name: config.DIALOG_FLOW.intent.registerSiteGroup,
+        func: intentRegistration.registerSiteGroup
+      },
+      {
         name: config.DIALOG_FLOW.intent.fallback,
         func: intentCommon.fallback
       }

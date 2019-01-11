@@ -4,6 +4,9 @@ require('dotenv').config();
 
 const defaultConfig = {
   PORT: process.env.PORT || 3000,
+  ECL: {
+    url: process.env.ECL_URL || 'http://localhost'
+  },
   DB: {
     username: process.env.DB_USERNAME || 'admin',
     password: process.env.DB_PASSWORD || 'password',
@@ -49,6 +52,7 @@ const defaultConfig = {
       registration: process.env.DIALOG_FLOW_INTENT_REGISTRATION,
       registerLastName: process.env.DIALOG_FLOW_INTENT_REGISTER_LAST_NAME,
       registerGivenName: process.env.DIALOG_FLOW_INTENT_REGISTER_GIVEN_NAME,
+      registerSiteGroup: process.env.DIALOG_FLOW_INTENT_REGISTER_SITE_GROUP,
       fallback: process.env.DIALOG_FLOW_INTENT_FALLBACK
     },
     context: {
@@ -57,6 +61,8 @@ const defaultConfig = {
       userRegistration: process.env.DIALOG_FLOW_CONTEXT_USER_REGISTRATION,
       userRegisterGivenName:
         process.env.DIALOG_FLOW_CONTEXT_USER_REGISTER_GIVEN_NAME,
+      userRegisterSiteGroup:
+        process.env.DIALOG_FLOW_CONTEXT_USER_REGISTER_SITE_GROUP,
       userRequestDetails:
         process.env.DIALOG_FLOW_CONTEXT_USER_GLOBAL_REQUEST_DETAILS
     }

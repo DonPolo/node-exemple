@@ -141,7 +141,7 @@ export const recordGlobalRequest = async (
     });
   } catch (error) {
     try {
-      logger.error('Global Request Error', error);
+      logger.error('Global Request Error:', error);
       // Send mail in case of failure
       await sendMessage(
         {
@@ -174,7 +174,7 @@ export const recordGlobalRequest = async (
         })
       );
     } catch (error2) {
-      logger.error('Global Request Error', error2);
+      logger.error('Global Request Error:', error2);
       res.push(
         req.t('intent.globalRequest.recorded_error', {
           count: ctx.concierges.length,
@@ -236,7 +236,7 @@ export const updateGlobalRequest = async (
 
       res.push(req.t('intent.globalRequest.updated'));
     } catch (error) {
-      logger.error('Global Request Details error', error);
+      logger.error('Global Request Details error:', error);
       // Send request update by mail
       await sendMessage(
         {
