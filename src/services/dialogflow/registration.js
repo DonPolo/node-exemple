@@ -1,5 +1,7 @@
 // @flow
 import { WebhookClient } from 'dialogflow-fulfillment';
+import twilio from 'twilio';
+import Queue from 'better-queue';
 
 import { logger } from '../../config/winston';
 import config from '../../config/constants';
@@ -12,10 +14,41 @@ import {
   checkOriginalIntent
 } from '.';
 
+import type { MailOptions } from '../message';
 import type { SiteGroup } from '../../models/ecl';
 import type { EclContext } from '.';
 
 const ecl = new Ecl();
+
+type MailTask = {
+  ctx: EclContext,
+  options: MailOptions
+};
+const mailQueue = new Queue(async (task: MailTask, cb) => {
+  try {
+    logger.info('Mail queue task started');
+    await sendMessage(task.options);
+    logger.info('Mail queue task ended');
+    cb();
+  } catch (err) {
+    logger.error('Mail queue task error', { task, err });
+    if (task.ctx.service === 'twilio') {
+      // Send error SMS to user
+      const client = twilio(config.TWILIO.accountId, config.TWILIO.authToken);
+      try {
+        await client.messages.create({
+          body:
+            "Bon j'ai apparement eu un petit souci pour envoyer ce mail ! Mais je vous confirme que votre demande d'inscription est bien prise en compte.",
+          from: task.ctx.serviceId,
+          to: task.ctx.userId
+        });
+      } catch (error) {
+        logger.error('Twilio error', error);
+      }
+    }
+    cb(err);
+  }
+});
 
 export const startRegistration = (
   email: string,
@@ -42,7 +75,7 @@ const saveRegistration = async (
   email: string,
   lastName: string,
   givenName: string,
-  siteGroup: SiteGroup,
+  siteGroup: ?SiteGroup,
   req: $Subtype<express$Request>,
   res: string[],
   context: Object,
@@ -55,7 +88,7 @@ const saveRegistration = async (
     // Store registration request in database
     const token = await ecl.saveRegistration(
       ctx.site,
-      ctx.userId,
+      ctx.userId || '?',
       email,
       lastName,
       givenName,
@@ -63,8 +96,9 @@ const saveRegistration = async (
     );
     const link = `${config.ECL.url}/inscription/verif_email.php?tok=${token}`;
     // Send user mail validation
-    await sendMessage(
-      {
+    mailQueue.push({
+      ctx,
+      options: {
         from: ctx.site.email,
         to: email,
         subject: 'Votre inscription à la Conciergerie',
@@ -88,9 +122,8 @@ const saveRegistration = async (
           ' <p>Au plaisir de vous rendre service.</p>' +
           '</body>' +
           '</html>'
-      },
-      true
-    );
+      }
+    });
     res.push(
       req.t('intent.register.done_after_validation', {
         count: ctx.concierges.length,
@@ -116,7 +149,7 @@ const saveRegistration = async (
           `\n  Son Email: ${context.parameters.email}` +
           `\n  Son N°: ${ctx.userId || '?'}` +
           `\n  Sa conciergerie: ${ctx.site.libelle || '?'}` +
-          `\n  Son code de regroupement: ${siteGroup.nom || '?'}` +
+          `\n  Son code de regroupement: ${siteGroup ? siteGroup.nom : '?'}` +
           `\n\nMerci de procéder à son inscription.\n\nBonne journée !`
       },
       true

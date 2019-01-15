@@ -15,18 +15,20 @@ const transporter = mailer.createTransport({
   // }
 });
 
+export type MailOptions = {
+  from: string,
+  to: string | string[],
+  cc?: string | string[],
+  bcc?: string | string[],
+  replyTo?: string,
+  subject: string,
+  text?: string,
+  html?: string,
+  attachments?: Object[]
+};
+
 export const sendMessage = async (
-  options: {
-    from: string,
-    to: string | string[],
-    cc?: string | string[],
-    bcc?: string | string[],
-    replyTo?: string,
-    subject: string,
-    text?: string,
-    html?: string,
-    attachments?: Object[]
-  },
+  options: MailOptions,
   throwError: boolean = true
 ) => {
   try {
@@ -45,7 +47,7 @@ export const sendMessage = async (
         `\tTo: ${Array.isArray(options.to) ? options.to.join(',') : options.to}`
       );
       logger.info(`\tSubject: ${options.subject}`);
-      logger.info(`\tMessage: ${options.text || options.html}`);
+      logger.info(`\tMessage: ${options.html || options.text || ''}`);
     }
   } catch (e) {
     logger.error('Unable to send mail:', e);

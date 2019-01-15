@@ -12,7 +12,7 @@
       "user_unknown": "Apparemment on ne se connaît pas encore.",
       "done": "Ok c'est noté !",
       "recorded": "Votre demande est enregistrée et disponible dans votre Espace Conciergerie en Ligne.",
-      "unregistered_recorded": "Pas besoin d'attendre pour ta demande, je l'ai transmise.",
+      "unregistered_recorded": "Pas besoin d'attendre pour votre demande, je l'ai transmise.",
       "recorded_with_locker": "{{conciergeGivenName, capitalize}} va passer récupérer vos affaires dans le casier {{numLocker}}.",
       "recorded_with_locker_plural": "{{conciergeGivenName, capitalize}} vont passer récupérer vos affaires dans le casier {{numLocker}}.",
       "recorded_ask_details": "Souhaitez-vous ajouter des précisions à la demande (détails complémentaires, numéro de casier, etc) ?",

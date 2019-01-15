@@ -195,7 +195,7 @@ export default class Ecl {
     email: string,
     lastName: string,
     givenName: string,
-    siteGroup: SiteGroup
+    siteGroup: ?SiteGroup
   ) {
     // Get needed site info
     const sitesInfo = await this.ecl.query(
