@@ -109,6 +109,7 @@ export default class Ecl {
       'SELECT `coord`.`co_re_03_u` as prenom, `coord`.`co_re_02_u` as nom, `coord`.`co_re_01` as trigramme ' +
         'FROM `coordinateur` as `coord` ' +
         'LEFT JOIN `client` ON `client`.`co_re_01`=`coord`.`co_re_01` ' +
+        "AND (`client`.`cl_re_03` = '0000-00-00' OR `client`.`cl_re_03` IS NULL) " +
         'WHERE `client`.`corresp_04`=:siteCode',
       {
         type: this.ecl.QueryTypes.SELECT,
