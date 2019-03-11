@@ -28,9 +28,9 @@ const messages = {
       concierges
     )}, votre concierge.\n` +
     'Nous inaugurons une nouvelle formule : je pourrai prendre vos demandes 7j/7 et 24h/24 ' +
-    `et aiderai ${Ecl.getPrenomConcierge(
+    `et les transmettrai à ${Ecl.getPrenomConcierge(
       concierges
-    )} à les traiter. Enregistrez bien mon numéro pour pouvoir faire vos demandes : ` +
+    )}. Enregistrez bien mon numéro (non surtaxé) pour pouvoir faire vos demandes : ` +
     `${
       site.botNumber
     }\n\nUn évènement convivial sera organisé très prochainement pour ` +
@@ -40,15 +40,15 @@ const messages = {
     'Vous allez recevoir 4 questions dans la matinée. ' +
     'Répondez en live, rapprochez-vous de vos collègues pour mutualiser vos chances de gagner !\n' +
     'Si besoin, votre concierge a probablement des indices !\n' +
-    'A partir de 12h, quand vous aurez les 4 mots et chiffres mystères, ' +
-    'venez près des casiers pour reconstituer la phrase magique et ouvrir un casier pour tenter de gagner des chèques cadeau !',
+    'A partir de 11h30, quand vous aurez les 4 mots et chiffres mystères, ' +
+    'venez à la conciergerie pour reconstituer la phrase magique et ouvrir un casier pour tenter de gagner des chèques cadeau !',
   question: [
     'Quel est le synonyme de « neuve » ?',
     'Quel est le concept qui vous facilite la vie au quotidien ?',
     'Qui a le plus beau sourire du site ?',
     'Qui suis-je ?'
   ],
-  end: 'Venez tenter votre chance près des casiers à partir de 12h !'
+  end: 'Venez tenter votre chance près des casiers dès maintenant !'
 };
 
 // const timeoutPromise = timeout =>
