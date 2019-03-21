@@ -382,18 +382,19 @@ export async function engieSync(
   try {
     let offset = 1;
     const sites = [
-      'GDF Villeurbanne',
-      'GDFSUEZ Quimper',
-      'GDFSUEZ Montpellier',
-      'GDFSUEZ Metz',
-      'GDFSUEZ Toulouse',
-      'GDFSUEZ Bagneux',
-      'GDFSUEZ Douai',
-      'GDFSUEZ Annecy',
-      'GDFSUEZ La Baule',
-      '5902_GDFSUEZ DUNKERQ',
-      '4501_GDFSUEZ ORLEANS',
-      '9501_GDFSUEZCERGY'
+      // 'GDF Villeurbanne',
+      // 'GDFSUEZ Quimper',
+      // 'GDFSUEZ Montpellier',
+      // 'GDFSUEZ Metz',
+      // 'GDFSUEZ Toulouse',
+      // 'GDFSUEZ Bagneux',
+      // 'GDFSUEZ Douai',
+      // 'GDFSUEZ Annecy',
+      // 'GDFSUEZ La Baule',
+      // '5902_GDFSUEZ DUNKERQ',
+      // '4501_GDFSUEZ ORLEANS',
+      // '9501_GDFSUEZCERGY',
+      '3105_SAFRAN TOULOUSE'
     ];
     const users = await ecl.getSiteUsers(sites);
     // const users = [
@@ -442,7 +443,7 @@ export async function engieSync(
             lifee,
             offset,
             sent: [],
-            messages: { welcome: true }
+            messages: {}
           }: EngieUser)
         );
         // Shift question offset index for each new user
