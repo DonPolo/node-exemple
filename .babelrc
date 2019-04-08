@@ -1,0 +1,29 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ],
+    "stage-0",
+    "flow"
+  ],
+  "retainLines": true,
+  "plugins": [
+    [
+      "babel-plugin-root-import", {
+        "rootPathPrefix": "~",
+        "rootPathSuffix": "src"
+      }
+    ],
+    [
+      "transform-object-rest-spread",
+      {
+        "useBuiltIns": true
+      }
+    ]
+  ]
+}

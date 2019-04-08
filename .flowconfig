@@ -1,0 +1,14 @@
+[include]
+
+[ignore]
+.*\node_modules/bcryptjs/src/bower\.json
+.*\node_modules/config-chain/test/broken\.json
+
+[libs]
+flow-typed
+
+[lints]
+
+[options]
+include_warnings=true
+module.name_mapper='^~/\(.*\)$' -> '<PROJECT_ROOT>/src/\1'
