@@ -1,0 +1,36 @@
+{
+  "plugins": [
+    "flowtype",
+    "flowtype-errors",
+    "prettier"
+  ],
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "globals": {},
+  "extends": [
+    "airbnb-base",
+    "plugin:flowtype/recommended",
+    "prettier"
+  ],
+  "parser": "babel-eslint",
+  "rules": {
+    "import/prefer-default-export": "off",
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "no-underscore-dangle": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": ".webpack.config.js"
+      }
+    }
+  }
+}
