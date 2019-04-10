@@ -4,16 +4,27 @@ const npsUtils = require('nps-utils');
 
 const { rimraf, crossEnv, series, concurrent } = npsUtils;
 
+const NODEMON_CMD =
+  'nodemon --watch .env --watch dev --delay 5 --icu-data-dir=node_modules/full-icu';
+
 module.exports = {
   scripts: {
     build: {
-      description: 'Building in production environment.',
-      default: series.nps('clean', 'build.build'),
-      build: `${crossEnv('NODE_ENV=production')} webpack`
+      prod: {
+        description: 'Building in production environment.',
+        default: series.nps('clean.prod', 'build.prod.pack'),
+        pack: `${crossEnv('NODE_ENV=production')} webpack-cli`
+      },
+      dev: {
+        description: 'Building in development environment.',
+        default: series.nps('clean.dev', 'build.dev.pack'),
+        pack: `${crossEnv('NODE_ENV=development')} webpack-cli`
+      }
     },
     clean: {
       description: 'Clean dist folder.',
-      default: rimraf('dist')
+      prod: rimraf('dist'),
+      dev: rimraf('dev'),
     },
     default: {
       description: 'Start project with pm2 on production.',
@@ -42,7 +53,7 @@ module.exports = {
         description: 'Running on dev environment.',
         script: `${crossEnv(
           'NODE_ENV=development'
-        )} nodemon --delay 3 dist/index.bundle.js`
+        )} nodemon --delay 3 dev/index.bundle.js`
       },
       default: {
         script: concurrent.nps('dev.watch', 'dev.start')
@@ -54,7 +65,7 @@ module.exports = {
       withDebug: {
         script: `${crossEnv(
           'NODE_ENV=development'
-        )} DEBUG=express:* nodemon --delay 3 --inspect dist/index.bundle.js`
+        )} DEBUG=express:* nodemon --delay 3 --inspect dev/index.bundle.js`
       },
       debug: {
         description: 'Running on dev environment with debug on.',
@@ -87,6 +98,33 @@ module.exports = {
     validate: {
       description: 'Validate code by linting, type-checking.',
       default: series.nps('lint')
-    }
+    },
+    lint : {
+      default : "tslint -t stylish --project tsconfig.json src/**/*.ts",
+      fix : "tslint -t stylish --project tsconfig.json --fix 'src/**/*.ts'",
+    },
+    start: {
+      default: {
+        description: 'Running on dev environment with debug off.',
+        script: concurrent.nps('start.watch', 'start.run')
+      },
+      debug: {
+        description: 'Running on dev environment with debug on.',
+        script: concurrent.nps('start.watch', 'start.run.debug')
+      },
+      run: {
+        default: `${crossEnv(
+          'NODE_ENV=development'
+        )} ${NODEMON_CMD}`,
+        debug: `${crossEnv(
+          'NODE_ENV=development'
+        )} ${NODEMON_CMD} --inspect dev/index.bundle.js`
+      },
+      watch: {
+        description: 'Webpack watch for change and compile.',
+        script: `${crossEnv('NODE_ENV=development')} webpack-cli -w --progress`
+      }
+
+    },
   }
 };

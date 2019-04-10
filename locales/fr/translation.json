@@ -48,6 +48,14 @@
       "not_for_me": "Ce n'est plus de mon ressort. Mais je suis encore jeune, j'apprends.",
       "transmitted": "En attendant je transmets à {{conciergeGivenName}} qui a un cerveau de toute beauté.",
       "transmitted_plural": "En attendant je transmets à {{conciergeGivenName}} qui ont un cerveau de toute beauté."
+    },
+    "filiale" : {
+      "success" : "La filiale de ce site est {{-filiale}}",
+      "not-found": "Ce site n'a pas été trouvé"
+    },
+    "site": {
+      "success": "Le nom de ce site est {{-site}}",
+      "not-found": "Ce site n'a pas été trouvé"
     }
   }
 }

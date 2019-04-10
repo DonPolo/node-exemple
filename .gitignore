@@ -11,3 +11,4 @@ doc/
 *.js.sample
 NewAgent*.json
 db/
+src_old/
