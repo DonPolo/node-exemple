@@ -10,6 +10,8 @@ const defaultConfig = {
     url: process.env.ECL_URL || 'http://localhost',
   },
   DB_LOGGING: isDev,
+  API_ACCESS_USERNAME: process.env.API_ACCESS_USERNAME || null,
+  API_ACCESS_PASSWORD: process.env.API_ACCESS_PASSWORD || null,
   DB: {
     username: process.env.DB_USERNAME || 'admin',
     password: process.env.DB_PASSWORD || 'password',

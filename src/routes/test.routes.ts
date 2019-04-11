@@ -5,7 +5,7 @@ import { authBasicEnv } from '../utils/auth.util';
 
 const routes = express.Router();
 
-routes.get('/' /*, authBasicEnv*/, TestController.defaultpage);
-routes.get('/question' /*, authBasicEnv*/, TestController.question);
+routes.get('/', authBasicEnv, TestController.defaultpage);
+routes.get('/question', authBasicEnv, TestController.question);
 
 export default routes;

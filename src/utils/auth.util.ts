@@ -11,8 +11,8 @@ import config from '../config';
 const basicEnvAuthLogin = new BasicStrategy((username, password, done) => {
   try {
     if (
-      config.DIALOG_FLOW.username === username &&
-      config.DIALOG_FLOW.password === password
+      config.API_ACCESS_USERNAME === username &&
+      config.API_ACCESS_PASSWORD === password
     ) {
       return done(null, {
         username,
