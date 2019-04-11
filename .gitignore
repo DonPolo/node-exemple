@@ -3,6 +3,7 @@
 node_modules/
 flow-typed/
 dist/
+dev/
 .env*
 coverage
 doc/
