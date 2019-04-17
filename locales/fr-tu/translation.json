@@ -1,0 +1,48 @@
+{
+  "intent": {
+    "register": {
+      "askmail": [
+        "Ok commençons l'inscription ! J'aurais besoin de ton mail stp"
+      ],
+      "askfirstname": [
+        "Parfait je note, il me faudrait ton prénom stp"
+      ],
+      "asklastname": [
+        "Ok {{ firstname }} il me faudrait aussi ton nom de famille stp"
+      ],
+      "askcode": [
+        "Parfait, il me manque plus que le code de ton service"
+      ],
+      "give_site_group_choice": "\nTapez {{number}} pour {{name}}.",
+      "ask_site_group_again": "Veuillez faire un choix entre 1 et {{max}} !",
+      "already_registered": "Ce n'est pas la peine, vous êtes déjà inscrit",
+      "done_after_validation": "Ça y est, on a déjà terminé :)\nIl va vous être demandé de valider votre adresse mail, vous pouvez donc surveiller votre boîte dès maintenant.",
+      "done": "Ça y est, on a déjà terminé :)\nPlus que 48h pour la validation de votre inscription."
+    },
+    "infos": {
+      "schedule": ["{{conciergeGivenName, capitalize}} vous accueille {{sitesSchedules}}"],
+      "schedule_plural": ["{{conciergeGivenName, capitalize}} vous accueillent {{sitesSchedules}}"],
+      "schedulenotfound": ["Oooups, je n'ai pas réussi à récupérer les horaires"],
+      "contact": [
+        "Vous pouvez contacter {{conciergeGivenName}} par email à {{siteEmail}} ou par téléphone au {{siteTelephone}}\n\nVous pouvez aussi passer à la conciergerie {{siteSchedules}}"
+      ],
+      "contactnotfound": ["Oooups, je n'ai pas réussi à récupérer les informations pour contacter ton concierge"],
+      "services": ["Vous trouverez la carte de nos services ici {{-siteServices}}"],
+      "servicesnotfound": ["Oooups, je n'ai pas trouver la carte des services"],
+      "relaiscolis": "Voici la liste des relais 📦 que vous pouvez utiliser pour que {{conciergeGivenName}} récupère vos colis {{-siteRelaisColis}}",
+      "relaiscolis_plural": "Voici la liste des relais 📦 que vous pouvez utiliser pour que {{conciergeGivenName}} récupèrent vos colis {{-siteRelaisColis}}",
+      "relaiscolisnotfound": ["Oooups, je n'ai pas trouvé d'infos sur les relais colis"]
+
+    },
+    "default": {
+      "notunderstand": [
+        "Je n'ai pas bien compris"
+      ]
+    }
+
+  },
+  "infos": {
+    "concierge": "ton concierge",
+    "concierges": "tes concierges"
+  }
+}

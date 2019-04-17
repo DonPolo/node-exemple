@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+
+  <body>
+
+    <div id="msg-container">
+
+    </div>
+
+    <input type="text" id="input-msg">
+    <button type="button" onclick="sendMessage()">Send</button>
+
+    <script>
+      const container = document.getElementById("msg-container");
+      function sendMessage () {
+        const msg = document.getElementById("input-msg").value;
+        document.getElementById("input-msg").value = '';
+        const url = 'http://localhost:8080/ajax/sendmessage?msg=' + msg + '&from=toto';
+        var req = new XMLHttpRequest();
+        container.innerHTML += '<div style="text-align: right">' + msg + '</div>';
+        req.open("GET", url);
+        req.onerror = function() {
+            console.log("Échec de chargement "+url);
+        };
+        req.onload = function() {
+            if (req.status === 200) {
+              var data = JSON.parse(req.responseText)
+              console.log(data);
+              container.innerHTML += '<div style="text-align: left">' + data.text + '</div>';
+            } else {
+              console.log("Erreur " + req.status);
+            }
+        };
+        req.send();
+      }
+
+    </script>
+  </body>
+
+</html>

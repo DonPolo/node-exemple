@@ -1,14 +1,13 @@
 import i18n from 'i18next';
 import i18nextBackend from 'i18next-node-fs-backend';
-import i18nextMiddleware from 'i18next-express-middleware';
 import moment from 'moment';
 
 const isDev = process.env.NODE_ENV === 'development';
 
 i18n.use(i18nextBackend).init({
-  lng: 'fr',
-  fallbackLng: 'fr',
-  preload: ['fr'],
+  lng: 'fr-tu',
+  fallbackLng: 'fr-tu',
+  preload: ['fr-tu'],
   saveMissing: true,
   debug: isDev,
   interpolation: {
@@ -28,5 +27,3 @@ i18n.use(i18nextBackend).init({
     jsonIndent: 2,
   },
 });
-
-export const middleware = i18nextMiddleware.handle(i18n, {});
