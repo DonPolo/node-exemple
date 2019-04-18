@@ -1,0 +1,51 @@
+{
+    "intent": "",
+    "before-contexts": {
+      "must": [],
+      "mustnot": "[] | 'all'"
+    },
+    "after-contexts": {
+      "clear": true,
+      "new": []
+    },
+    "training": [
+      {
+        "sentence": "",
+        "entities": [
+          {
+            "name": "number",
+            "value": "10",
+            "pos": ["from", "to"]
+          }
+        ]
+      }
+    ],
+    "responses": [
+      {
+       "tu": [
+         {
+          "platforms": [""],
+          "responses": [
+            {
+              "type": "text|photos|button(s)|dropdown|link",
+              "value": {"value depends on type": ""},
+              "platform": ""
+            }
+          ]
+         }
+       ],
+       "vs": [
+        {
+          "platforms": [""],
+          "responses": [
+            {
+              "type": "text|photos|button(s)|dropdown|link",
+              "value": {},
+              "platform": ""
+            }
+          ]
+         }
+       ]
+      }
+    ]
+}

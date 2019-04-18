@@ -86,10 +86,12 @@ async function register(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: {
-      text: t('intent.register.askmail'),
-      type: 'text',
-    },
+    response: [
+      {
+        text: t('intent.register.askmail'),
+        type: 'text',
+      },
+    ],
   };
   return res;
 }
@@ -115,10 +117,12 @@ async function registerMail(
   }
   const res: FulfillResponse = {
     contexts: c,
-    response: {
-      text: t('intent.register.askfirstname'),
-      type: 'text',
-    },
+    response: [
+      {
+        text: t('intent.register.askfirstname'),
+        type: 'text',
+      },
+    ],
     confidence: conf,
   };
   return res;
@@ -163,10 +167,14 @@ async function registerName(
           });
           if (types.includes('dropdown')) {
             response.type = 'dropdown';
+            response.params = [];
+            response.value = config.INTENTS.registercode;
             groups.forEach((group, index) => {
+              const v = index + 1;
+              const l = v.toString();
               response.params.push({
                 text: group.nom,
-                value: index + 1,
+                value: l,
               });
             });
           } else {
@@ -205,7 +213,7 @@ async function registerName(
     conf = 0;
   }
   const res: FulfillResponse = {
-    response,
+    response: [response],
     contexts: c,
     confidence: conf,
   };
@@ -260,10 +268,12 @@ async function registerCode(
   }
   const res: FulfillResponse = {
     contexts: c,
-    response: {
-      text: txt,
-      type: 'text',
-    },
+    response: [
+      {
+        text: txt,
+        type: 'text',
+      },
+    ],
     confidence: conf,
   };
   return res;

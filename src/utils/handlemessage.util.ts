@@ -3,11 +3,17 @@ import luis from './services/luis.util';
 import fulfill from './fulfill.util';
 import ContextsManager from './contextsmanager.util';
 import ecl from '../models/ecl';
-import { SiteContexts, Contexts, FulfillResponse } from './types.util';
+import { SiteContexts, Contexts, FulfillResponse, Result } from './types.util';
 import i18n from 'i18next';
 
-async function getSiteContexts(to: string): Promise<SiteContexts> {
-  const service = 'twilio';
+async function getSiteContexts(
+  to: string,
+  platform: string,
+): Promise<SiteContexts> {
+  let service = 'twilio';
+  if (platform === 'slack') {
+    service = 'slack';
+  }
   if (!to) throw Error(`Unknown to for service ${service}`);
   const Ecl = new ecl();
   const site = await Ecl.getSiteInfos(service, to);
@@ -29,10 +35,9 @@ export default async function(
 ) {
   /* Get contexts */
   let contexts: Contexts = await ContextsManager.load(from);
-  if (platform !== 'slack') {
-    const a: SiteContexts = await getSiteContexts(to);
-    contexts.site = a;
-  }
+  const a: SiteContexts = await getSiteContexts(to, platform);
+  contexts.site = a;
+
   /* Get service Result */
   let result;
   switch (service) {
@@ -60,6 +65,7 @@ export default async function(
   } else {
     await i18n.changeLanguage('fr-tu');
   }
+  console.log(result.result.intents);
   /* Defines accepted type for the platform */
   let types = [];
   switch (platform) {
@@ -73,7 +79,48 @@ export default async function(
       types = ['text'];
   }
   /* Get fulfill Response */
-  const response: FulfillResponse = await fulfill(result.result, contexts, types);
+  const response: FulfillResponse = await fulfill(
+    result.result,
+    contexts,
+    types,
+  );
+  /* Save contexts */
+  await ContextsManager.save(from, response.contexts);
+  /* Return response text */
+  return response.response;
+}
+
+export async function handleMsgWithoutService(
+  msg: string,
+  from: string,
+  to: string,
+  platform: string,
+  result: Result,
+) {
+  /* Get contexts */
+  const contexts: Contexts = await ContextsManager.load(from);
+  const a: SiteContexts = await getSiteContexts(to, platform);
+  contexts.site = a;
+  /* Change language */
+  if (to === '+33755536910') {
+    await i18n.changeLanguage('fr-vs');
+  } else {
+    await i18n.changeLanguage('fr-tu');
+  }
+  /* Defines accepted type for the platform */
+  let types = [];
+  switch (platform) {
+    case 'slack':
+      types = ['buttons', 'dropdown', 'text'];
+      break;
+    case 'tel':
+      types = ['text'];
+      break;
+    default:
+      types = ['text'];
+  }
+  /* Get fulfill Response */
+  const response: FulfillResponse = await fulfill(result, contexts, types);
   /* Save contexts */
   await ContextsManager.save(from, response.contexts);
   /* Return response text */

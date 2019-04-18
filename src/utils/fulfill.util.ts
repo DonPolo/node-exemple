@@ -65,6 +65,7 @@ export default async function(
       response = e;
     }
   });
+  console.log(response);
   // Return it
   return response;
 }

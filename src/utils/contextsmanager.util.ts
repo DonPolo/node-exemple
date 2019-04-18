@@ -64,29 +64,40 @@ const findone: any = async (query: any) => {
 
 async function save(user: string, c: Contexts) {
   await deleteOld();
-  const nb = await findone({ user });
-  const contexts = {
-    fulfill: c.fulfill,
-    service: c.service,
-  };
-  if (!nb) {
-    // Inserting context
-    await insert({ user, contexts, createTime: Date.now() });
-  } else {
-    // Updating context
-    await update({ user, contexts });
+  if (user) {
+    const nb = await findone({ user });
+    const contexts = {
+      fulfill: c.fulfill,
+      service: c.service,
+    };
+    if (!nb) {
+      // Inserting context
+      await insert({ user, contexts, createTime: Date.now() });
+    } else {
+      // Updating context
+      await update({ user, contexts });
+    }
   }
 }
 
 async function load(user: string): Promise<Contexts> {
   await deleteOld();
-  const contexts = await findone({ user });
-  if (contexts) {
-    contexts.contexts.site = null;
-    return contexts.contexts;
+  if (user) {
+    const contexts = await findone({ user });
+    if (contexts) {
+      contexts.contexts.site = null;
+      return contexts.contexts;
+    }
   }
   return {
-    fulfill: null,
+    fulfill: {
+      ctx: [],
+      lastname: '',
+      firstname: '',
+      email: '',
+      siteGroup: null,
+      userId: '',
+    },
     service: {
       watson: null,
     },

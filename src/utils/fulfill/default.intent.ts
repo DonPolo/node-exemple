@@ -11,10 +11,12 @@ async function fallback(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: {
-      text: t('intent.default.notunderstand'),
-      type: 'text',
-    },
+    response: [
+      {
+        text: t('intent.default.notunderstand'),
+        type: 'text',
+      },
+    ],
   };
   return res;
 }

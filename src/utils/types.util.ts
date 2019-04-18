@@ -13,7 +13,7 @@ export interface ResultResponse {
 }
 
 export interface ResultIntent {
-  confidence: Float32Array;
+  confidence: number;
   name: string;
 }
 
@@ -33,7 +33,7 @@ export interface FulfillContexts {
   lastname: string;
   firstname: string;
   email: string;
-  siteGroup: number;
+  siteGroup: number | null;
   userId: string;
 }
 
@@ -44,7 +44,7 @@ export interface SiteContexts {
 
 /* Response from fulfill engine */
 export interface FulfillResponse {
-  response: FulfillResponseResponse | null;
+  response: FulfillResponseResponse[] | null;
   contexts: Contexts;
   confidence: number;
 }
@@ -53,6 +53,7 @@ export interface FulfillResponseResponse {
   text: string;
   type: string;
   params?: any;
+  value?: string;
 }
 
 /* Relation between intent and function */

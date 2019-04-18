@@ -20,10 +20,12 @@ async function opentime(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: {
-      text: txt,
-      type: 'text',
-    },
+    response: [
+      {
+        text: txt,
+        type: 'text',
+      },
+    ],
   };
   return res;
 }
@@ -48,10 +50,12 @@ async function contact(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: {
-      text: txt,
-      type: 'text',
-    },
+    response: [
+      {
+        text: txt,
+        type: 'text',
+      },
+    ],
   };
   return res;
 }
@@ -72,10 +76,12 @@ async function services(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: {
-      text: txt,
-      type: 'text',
-    },
+    response: [
+      {
+        text: txt,
+        type: 'text',
+      },
+    ],
   };
   return res;
 }
@@ -98,10 +104,12 @@ async function relaiscolis(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: {
-      text: txt,
-      type: 'text',
-    },
+    response: [
+      {
+        text: txt,
+        type: 'text',
+      },
+    ],
   };
   return res;
 }
