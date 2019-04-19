@@ -1,1 +1,3 @@
-{"user":"paul.moine@easy-life.fr","contexts":{"fulfill":{"ctx":["ctx_regcode"],"lastname":"john","firstname":"John","email":"john@doe.fr","siteGroup":null,"userId":""},"service":{"watson":null}},"createTime":1555493034633,"_id":"Zn121UvFzYdq3D4f"}
+{"user":"paul.moine@easy-life.fr","contexts":{"fulfill":{"ctx":[],"lastname":"John","firstname":"John","email":"john@doe.fr","siteGroup":2,"userId":""},"service":{"watson":null}},"createTime":1555493034633,"_id":"Zn121UvFzYdq3D4f"}
+{"user":"UJ16K7QGN","contexts":{"fulfill":{"ctx":[],"lastname":"","firstname":"","email":"","siteGroup":null,"userId":""},"service":{"watson":null}},"createTime":1555588415291,"_id":"Zt0PvnbiaaBCIcmf"}
+{"user":"toto","contexts":{"fulfill":{"ctx":[],"lastname":"","firstname":"","email":"","siteGroup":null,"userId":""},"service":{"watson":null}},"createTime":1555594029014,"_id":"uoWuHOLrTnOqrWDJ"}

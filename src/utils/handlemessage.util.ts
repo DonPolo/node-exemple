@@ -1,5 +1,8 @@
 import watson from './services/watson.util';
 import luis from './services/luis.util';
+import wit from './services/wit.util';
+import sap from './services/sap.util';
+
 import fulfill from './fulfill.util';
 import ContextsManager from './contextsmanager.util';
 import ecl from '../models/ecl';
@@ -47,6 +50,12 @@ export default async function(
     case 'luis':
       result = await luis(msg, contexts);
       break;
+    case 'wit':
+      result = await wit(msg, contexts);
+      break;
+    case 'sap':
+      result = await sap(msg, contexts);
+      break;
     default:
       result = {
         contexts,
@@ -65,7 +74,6 @@ export default async function(
   } else {
     await i18n.changeLanguage('fr-tu');
   }
-  console.log(result.result.intents);
   /* Defines accepted type for the platform */
   let types = [];
   switch (platform) {
@@ -84,6 +92,7 @@ export default async function(
     contexts,
     types,
   );
+  console.log(response);
   /* Save contexts */
   await ContextsManager.save(from, response.contexts);
   /* Return response text */

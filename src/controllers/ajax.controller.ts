@@ -14,11 +14,11 @@ export default async function(
         msg,
         from,
         '+33755536910',
-        'luis',
+        'sap',
         'tel',
       );
       res.writeHead(200, { 'Content-Type': 'text/plain' });
-      return res.end(response);
+      return res.end(JSON.stringify(response));
     }
   } catch (ex) {
     res.writeHead(500);

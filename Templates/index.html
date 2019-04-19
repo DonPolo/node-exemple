@@ -33,7 +33,7 @@
             if (req.status === 200) {
               var data = JSON.parse(req.responseText)
               console.log(data);
-              container.innerHTML += '<div style="text-align: left">' + data.text + '</div>';
+              container.innerHTML += '<div style="text-align: left">' + data[0].text + '</div>';
             } else {
               console.log("Erreur " + req.status);
             }

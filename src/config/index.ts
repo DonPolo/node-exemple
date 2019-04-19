@@ -84,6 +84,12 @@ const defaultConfig = {
   NEDB: {
     ttl: parseInt(process.env.NEDB_TTL || '0', 10),
   },
+  WIT: {
+    accesstoken: process.env.WIT_ACCESSTOKEN || '',
+  },
+  SAP: {
+    token: process.env.SAP_TOKEN || '',
+  },
 };
 
 export default defaultConfig;

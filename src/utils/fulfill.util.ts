@@ -33,7 +33,7 @@ export default async function(
       if (result.response) {
         res = {
           contexts,
-          response: { text: result.response.text, type: 'text' },
+          response: [{ text: result.response.text, type: 'text' }],
           confidence: 0.01,
         };
       }
@@ -65,7 +65,6 @@ export default async function(
       response = e;
     }
   });
-  console.log(response);
   // Return it
   return response;
 }

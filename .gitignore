@@ -1,0 +1,15 @@
+.vscode/
+.idea/
+node_modules/
+flow-typed/
+dist/
+dev/
+.env*
+coverage
+doc/
+*.log
+.vagrant/
+*.js.sample
+NewAgent*.json
+DB/
+Templates/

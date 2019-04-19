@@ -41,19 +41,19 @@ export async function events(
   res: express.Response,
   next: express.NextFunction,
 ) {
-  if (req.body.token === 'hvKeVxQcyXJ0DsnjGLfS617C') {
-    const payload = JSON.parse(req.body.payload);
+  const payload = JSON.parse(req.body.payload);
+  if (payload.token === 'hvKeVxQcyXJ0DsnjGLfS617C') {
     const to = payload.team.id;
-    const from = payload.user.id;
+    const from = await getEmail(payload.user.id);
     const intents: ResultIntent[] = [];
     const entities: ResultEntity[] = [];
     payload.actions.forEach((a: any) => {
       intents.push({
         confidence: 0.1,
-        name: a.action_id,
+        name: a.action_id.split(' ')[0],
       });
       entities.push({
-        name: 'site_code',
+        name: a.action_id.split(' ')[1],
         value: a.selected_option.value,
       });
     });

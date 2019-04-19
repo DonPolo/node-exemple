@@ -168,7 +168,7 @@ async function registerName(
           if (types.includes('dropdown')) {
             response.type = 'dropdown';
             response.params = [];
-            response.value = config.INTENTS.registercode;
+            response.value = `${config.INTENTS.registercode} builtin.number`;
             groups.forEach((group, index) => {
               const v = index + 1;
               const l = v.toString();
