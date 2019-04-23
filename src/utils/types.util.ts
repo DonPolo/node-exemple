@@ -44,16 +44,10 @@ export interface SiteContexts {
 
 /* Response from fulfill engine */
 export interface FulfillResponse {
-  response: FulfillResponseResponse[] | null;
+  response: any | null;
   contexts: Contexts;
   confidence: number;
-}
-
-export interface FulfillResponseResponse {
-  text: string;
-  type: string;
   params?: any;
-  value?: string;
 }
 
 /* Relation between intent and function */

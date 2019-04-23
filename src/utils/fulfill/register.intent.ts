@@ -1,10 +1,5 @@
-import {
-  Contexts,
-  ResultEntity,
-  FulfillResponse,
-  FulfillResponseResponse,
-} from '../types.util';
-import t from '../translate.util';
+import { Contexts, ResultEntity, FulfillResponse } from '../types.util';
+import responsemanager from '../responsemanager.util';
 import config from '../../config';
 import Ecl, { SiteGroup } from '../../models/ecl';
 import { sendMessage } from '../message.util';
@@ -86,12 +81,7 @@ async function register(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: [
-      {
-        text: t('intent.register.askmail'),
-        type: 'text',
-      },
-    ],
+    response: await responsemanager.load('intent.register.askmail'),
   };
   return res;
 }
@@ -117,12 +107,7 @@ async function registerMail(
   }
   const res: FulfillResponse = {
     contexts: c,
-    response: [
-      {
-        text: t('intent.register.askfirstname'),
-        type: 'text',
-      },
-    ],
+    response: await responsemanager.load('intent.register.askfirstname'),
     confidence: conf,
   };
   return res;
@@ -137,12 +122,9 @@ async function registerName(
 ) {
   if (!c.fulfill) return null;
   let conf = confidence;
-  const response: FulfillResponseResponse = {
-    text: '',
-    type: 'text',
-    params: null,
-  };
   const names = entities.filter(e => e.name === 'name');
+  let text = '';
+  let params = null;
   let name = null;
   if (names.length > 0) {
     name = names[0].value;
@@ -162,58 +144,45 @@ async function registerName(
         const groups = await ecl.getSiteGroups(c.site.site.id);
         if (groups.length > 1) {
           c.fulfill.ctx = [config.CONTEXTS.FULFILL.registercode];
-          response.text = t('intent.register.askcode', {
+          text = await responsemanager.load('intent.register.askcode');
+          params = {
             firstname: c.fulfill.firstname,
-          });
-          if (types.includes('dropdown')) {
-            response.type = 'dropdown';
-            response.params = [];
-            response.value = `${config.INTENTS.registercode} builtin.number`;
-            groups.forEach((group, index) => {
-              const v = index + 1;
-              const l = v.toString();
-              response.params.push({
-                text: group.nom,
-                value: l,
-              });
-            });
-          } else {
-            groups.forEach((group, index) => {
-              response.text += t('intent.register.give_site_group_choice', {
-                number: index + 1,
-                name: group.nom,
-              });
-            });
-          }
+          };
         } else {
           c.fulfill.ctx = [];
           if (registration(c, groups.length ? groups[0] : null)) {
-            response.text = t('intent.register.done_after_validation', {
+            text = await responsemanager.load(
+              'intent.register.done_after_validation',
+            );
+            params = {
               count: c.site.concierges.length,
               conciergeGivenName: Ecl.getPrenomConcierge(c.site.concierges),
-            });
+            };
           } else {
-            response.text = t('intent.register.done');
+            text = await responsemanager.load('intent.register.done');
           }
         }
       } else {
         c.fulfill.ctx = [config.CONTEXTS.FULFILL.registercode];
-        response.text = t('intent.register.askcode', {
+        text = await responsemanager.load('intent.register.askcode');
+        params = {
           firstname: c.fulfill.firstname,
-        });
+        };
       }
     } else {
       c.fulfill.firstname = name;
-      response.text = t('intent.register.asklastname', {
+      text = await responsemanager.load('intent.register.asklastname');
+      params = {
         firstname: c.fulfill.firstname,
-      });
+      };
     }
     conf = 0.9;
   } else {
     conf = 0;
   }
   const res: FulfillResponse = {
-    response: [response],
+    params,
+    response: text,
     contexts: c,
     confidence: conf,
   };
@@ -230,6 +199,7 @@ async function registerCode(
   if (!c.fulfill) return null;
   let conf = confidence;
   let txt = '';
+  let params = null;
   if (
     c.fulfill.ctx &&
     c.fulfill.ctx.includes(config.CONTEXTS.FULFILL.registercode) &&
@@ -247,19 +217,23 @@ async function registerCode(
         ? groups[siteGroupNumber - 1]
         : undefined;
     if (!siteGroup) {
-      txt = t('intent.register.ask_site_group_again', {
+      txt = await responsemanager.load('intent.register.ask_site_group_again');
+      params = {
         max: groups.length,
-      });
+      };
     } else {
       c.fulfill.ctx = [];
       c.fulfill.siteGroup = siteGroupNumber;
       if (registration(c, siteGroup)) {
-        txt = t('intent.register.done_after_validation', {
+        txt = await responsemanager.load(
+          'intent.register.done_after_validation',
+        );
+        params = {
           count: c.site.concierges.length,
           conciergeGivenName: Ecl.getPrenomConcierge(c.site.concierges),
-        });
+        };
       } else {
-        txt = t('intent.register.done');
+        txt = await responsemanager.load('intent.register.done');
       }
     }
     conf = 0.9;
@@ -267,13 +241,9 @@ async function registerCode(
     conf = 0;
   }
   const res: FulfillResponse = {
+    params,
     contexts: c,
-    response: [
-      {
-        text: txt,
-        type: 'text',
-      },
-    ],
+    response: txt,
     confidence: conf,
   };
   return res;

@@ -69,16 +69,15 @@ export default async function(
   }
   contexts = result.contexts;
   /* Change language */
+  let lang = 'fr-tu';
   if (to === '+33755536910') {
-    await i18n.changeLanguage('fr-vs');
-  } else {
-    await i18n.changeLanguage('fr-tu');
+    lang = 'fr-vous';
   }
   /* Defines accepted type for the platform */
   let types = [];
   switch (platform) {
     case 'slack':
-      types = ['buttons', 'dropdown', 'text'];
+      types = ['btn', 'dropdown', 'text', 'media', 'link'];
       break;
     case 'tel':
       types = ['text'];
@@ -91,6 +90,7 @@ export default async function(
     result.result,
     contexts,
     types,
+    lang,
   );
   console.log(response);
   /* Save contexts */
@@ -111,10 +111,9 @@ export async function handleMsgWithoutService(
   const a: SiteContexts = await getSiteContexts(to, platform);
   contexts.site = a;
   /* Change language */
+  let lang = 'fr-tu';
   if (to === '+33755536910') {
-    await i18n.changeLanguage('fr-vs');
-  } else {
-    await i18n.changeLanguage('fr-tu');
+    lang = 'fr-vous';
   }
   /* Defines accepted type for the platform */
   let types = [];
@@ -129,7 +128,12 @@ export async function handleMsgWithoutService(
       types = ['text'];
   }
   /* Get fulfill Response */
-  const response: FulfillResponse = await fulfill(result, contexts, types);
+  const response: FulfillResponse = await fulfill(
+    result,
+    contexts,
+    types,
+    lang,
+  );
   /* Save contexts */
   await ContextsManager.save(from, response.contexts);
   /* Return response text */

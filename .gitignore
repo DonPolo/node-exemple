@@ -13,3 +13,4 @@ doc/
 NewAgent*.json
 DB/
 Templates/
+types.ts

@@ -1,5 +1,5 @@
-import t from '../translate.util';
 import { ResultEntity, Contexts, FulfillResponse } from '../types.util';
+import responsemanager from '../responsemanager.util';
 
 async function fallback(
   entities: ResultEntity[] | null,
@@ -11,12 +11,7 @@ async function fallback(
   const res: FulfillResponse = {
     confidence,
     contexts: c,
-    response: [
-      {
-        text: t('intent.default.notunderstand'),
-        type: 'text',
-      },
-    ],
+    response: await responsemanager.load('fallback'),
   };
   return res;
 }
