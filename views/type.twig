@@ -1,0 +1,23 @@
+{% extends "./layout.twig" %}
+
+{% block head %}
+  <link rel='stylesheet' href='/CSS/type.css' />
+  <script src="/JS/search.js"></script>
+{% endblock %}
+
+{% block body %}
+  <div class="search" id="search" search="simple">
+    <input type="text" placeholder="Search..."/>
+  </div>
+  <main>
+    <h2>Response : </h2>
+    {% for file in responsefiles %}
+    <a href="/webapp/{{ type }}/response/{{ file }}" s-val="{{ file }}">{{ file | capitalize }}</a>
+    {% endfor %}
+
+    <h2>Train : </h2>
+    {% for file in trainfiles %}
+    <a href="/webapp/{{ type }}/training/{{ file }}" s-val="{{ file }}">{{ file | capitalize }}</a>
+    {% endfor %}
+  </main>
+{% endblock %}

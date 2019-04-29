@@ -75,7 +75,7 @@ const defaultConfig = {
   MAIL: {
     enable: process.env.MAIL_ENABLE === 'true' || false,
     host: process.env.MAIL_SMTP_SERVER || 'localhost',
-    port: process.env.MAIL_SMTP_PORT || 25,
+    port: parseInt(process.env.MAIL_SMTP_PORT || '25', 10),
     secure: process.env.MAIL_SMTP_SECURE === 'true' || false,
     recipient: process.env.MAIL_RECIPIENT || undefined,
     sender: process.env.MAIL_SENDER || '',
@@ -89,6 +89,10 @@ const defaultConfig = {
   },
   SAP: {
     token: process.env.SAP_TOKEN || '',
+    userslug: process.env.SAP_USERSLUG || '',
+    botslug: process.env.SAP_BOTSLUG || '',
+    versionslug: process.env.SAP_VERSIONSLUG || '',
+    devtoken: process.env.SAP_DEV_TOKEN || '',
   },
 };
 

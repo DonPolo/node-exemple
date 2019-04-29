@@ -4,14 +4,14 @@ import moment from 'moment';
 
 const isDev = process.env.NODE_ENV === 'development';
 
-i18n.use(i18nextBackend).init({
+/*i18n.use(i18nextBackend).init({
   lng: 'fr-tu',
   fallbackLng: 'fr-tu',
   preload: ['fr-tu'],
   saveMissing: true,
   debug: isDev,
   interpolation: {
-    format: (value, format /* , lng */) => {
+    format: (value, format) => {
       if (format === 'capitalize')
         return value.charAt(0).toUpperCase() + value.slice(1);
       if (value instanceof Date) return moment(value).format(format);
@@ -26,4 +26,4 @@ i18n.use(i18nextBackend).init({
     // jsonIndent to use when storing json files
     jsonIndent: 2,
   },
-});
+});*/

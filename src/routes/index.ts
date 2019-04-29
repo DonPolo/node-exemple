@@ -1,13 +1,14 @@
 import express from 'express';
-import TestController from '../controllers';
-import SendMessageController from '../controllers/ajax.controller';
-import SlackController, { events } from '../controllers/slack.controller';
-import bodyparser from 'body-parser';
-const routes = express.Router();
-const urlencodedParser = bodyparser.urlencoded({ extended: false });
 
-routes.all('/', TestController);
-routes.get('/ajax/sendmessage', SendMessageController);
-routes.post('/slack', SlackController);
-routes.post('/slackevents', urlencodedParser, events);
+import TestRoutes from './test.routes';
+import WebappRoutes from './webapp.routes';
+
+const routes = express.Router();
+
+// Test routes for the console
+routes.use('/test', TestRoutes);
+
+// Webapp routes to modified responses and training
+routes.use('/webapp', WebappRoutes);
+
 export default routes;

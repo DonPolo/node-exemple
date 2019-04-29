@@ -3,7 +3,7 @@ import config from '../config/';
 
 const transporter = nodemailer.createTransport({
   host: config.MAIL.host,
-  port: 25,
+  port: config.MAIL.port,
   secure: config.MAIL.secure,
   // auth: {
   //     user: 'xxx@xx.com',
@@ -24,6 +24,11 @@ export interface MailOptions {
   attachments?: any[];
 }
 
+/**
+ * Send a mail
+ * @param options The mail to send
+ * @param throwError if true the function can throw errors
+ */
 export const sendMessage = async (
   options: MailOptions,
   throwError: boolean = true,

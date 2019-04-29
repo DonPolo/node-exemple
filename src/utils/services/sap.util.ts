@@ -1,15 +1,22 @@
-import { Contexts, Result } from '../types.util';
+import { ServiceRequest, ServiceResult } from '../types.util';
 import config from '../../config';
 import { execrequest } from '../async.util';
 import uuid from 'uuid';
-export default async function(msg: string, contexts: Contexts) {
-  const result: Result = {
+
+/**
+ * Get intents and entities from SAP relative to a message
+ * @param msg the user message
+ * @param contexts the contexts (not usefull here but can be for dialogflow or watson)
+ * @returns an object containing the result and the contexts
+ */
+export default async function(request: ServiceRequest) {
+  const result: ServiceResult = {
     response: null,
     intents: [],
     entities: [],
-    query: msg,
+    query: request.msg,
+    contexts: request.contexts,
   };
-
   try {
     let res = await execrequest({
       url: 'https://api.cai.tools.sap/build/v1/dialog',
@@ -20,7 +27,7 @@ export default async function(msg: string, contexts: Contexts) {
       },
       json: {
         message: {
-          content: msg,
+          content: request.msg,
           type: 'text',
         },
         conversation_id: uuid(),
@@ -33,6 +40,7 @@ export default async function(msg: string, contexts: Contexts) {
         confidence: e.confidence,
       });
     });
+
     let key: string;
     // tslint:disable-next-line: forin
     for (key in res.entities) {
@@ -43,8 +51,8 @@ export default async function(msg: string, contexts: Contexts) {
         });
       });
     }
-    return { result, contexts };
+    return result;
   } catch (e) {
-    return { result, contexts };
+    return result;
   }
 }

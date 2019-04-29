@@ -2,13 +2,21 @@ import Datastore from 'nedb';
 import { Contexts } from './types.util';
 import config from '../config';
 
+// Connect to ad db stored in DB/contexts
 const db = new Datastore({ filename: 'DB/contexts', autoload: true });
 
+/**
+ * Delete old contexts (date expired)
+ */
 async function deleteOld() {
   const ttl = Date.now() - config.NEDB.ttl * 86400000;
   await db.remove({ createTime: { $lt: ttl } }, { multi: true });
 }
 
+/**
+ * Count the occurences in db
+ * @param query a mongodb query
+ */
 const count: any = async (query: any) => {
   return new Promise((resolve, reject) => {
     db.count(query, (err: any, nb: any) => {
@@ -21,6 +29,10 @@ const count: any = async (query: any) => {
   });
 };
 
+/**
+ * Insert datas in db
+ * @param query a mongodb query
+ */
 const insert: any = async (query: any) => {
   return new Promise((resolve, reject) => {
     db.insert(query, (err: any, newDoc: any) => {
@@ -33,6 +45,10 @@ const insert: any = async (query: any) => {
   });
 };
 
+/**
+ * Update datas in db
+ * @param query a mongodb query
+ */
 const update: any = async (query: any) => {
   return new Promise((resolve, reject) => {
     db.update(
@@ -50,6 +66,10 @@ const update: any = async (query: any) => {
   });
 };
 
+/**
+ * Find one row in db
+ * @param query a mongodb query
+ */
 const findone: any = async (query: any) => {
   return new Promise((resolve, reject) => {
     db.findOne(query, (err: any, doc: any) => {
@@ -62,6 +82,11 @@ const findone: any = async (query: any) => {
   });
 };
 
+/**
+ * Save contexts relative to a user
+ * @param user the user id (phone, mail)
+ * @param c the contexts to store
+ */
 async function save(user: string, c: Contexts) {
   await deleteOld();
   if (user) {
@@ -69,6 +94,7 @@ async function save(user: string, c: Contexts) {
     const contexts = {
       fulfill: c.fulfill,
       service: c.service,
+      user: c.user,
     };
     if (!nb) {
       // Inserting context
@@ -80,18 +106,23 @@ async function save(user: string, c: Contexts) {
   }
 }
 
+/**
+ * Load a user contexts (if there's not return an empty context)
+ * @param user the user id (phone, mail)
+ */
 async function load(user: string): Promise<Contexts> {
   await deleteOld();
   if (user) {
     const contexts = await findone({ user });
     if (contexts) {
       contexts.contexts.site = null;
+      contexts.contexts.concierges = null;
       return contexts.contexts;
     }
   }
   return {
-    fulfill: {
-      ctx: [],
+    fulfill: [],
+    user: {
       lastname: '',
       firstname: '',
       email: '',
@@ -102,6 +133,7 @@ async function load(user: string): Promise<Contexts> {
       watson: null,
     },
     site: null,
+    concierges: null,
   };
 }
 

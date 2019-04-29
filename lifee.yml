@@ -1,9 +1,27 @@
-desc:
-text:
+- desc:
+- text:
   fr-tu:
     - Ca va super
     - Ca va bien et toi
   fr-vous:
     - je vais bien
     - je me porte bien
-media:
+- media:
+- link:
+- btn:
+  fr-tu:
+    -
+    -
+  fr-vous:
+    -
+    -
+- dropdown:
+  fr-tu:
+    -
+    -
+    -
+  fr-vous:
+    -
+    -
+    -
+- btn:

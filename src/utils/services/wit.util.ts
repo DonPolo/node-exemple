@@ -1,19 +1,20 @@
 import { Wit } from 'node-wit';
 
-import { Contexts, Result } from '../types.util';
+import { ServiceResult, ServiceRequest } from '../types.util';
 import config from '../../config';
 
-export default async function(msg: string, contexts: Contexts) {
-  const result: Result = {
+export default async function(request: ServiceRequest) {
+  const result: ServiceResult = {
     response: null,
     intents: [],
     entities: [],
-    query: msg,
+    query: request.msg,
+    contexts: request.contexts,
   };
 
   try {
     const client = new Wit({ accessToken: config.WIT.accesstoken });
-    const res = await client.message(msg, {});
+    const res = await client.message(request.msg, {});
     let key: string;
     for (key in res.entities) {
       if (key === 'intent') {
@@ -32,8 +33,8 @@ export default async function(msg: string, contexts: Contexts) {
         });
       }
     }
-    return { result, contexts };
+    return result;
   } catch (e) {
-    return { result, contexts };
+    return result;
   }
 }

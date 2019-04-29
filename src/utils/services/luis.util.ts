@@ -1,15 +1,15 @@
-import request from 'request';
 import querystring from 'querystring';
 import config from '../../config';
-import { Result, Contexts } from '../types.util';
+import { ServiceRequest, ServiceResult } from '../types.util';
 import { execrequest } from '../async.util';
 
-export default async function(msg: string, contexts: Contexts) {
-  const result: Result = {
+export default async function(request: ServiceRequest) {
+  const result: ServiceResult = {
     response: null,
     intents: [],
     entities: [],
-    query: msg,
+    query: request.msg,
+    contexts: request.contexts,
   };
   try {
     const endpoint =
@@ -18,7 +18,7 @@ export default async function(msg: string, contexts: Contexts) {
     const endpointkey = config.LUIS.endpointKey;
     const queryParams = {
       verbose: true,
-      q: msg,
+      q: request.msg,
       'subscription-key': endpointkey,
     };
     const req = `${endpoint}${appId}?${querystring.stringify(queryParams)}`;
@@ -37,8 +37,8 @@ export default async function(msg: string, contexts: Contexts) {
         value: e.entity,
       });
     });
-    return { result, contexts };
+    return result;
   } catch (err) {
-    return { result, contexts };
+    return result;
   }
 }

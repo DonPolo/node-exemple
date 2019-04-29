@@ -1,0 +1,71 @@
+{% extends "./layout.twig" %}
+
+{% block head %}
+  <link rel='stylesheet' href='/CSS/file.css' />
+  <!-- YAML -->
+  <script src="/JS/yaml.min.js"></script>
+  <!-- Code Mirror -->
+  <link rel="stylesheet" href="/lib/codemirror.css">
+  <link rel="stylesheet" href="/addon/lint/lint.css">
+  <link rel="stylesheet" href="/theme/yeti.css">
+  <script src="/lib/codemirror.js"></script>
+  <script src="/JS/js-yaml/js-yaml.js"></script>
+  <script src="/mode/yaml/yaml.js"></script>
+  <script src="/addon/lint/lint.js"></script>
+  <script src="/addon/lint/yaml-lint.js"></script>
+  <script src="/JS/search.js"></script>
+  <script>
+    var file = `{{ file }}`;
+    var source;
+    var filename = "{{ type }}.{{ filename }}";
+    var cat = "{{ cat }}";
+    var errsyntax = false;
+    window.addEventListener('load', function () {
+      source = CodeMirror.fromTextArea(document.getElementById('editor'), {
+        mode: 'yaml',
+        lineNumbers: true,
+        value: file,
+        theme: 'default',
+        gutters: ["CodeMirror-lint-markers"],
+        lint: true,
+        smartIndent: true,
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true,
+        autocorrect: true,
+      });
+      source.setValue(file.replace(/  /g, "\t"));
+      getFiles();
+  });
+  </script>
+  <script src="/JS/file.js"></script>
+{% endblock %}
+
+{% block body %}
+  <nav>
+    <div class="search" id="search">
+      <input type="text" placeholder="Search..."/>
+    </div>
+    <div class="container" id="filecontainer">
+
+    </div>
+    <div class="but">
+      <a onclick="save()" id="savebut">
+        Save
+        <img src='/PIC/load.gif' />
+      </a>
+    </div>
+  </nav>
+  <main>
+    <textarea id="editor"></textarea>
+  </main>
+  <div class="console" id="console"></div>
+  <dic class="rightmenu">
+    <div class="search" id="search" search="simple">
+      <input type="text" placeholder="Search..."/>
+    </div>
+    <div class="paramcontainer">
+      <strong onclick="addparameter('toto')" s-val='toto'>Toto</strong>
+    </div>
+  </div>
+{% endblock %}

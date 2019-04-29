@@ -1,5 +1,6 @@
 import express from 'express';
 import handlemessage from '../utils/handlemessage.util';
+import { Request, Response, ParsedResponse } from '../utils/types.util';
 
 export default async function(
   req: express.Request,
@@ -10,14 +11,16 @@ export default async function(
     if (req.query.msg && req.query.from) {
       const msg = req.query.msg;
       const from = req.query.from;
-      const response = await handlemessage(
+      const request: Request = {
         msg,
         from,
-        '+33755536910',
-        'sap',
-        'tel',
-      );
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
+        to: '+33755536910',
+        service: 'sap',
+        platform: 'tel',
+        acceptedtypes: ['text', 'btn', 'dropdown'],
+      };
+      const response: ParsedResponse | null = await handlemessage(request);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify(response));
     }
   } catch (ex) {

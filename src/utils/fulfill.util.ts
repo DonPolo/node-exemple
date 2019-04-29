@@ -1,87 +1,112 @@
-import { Result, Contexts, Intent, FulfillResponse } from './types.util';
+import {
+  Intent,
+  FulfillRequest,
+  FulfillResult,
+  IntentResult,
+  ParseResponseRequest,
+  ParsedResponse,
+  Contexts,
+} from './types.util';
 import config from '../config';
 import '../config/i18n';
 import intentRegister from './fulfill/register.intent';
 import intentDefault from './fulfill/default.intent';
 import intentInfos from './fulfill/infos.intent';
 import i18n from 'i18next';
+import { clone } from './func.util';
 
-function clone(src: any) {
-  return JSON.parse(JSON.stringify(src));
+/**
+ * Find and return the most probable response
+ * @param result the intents and entities
+ * @param contexts the diferent contexts
+ * @param types the types supported by the platform
+ * @param lang the level of language for the response (fr-tu or fr-vous)
+ */
+export default async function(request: FulfillRequest): Promise<FulfillResult> {
+  // Get all known intents
+  const intents: Intent[] = getConfig();
+  const intentMap = new Map();
+  intents.forEach(intent => {
+    intentMap.set(intent.name, intent.func);
+  });
+
+  // Create an array with all intent responses
+  const intentsRes: IntentResult[] = [];
+  // Get all intents
+  await request.result.intents.reduce(async (previous, e) => {
+    await previous;
+    let res: IntentResult;
+    if (!intentMap.has(e.name)) {
+      if (request.result.response) {
+        res = {
+          response: {
+            intent: '',
+            type: '',
+            responses: [
+              {
+                text: {
+                  'fr-tu': [request.result.response],
+                  'fr-vous': [request.result.response],
+                },
+              },
+            ],
+          },
+          contexts: request.result.contexts,
+          confidence: 0.01,
+        };
+      }
+      res = await intentDefault.fallback({
+        entities: request.result.entities,
+        contexts: clone(request.result.contexts),
+        confidence: e.confidence,
+        query: request.result.query,
+      });
+    } else {
+      res = await intentMap.get(e.name)({
+        entities: request.result.entities,
+        contexts: clone(request.result.contexts),
+        confidence: e.confidence,
+        query: request.result.query,
+      });
+    }
+    if (res) {
+      intentsRes.push(res);
+    }
+  }, Promise.resolve());
+
+  // Get the most probable one
+  let intentResult: IntentResult = await intentDefault.fallback({
+    entities: request.result.entities,
+    contexts: clone(request.result.contexts),
+    confidence: 0.01,
+    query: request.result.query,
+  });
+  intentsRes.forEach(e => {
+    if (e && intentResult.confidence < e.confidence) {
+      intentResult = e;
+    }
+  });
+
+  // Parse the response
+  const parseResponseRequest: ParseResponseRequest = {
+    intentResult,
+    acceptedtypes: request.acceptedtypes,
+    lang: request.lang,
+  };
+  const response: ParsedResponse = await parseResponse(parseResponseRequest);
+
+  // Return the fulfill result
+  const result: FulfillResult = {
+    response,
+    contexts: intentResult.contexts,
+  };
+  return result;
 }
 
-export default async function(
-  result: Result,
-  contexts: Contexts,
-  types: string[],
-  lang: string,
-) {
-  let response: FulfillResponse;
-  // Return 'not understand' when no intents
-  if (result.intents.length === 0) {
-    response = await intentDefault.fallback(
-      null,
-      contexts,
-      0,
-      result.query,
-      types,
-    );
-  } else {
-    // Get all known intents
-    const intents: Intent[] = getConfig();
-    const intentMap = new Map();
-    intents.forEach(intent => {
-      intentMap.set(intent.name, intent.func);
-    });
-    const intentsRes: FulfillResponse[] = [];
-    // Check all intents
-    await result.intents.reduce(async (previous, e) => {
-      await previous;
-      let res: FulfillResponse;
-      if (!intentMap.has(e.name)) {
-        if (result.response) {
-          res = {
-            contexts,
-            response: [{ text: result.response.text, type: 'text' }],
-            confidence: 0.01,
-          };
-        }
-        res = await intentDefault.fallback(
-          null,
-          contexts,
-          0,
-          result.query,
-          types,
-        );
-      } else {
-        const c: Contexts = clone(contexts);
-        res = await intentMap.get(e.name)(
-          result.entities,
-          c,
-          e.confidence,
-          result.query,
-          types,
-        );
-      }
-      if (res) {
-        intentsRes.push(res);
-      }
-    }, Promise.resolve());
-    response = intentsRes[0];
-    // Get the most probable one
-    intentsRes.forEach(e => {
-      if (e && response.confidence < e.confidence) {
-        response = e;
-      }
-    });
-  }
-
-  response = await parseResponse(response, types, lang);
-  // Return it
-  return response;
-}
-
-function getConfig() {
+/**
+ * Get the match between intents name and function to call
+ */
+function getConfig(): Intent[] {
   return [
     {
       name: config.INTENTS.register,
@@ -122,13 +147,24 @@ function getConfig() {
   ];
 }
 
+/**
+ * Return the response with the good language and random texts
+ * @param response the full response
+ * @param types the accepted types
+ * @param lang the level of language
+ */
 async function parseResponse(
-  response: FulfillResponse,
-  types: string[],
-  lang: string,
-) {
-  const res = response.response.responses;
-  const newres: any[] = [];
+  request: ParseResponseRequest,
+): Promise<ParsedResponse> {
+  // Get the responses array
+  const res = request.intentResult.response.responses;
+  const types = request.acceptedtypes;
+  const lang = request.lang;
+  // Create parsed response
+  const newres: ParsedResponse = {
+    responses: [],
+  };
+  // Build it
   res.reduce(async (previous: any, r: any) => {
     await previous;
     if (!r.desc) {
@@ -136,16 +172,19 @@ async function parseResponse(
         if (typeof r.text !== 'undefined') {
           const texts = r[lang];
           const text = texts[Math.floor(Math.random() * texts.length)];
-          const realtxt = await getTextFormated(text, response.params);
-          newres.push({
+          const realtxt = await getTextFormated(
+            text,
+            request.intentResult.contexts,
+          );
+          newres.responses.push({
             text: realtxt,
           });
         } else if (typeof r.media !== 'undefined') {
-          newres.push({
+          newres.responses.push({
             media: r.media,
           });
         } else if (typeof r.link !== 'undefined') {
-          newres.push({
+          newres.responses.push({
             link: r.link,
           });
         } else if (typeof r.btn !== 'undefined') {
@@ -154,13 +193,18 @@ async function parseResponse(
           btns.reduce(async (prev: any, b: any) => {
             await prev;
             realbtns.push({
-              text: await getTextFormated(b.text, response.params),
+              text: await getTextFormated(
+                b.text,
+                request.intentResult.contexts,
+              ),
               value: b.value,
             });
           }, Promise.resolve());
-          newres.push({
-            btns: realbtns,
-            nextaction: r.nextaction,
+          newres.responses.push({
+            btn: {
+              btns: realbtns,
+              nextaction: r.nextaction,
+            },
           });
         } else if (typeof r.dropdown !== 'undefined') {
           const opts = r[lang];
@@ -168,23 +212,32 @@ async function parseResponse(
           opts.reduce(async (prev: any, b: any) => {
             await prev;
             realopts.push({
-              text: await getTextFormated(b.text, response.params),
+              text: await getTextFormated(
+                b.text,
+                request.intentResult.contexts,
+              ),
               value: b.value,
             });
           }, Promise.resolve());
-          newres.push({
-            dropdown: realopts,
-            nextaction: r.nextaction,
+          newres.responses.push({
+            dropdown: {
+              opts: realopts,
+              nextaction: r.nextaction,
+            },
           });
         }
       }
     }
   }, Promise.resolve());
-  response.response = newres;
-  return response;
+  return newres;
 }
 
-async function getTextFormated(text: string, params: any) {
+/**
+ * Return a text with the parameters inside
+ * @param text the text you want to format
+ * @param params the parameters for your text
+ */
+async function getTextFormated(text: string, params: Contexts) {
   await i18n.init({
     lng: 'lang',
     resources: {
@@ -195,5 +248,9 @@ async function getTextFormated(text: string, params: any) {
       },
     },
   });
-  return i18n.t('key', params);
+  return i18n.t('key', {
+    site: params.site,
+    user: params.user,
+    concierges: params.concierges,
+  });
 }

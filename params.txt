@@ -1,0 +1,15 @@
+Params :
+- conciergeGivenName: Ecl.getPrenomConcierge(
+    request.contexts.site.concierges),
+- siteRelaisColis: (contexts.)site.relaisColis,
+- siteServices: (contexts.)site.guideServices,
+- siteEmail: (contexts.)site.email,
+- siteTelephone: (contexts.)site.telephone,
+- siteSchedules: (contexts.)site.horaires,
+- firstname: (contexts.)user.firstname,
+
+
+    params = {
+        max: groups.length,
+        count: request.contexts.site.concierges.length,
+      };

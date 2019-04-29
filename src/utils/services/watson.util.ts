@@ -1,6 +1,6 @@
 import watson from 'watson-developer-cloud/assistant/v2';
 import config from '../../config';
-import { Result, Contexts } from '../types.util';
+import { ServiceRequest, ServiceResult } from '../types.util';
 
 const createSession: any = async (assistant: any, obj: any) => {
   // tslint:disable-next-line: no-unused-expression
@@ -27,12 +27,14 @@ const sendMessage: any = async (assistant: any, obj: any) => {
     });
   });
 };
-export default async function(msg: string, contexts: Contexts) {
-  const result: Result = {
+
+export default async function(request: ServiceRequest) {
+  const result: ServiceResult = {
     response: null,
     intents: [],
     entities: [],
-    query: msg,
+    query: request.msg,
+    contexts: request.contexts,
   };
   try {
     // Create assistant
@@ -46,24 +48,22 @@ export default async function(msg: string, contexts: Contexts) {
       assistant_id: assistantId,
     });
     const sessionId = session.session_id;
-    contexts.service.watsonId = sessionId;
+    request.contexts.service.watsonId = sessionId;
     const res = await sendMessage(assistant, {
       assistant_id: assistantId,
       session_id: sessionId,
       input: {
         message_type: 'text',
-        text: msg,
+        text: request.msg,
         options: {
           return_context: true,
         },
       },
-      contexts: contexts.service.watson,
+      contexts: request.contexts.service.watson,
     });
-    contexts.service.watson = res.context;
-    result.response = {
-      type: res.output.generic[0].response_type,
-      text: res.output.generic[0].text,
-    };
+    request.contexts.service.watson = res.context;
+    result.response = res.output.generic[0].text;
+
     res.output.intents.forEach((e: any) => {
       result.intents.push({
         confidence: e.confidence,
@@ -74,11 +74,11 @@ export default async function(msg: string, contexts: Contexts) {
     res.output.entities.forEach((e: any) => {
       result.entities.push({
         name: e.entity,
-        value: msg.substring(e.location[0], e.location[1]),
+        value: request.msg.substring(e.location[0], e.location[1]),
       });
     });
-    return { result, contexts };
+    return result;
   } catch (err) {
-    return { result, contexts };
+    return result;
   }
 }
