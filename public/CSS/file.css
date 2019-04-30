@@ -44,11 +44,45 @@ main {
   position: absolute;
   top: 50px;
   left: 300px;
-  right: 250px;
+  right: 300px;
   bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
   z-index: -10;
+}
+main .info-but {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  background: white;
+  box-shadow: 0 0 5px 0 black;
+  height: 25px;
+  width: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  z-index: 20;
+}
+main .info-but:hover {
+  background: #d1f5f9;
+}
+main .back-but {
+  position: absolute;
+  top: 15px;
+  right: 70px;
+  background: white;
+  box-shadow: 0 0 5px 0 black;
+  height: 25px;
+  width: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  z-index: 20;
+}
+main .back-but:hover {
+  background: #d1f5f9;
 }
 main .CodeMirror {
   width: 100%;
@@ -58,7 +92,7 @@ main .CodeMirror {
 .console {
   position: absolute;
   left: 300px;
-  right: 250px;
+  right: 300px;
   bottom: 0;
   height: 0;
   overflow-x: hidden;
@@ -90,6 +124,7 @@ nav .container {
 nav .container h2 {
   width: 80%;
   margin: 10px 10%;
+  font-size: 20px;
 }
 nav .container h3 {
   width: 70%;
@@ -132,7 +167,7 @@ nav .but a.disabled img {
   top: 50px;
   right: 0;
   bottom: 0;
-  width: 250px;
+  width: 300px;
   background: #d1f5f9;
   box-shadow: 0 0 5px 0 black;
   z-index: -1;
@@ -151,7 +186,33 @@ nav .but a.disabled img {
   width: 80%;
   margin: 10px 10%;
   font-weight: normal;
-  font-size: 20px;
+  font-size: 16px;
+}
+
+.infos {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.5);
+}
+.infos > span {
+  position: absolute;
+  left: 300px;
+  top: 50px;
+  bottom: 0;
+  right: 300px;
+}
+.infos > span > div {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  right: 25px;
+  bottom: 25px;
+  background: #d1f5f9;
+  padding: 30px;
+  overflow: auto;
 }
 
 /*# sourceMappingURL=file.css.map */

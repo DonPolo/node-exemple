@@ -102,7 +102,6 @@ export default async function(
   if (request.to === '+33755536910') {
     lang = 'fr-vous';
   }
-
   /* Get fulfill Response */
   if (!request.result) return null;
   const fulfillRequest: FulfillRequest = {

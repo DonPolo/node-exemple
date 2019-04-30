@@ -9,9 +9,12 @@ import {
 } from './types.util';
 import config from '../config';
 import '../config/i18n';
+
 import intentRegister from './fulfill/register.intent';
 import intentDefault from './fulfill/default.intent';
 import intentInfos from './fulfill/infos.intent';
+import intentTests from './fulfill/tests.intent';
+
 import i18n from 'i18next';
 import { clone } from './func.util';
 
@@ -144,6 +147,34 @@ function getConfig(): Intent[] {
       name: config.INTENTS.fallback,
       func: intentDefault.fallback,
     },
+    {
+      name: 'test-buttons',
+      func: intentTests.buttons,
+    },
+    {
+      name: 'test-dropdown',
+      func: intentTests.dropdown,
+    },
+    {
+      name: 'test-media',
+      func: intentTests.media,
+    },
+    {
+      name: 'test-link',
+      func: intentTests.link,
+    },
+    {
+      name: 'test-text',
+      func: intentTests.text,
+    },
+    {
+      name: 'test-mix',
+      func: intentTests.mix,
+    },
+    {
+      name: 'test-clone',
+      func: intentTests.clone,
+    },
   ];
 }
 
@@ -164,13 +195,26 @@ async function parseResponse(
   const newres: ParsedResponse = {
     responses: [],
   };
+  let trouble = false;
   // Build it
-  res.reduce(async (previous: any, r: any) => {
+  await res.reduce(async (previous: any, r: any) => {
     await previous;
     if (!r.desc) {
-      if (types.includes(Object.keys(r)[0])) {
+      if (r.alt && trouble) {
+        trouble = false;
+        const texts = r.alt[lang];
+        const text = texts[Math.floor(Math.random() * texts.length)];
+        const realtxt = await getTextFormated(
+          text,
+          request.intentResult.contexts,
+        );
+        newres.responses.push({
+          text: realtxt,
+        });
+      } else if (types.includes(Object.keys(r)[0])) {
+        trouble = false;
         if (typeof r.text !== 'undefined') {
-          const texts = r[lang];
+          const texts = r.text[lang];
           const text = texts[Math.floor(Math.random() * texts.length)];
           const realtxt = await getTextFormated(
             text,
@@ -188,9 +232,9 @@ async function parseResponse(
             link: r.link,
           });
         } else if (typeof r.btn !== 'undefined') {
-          const btns = r[lang];
+          const btns = r.btn[lang];
           const realbtns: any[] = [];
-          btns.reduce(async (prev: any, b: any) => {
+          await btns.reduce(async (prev: any, b: any) => {
             await prev;
             realbtns.push({
               text: await getTextFormated(
@@ -203,13 +247,13 @@ async function parseResponse(
           newres.responses.push({
             btn: {
               btns: realbtns,
-              nextaction: r.nextaction,
+              nextaction: r.btn.nextaction,
             },
           });
         } else if (typeof r.dropdown !== 'undefined') {
-          const opts = r[lang];
+          const opts = r.dropdown[lang];
           const realopts: any[] = [];
-          opts.reduce(async (prev: any, b: any) => {
+          await opts.reduce(async (prev: any, b: any) => {
             await prev;
             realopts.push({
               text: await getTextFormated(
@@ -222,11 +266,15 @@ async function parseResponse(
           newres.responses.push({
             dropdown: {
               opts: realopts,
-              nextaction: r.nextaction,
+              nextaction: r.dropdown.nextaction,
             },
           });
         }
+      } else {
+        trouble = true;
       }
+    } else {
+      trouble = false;
     }
   }, Promise.resolve());
   return newres;
@@ -238,17 +286,20 @@ async function parseResponse(
  * @param params the parameters for your text
  */
 async function getTextFormated(text: string, params: Contexts) {
+  if (i18n.isInitialized) {
+    await i18n.reloadResources();
+  }
   await i18n.init({
     lng: 'lang',
     resources: {
       lang: {
         translation: {
-          key: text,
+          text,
         },
       },
     },
   });
-  return i18n.t('key', {
+  return i18n.t(text, {
     site: params.site,
     user: params.user,
     concierges: params.concierges,

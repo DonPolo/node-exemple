@@ -20,30 +20,20 @@
     var filename = "{{ type }}.{{ filename }}";
     var cat = "{{ cat }}";
     var errsyntax = false;
+    var params = {{ paramsstr }};
+
     window.addEventListener('load', function () {
-      source = CodeMirror.fromTextArea(document.getElementById('editor'), {
-        mode: 'yaml',
-        lineNumbers: true,
-        value: file,
-        theme: 'default',
-        gutters: ["CodeMirror-lint-markers"],
-        lint: true,
-        smartIndent: true,
-        indentUnit: 2,
-        tabSize: 2,
-        lineWrapping: true,
-        autocorrect: true,
-      });
-      source.setValue(file.replace(/  /g, "\t"));
-      getFiles();
-  });
+      {% if cat == 'training' %}
+        getEntities();
+      {% endif %}
+    });
   </script>
   <script src="/JS/file.js"></script>
 {% endblock %}
 
 {% block body %}
   <nav>
-    <div class="search" id="search">
+    <div class="search" id="search" search='complex' s-con='filecontainer'>
       <input type="text" placeholder="Search..."/>
     </div>
     <div class="container" id="filecontainer">
@@ -58,14 +48,78 @@
   </nav>
   <main>
     <textarea id="editor"></textarea>
+    <span class="info-but" onclick="openinfos()">
+      <i class="fas fa-info"></i>
+    </span>
+    <span class="back-but">
+      <a href="/webapp/{{ type }}" class="fas fa-chevron-left"></a>
+    </span>
   </main>
   <div class="console" id="console"></div>
-  <dic class="rightmenu">
-    <div class="search" id="search" search="simple">
+  <div class="rightmenu">
+    <div class="search" id="search" search="simple" s-con='paramcontainer'>
       <input type="text" placeholder="Search..."/>
     </div>
-    <div class="paramcontainer">
-      <strong onclick="addparameter('toto')" s-val='toto'>Toto</strong>
+    <div class="paramcontainer" id="paramcontainer">
+      {% for param in params %}
+        <strong onclick="addparameter('{{ param }}')" s-val='{{ param }}'>{{ param }}</strong>
+      {% endfor %}
     </div>
+  </div>
+  <div class="infos" id="infos" onclick="closeinfos()" style='display: none'>
+    <span>
+      <div onclick="event.stopPropagation()">
+        <pre>intent: "default.greeting"
+type: "default"
+responses:
+  - desc: "oups"
+  - text:
+      fr-tu:
+        - "Ca va super toto"
+        - "Ca va bien et toto"
+        - "Cool"
+      fr-vous:
+        - "je vais bien"
+        - "je me porte bien"
+  - media: "hello"
+  - link: "hi"
+  - btn:
+      nextaction: "titi"
+      fr-tu:
+        - text: "toto"
+          value: 2
+        - text: "greg"
+          value: 3
+      fr-vous:
+        - text: "gerr"
+          value: 2
+        - text: "gregre"
+          value: 3
+  - dropdown:
+      nextaction: "tata"
+      fr-tu:
+        - text: "gre"
+          value: 5
+        - text: "ge"
+          value: 6
+        - text: "htehet"
+          value: 7
+      fr-vous:
+        - text: "ethte"
+          value: 5
+        - text: "ethte"
+          value: 6
+        - text: "hehte"
+          value: 7
+  - text:
+      fr-tu:
+        - "Ca va super"
+        - "Ca va bien et toi"
+      fr-vous:
+        - "je vais bien"
+        - "je me porte bien"
+        </pre>
+      </div>
+    </span>
   </div>
 {% endblock %}

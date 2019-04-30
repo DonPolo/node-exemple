@@ -2,9 +2,9 @@ import responsemanager from '../responsemanager.util';
 import { IntentRequest, IntentResult } from '../types.util';
 
 async function opentime(request: IntentRequest) {
-  let txt = await responsemanager.load('intent.infos.schedulenotfound');
+  let txt = await responsemanager.load('infos.schedulenotfound');
   if (request.contexts.site) {
-    txt = await responsemanager.load('intent.infos.schedule');
+    txt = await responsemanager.load('infos.schedule');
   }
   const res: IntentResult = {
     confidence: request.confidence,
@@ -15,9 +15,9 @@ async function opentime(request: IntentRequest) {
 }
 
 async function contact(request: IntentRequest) {
-  let txt = await responsemanager.load('intent.infos.contactnotfound');
+  let txt = await responsemanager.load('infos.contactnotfound');
   if (request.contexts.site) {
-    txt = await responsemanager.load('intent.infos.contact');
+    txt = await responsemanager.load('infos.contact');
   }
   const res: IntentResult = {
     confidence: request.confidence,
@@ -28,9 +28,9 @@ async function contact(request: IntentRequest) {
 }
 
 async function services(request: IntentRequest) {
-  let txt = await responsemanager.load('intent.infos.servicesnotfound');
+  let txt = await responsemanager.load('infos.servicesnotfound');
   if (request.contexts.site) {
-    txt = await responsemanager.load('intent.infos.services');
+    txt = await responsemanager.load('infos.services');
   }
   const res: IntentResult = {
     confidence: request.confidence,
@@ -41,9 +41,9 @@ async function services(request: IntentRequest) {
 }
 
 async function relaiscolis(request: IntentRequest) {
-  let txt = await responsemanager.load('intent.infos.relaiscolisnotfound');
+  let txt = await responsemanager.load('infos.relaiscolisnotfound');
   if (request.contexts.site) {
-    txt = await responsemanager.load('intent.infos.relaiscolis');
+    txt = await responsemanager.load('infos.relaiscolis');
   }
   const res: IntentResult = {
     confidence: request.confidence,

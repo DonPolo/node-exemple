@@ -117,8 +117,8 @@ async function loadfile(file: string): Promise<string[]> {
 
 async function updatefile(file: string, newfile: any) {
   // Delete all expressions
-  /*const res = await loadexpressions(file);
-  await res.results.reduce(async (previous: any, e: any) => {
+  const resdel = await loadexpressions(file);
+  await resdel.reduce(async (previous: any, e: any) => {
     await previous;
     await execrequest({
       url: `https://api.cai.tools.sap/train/v2/users/${
@@ -131,12 +131,25 @@ async function updatefile(file: string, newfile: any) {
         Authorization: `Token ${config.SAP.devtoken}`,
       },
     });
-  }, Promise.resolve());*/
+  }, Promise.resolve());
+  // Get entities
+  let entities = await execrequest({
+    url: `https://api.cai.tools.sap/train/v2/users/${
+      config.SAP.userslug
+    }/bots/${config.SAP.botslug}/versions/${
+      config.SAP.versionslug
+    }/dataset/entities`,
+    method: 'GET',
+    headers: {
+      Authorization: `Token ${config.SAP.devtoken}`,
+    },
+  });
+  entities = JSON.parse(entities.body).results;
   // Create new expressions
-  const expressions: any[] = [];
-  newfile.forEach((e: string) => {
+  await newfile.reduce(async (previous: any, e: string) => {
+    await previous;
     let src = e;
-    const toks: any[] = [];
+    const ents: any[] = [];
     while (src.indexOf('{{') !== -1) {
       const a = src.indexOf('{{') + 2;
       const b = src.indexOf('}}');
@@ -144,49 +157,81 @@ async function updatefile(file: string, newfile: any) {
       const type = txt.split('|')[1].trim();
       const val = txt.split('|')[0].trim();
       src = src.substring(0, a - 2) + val + src.substring(b + 2, src.length);
-      toks.push({
-        id: uuid(),
-        space: false,
-        word: {
-          id: uuid(),
-          name: val,
-          slug: val,
-        },
-        entity: {
-          id: uuid(),
-          name: type.toUpperCase(),
-          slug: type,
-        },
+      const ent = entities.filter((en: any) => en.slug === type)[0];
+      ents.push({
+        val,
+        entity: ent,
       });
     }
-    expressions.push({
-      id: uuid(),
+    const expr = {
       source: src,
-      tokens: toks,
+      tokens: null,
       language: {
-        id: '996ad860-2a9a-504f-8861-aeafd0b2ae29',
-        name: 'French',
-        slug: 'french',
         isocode: 'fr',
-        support: 'advanced',
       },
+    };
+    const res = await execrequest({
+      url: `https://api.cai.tools.sap/train/v2/users/${
+        config.SAP.userslug
+      }/bots/${config.SAP.botslug}/versions/${
+        config.SAP.versionslug
+      }/dataset/intents/${file}/expressions`,
+      method: 'POST',
+      headers: {
+        Authorization: `Token ${config.SAP.devtoken}`,
+        'Content-Type': 'application/json',
+      },
+      json: expr,
     });
-  });
-  const res = await execrequest({
+    if (ents.length > 0) {
+      const id = res.body.results.id;
+      const tokens = res.body.results.tokens;
+      let j = -1;
+      ents.forEach((en: any) => {
+        let i = 0;
+        for (const token of tokens) {
+          if (i > j && token.word.name === en.val) {
+            j = i;
+            token.entity = en.entity;
+          }
+          i += 1;
+        }
+      });
+      const re = await execrequest({
+        url: `https://api.cai.tools.sap/train/v2/users/${
+          config.SAP.userslug
+        }/bots/${config.SAP.botslug}/versions/${
+          config.SAP.versionslug
+        }/dataset/intents/${file}/expressions/${id}`,
+        method: 'PUT',
+        headers: {
+          Authorization: `Token ${config.SAP.devtoken}`,
+          'Content-Type': 'application/json',
+        },
+        json: { tokens, source: res.body.results.source },
+      });
+    }
+  }, Promise.resolve());
+}
+
+async function getEntities() {
+  let res = await execrequest({
     url: `https://api.cai.tools.sap/train/v2/users/${
       config.SAP.userslug
     }/bots/${config.SAP.botslug}/versions/${
       config.SAP.versionslug
-    }/dataset/intents/${file}/expressions/bulk_create`,
-    method: 'POST',
+    }/dataset/entities`,
+    method: 'GET',
     headers: {
       Authorization: `Token ${config.SAP.devtoken}`,
-      'Content-Type': 'application/json',
-    },
-    json: {
-      expressions,
     },
   });
+  res = JSON.parse(res.body);
+  const entities: string[] = [];
+  res.results.forEach((e: any) => {
+    entities.push(e.slug);
+  });
+  return entities;
 }
 
 export default {
@@ -195,4 +240,5 @@ export default {
   loadtype,
   loadfile,
   updatefile,
+  getEntities,
 };

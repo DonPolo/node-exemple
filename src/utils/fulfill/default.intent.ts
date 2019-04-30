@@ -5,7 +5,7 @@ async function fallback(request: IntentRequest) {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
-    response: await responsemanager.load('fallback'),
+    response: await responsemanager.load('default.fallback'),
   };
   return res;
 }

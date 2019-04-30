@@ -4,3 +4,20 @@
 
 main
   @extend %butlist
+  position: relative
+
+  .back-but
+    position: absolute
+    top: 15px
+    right: 70px
+    background: white
+    box-shadow: 0 0 5px 0 black
+    height: 25px
+    width: 25px
+    display: flex
+    justify-content: center
+    align-items: center
+    border-radius: 50%
+    z-index: 20
+  .back-but:hover
+    background: $secondcolor

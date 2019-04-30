@@ -150,7 +150,7 @@ async function sendSlackResponse(res: ParsedResponse, channel: string) {
     blocks: '',
   };
   const blocks: any[] = [];
-  res.responses.reduce(async (previous: any, response: any) => {
+  await res.responses.reduce(async (previous: any, response: any) => {
     await previous;
     if (response.text) {
       blocks.push({
@@ -164,7 +164,7 @@ async function sendSlackResponse(res: ParsedResponse, channel: string) {
       blocks.push({
         type: 'image',
         image_url: response.media,
-        alt_text: '',
+        alt_text: 'image',
       });
     } else if (response.btn) {
       const elements: any[] = [];
@@ -172,10 +172,10 @@ async function sendSlackResponse(res: ParsedResponse, channel: string) {
         elements.push({
           type: 'button',
           text: {
-            type: 'mrkdwn',
+            type: 'plain_text',
             text: b.text,
           },
-          value: `${response.btn.nextaction}|${b.value}`,
+          value: `${b.value}|${response.btn.nextaction}`,
         });
       });
       blocks.push({
@@ -187,7 +187,7 @@ async function sendSlackResponse(res: ParsedResponse, channel: string) {
       response.dropdown.opts.forEach((e: any) => {
         opt.push({
           text: {
-            type: 'mrkdwn',
+            type: 'plain_text',
             text: e.text,
             emoji: true,
           },

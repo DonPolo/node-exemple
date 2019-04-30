@@ -5,7 +5,7 @@ main {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-main a {
+main > a {
   margin: 20px 10px;
 }
 main h2 {
@@ -44,7 +44,7 @@ a {
   padding: 5px;
 }
 
-.btn, main a {
+.btn, main > a {
   display: flex;
   width: 200px;
   height: 40px;
@@ -52,6 +52,27 @@ a {
   align-items: center;
   justify-content: center;
   font-size: 20px;
+}
+
+main {
+  position: relative;
+}
+main .back-but {
+  position: absolute;
+  top: 15px;
+  right: 70px;
+  background: white;
+  box-shadow: 0 0 5px 0 black;
+  height: 25px;
+  width: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  z-index: 20;
+}
+main .back-but:hover {
+  background: #d1f5f9;
 }
 
 /*# sourceMappingURL=type.css.map */

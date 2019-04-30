@@ -87,9 +87,11 @@ async function save(response: any) {
  */
 async function load(intent: string): Promise<Response> {
   let response = await findone({ intent });
-
+  if (response.clone) {
+    response = await load(response.clone);
+  }
   if (!response) {
-    response = await findone({ intent: 'fallback' });
+    response = await findone({ intent: 'default.fallback' });
   }
   return response;
 }

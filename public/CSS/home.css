@@ -5,7 +5,7 @@ main {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-main a {
+main > a {
   margin: 20px 10px;
 }
 main h2 {
@@ -44,7 +44,7 @@ a {
   padding: 5px;
 }
 
-.btn, main a {
+.btn, main > a {
   display: flex;
   width: 200px;
   height: 40px;

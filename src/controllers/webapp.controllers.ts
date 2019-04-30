@@ -59,13 +59,33 @@ async function file(
   const catparam = req.params.cat;
   const nameparam = req.params.name;
   let fileres: any;
+  let params: string[] = [];
   if (catparam === 'response') {
     fileres = await responsemanager.loadfile(`${typeparam}.${nameparam}`);
+    params = [
+      'user.lastname',
+      'user.firstname',
+      'user.email',
+      'user.siteGroup',
+      'user.userId',
+      'site.id',
+      'site.code',
+      'site.libelle',
+      'site.email',
+      'site.telephone',
+      'site.botNumber',
+      'site.horaires',
+      'site.infos',
+      'site.guideServices',
+      'site.relaisColis',
+      'concierges.conciergeGivenName',
+    ];
   } else if (catparam === 'training') {
     fileres = await trainingmanager.loadfile(`${typeparam}-${nameparam}`);
   }
-
   res.render('file.twig', {
+    params,
+    paramsstr: JSON.stringify(params),
     file: json2pyaml.stringify(fileres),
     type: typeparam,
     filename: nameparam,
@@ -93,6 +113,7 @@ async function save(
       await trainingmanager.updatefile(req.body.file.replace('.', '-'), json);
     }
   } catch (e) {
+    console.log(e);
     error = e;
   }
 
@@ -122,6 +143,7 @@ async function getfiles(
           types.push(t);
         }
       });
+      const entities = await trainingmanager.getEntities();
       await types.reduce(async (previous: any, e: any) => {
         await previous;
         const responsefiles = await responsemanager.loadtype(e);
@@ -143,10 +165,28 @@ async function getfiles(
   res.end();
 }
 
+async function getentities(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  try {
+    const entities = await trainingmanager.getEntities();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(entities));
+    return;
+  } catch (e) {
+    // Do nothing
+  }
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end();
+}
+
 export default {
   home,
   type,
   file,
   save,
   getfiles,
+  getentities,
 };

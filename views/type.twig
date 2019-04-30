@@ -10,6 +10,9 @@
     <input type="text" placeholder="Search..."/>
   </div>
   <main>
+    <span class="back-but">
+      <a href="/webapp" class="fas fa-chevron-left"></a>
+    </span>
     <h2>Response : </h2>
     {% for file in responsefiles %}
     <a href="/webapp/{{ type }}/response/{{ file }}" s-val="{{ file }}">{{ file | capitalize }}</a>

@@ -12,6 +12,8 @@ routes.all('/', WebappControllers.home);
 routes.post('/save', urlencodedParser, WebappControllers.save);
 // Ajax call
 routes.post('/getfiles', urlencodedParser, WebappControllers.getfiles);
+// Ajax cakk
+routes.post('/getentities', urlencodedParser, WebappControllers.getentities);
 
 routes.all('/:type', WebappControllers.type);
 routes.all('/:type/:cat/:name', WebappControllers.file);

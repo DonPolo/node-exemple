@@ -75,7 +75,7 @@ async function register(request: IntentRequest) {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
-    response: await responsemanager.load('intent.register.askmail'),
+    response: await responsemanager.load('register.askmail'),
   };
   return res;
 }
@@ -97,7 +97,7 @@ async function registerMail(request: IntentRequest) {
   }
   const res: IntentResult = {
     contexts: request.contexts,
-    response: await responsemanager.load('intent.register.askfirstname'),
+    response: await responsemanager.load('register.askfirstname'),
     confidence: conf,
   };
   return res;
@@ -127,26 +127,24 @@ async function registerName(request: IntentRequest) {
         const groups = await ecl.getSiteGroups(request.contexts.site.id);
         if (groups.length > 1) {
           request.contexts.fulfill = [config.CONTEXTS.FULFILL.registercode];
-          text = await responsemanager.load('intent.register.askcode');
+          text = await responsemanager.load('register.askcode');
         } else {
           request.contexts.fulfill = [];
           if (
             registration(request.contexts, groups.length ? groups[0] : null)
           ) {
-            text = await responsemanager.load(
-              'intent.register.done_after_validation',
-            );
+            text = await responsemanager.load('register.done_after_validation');
           } else {
-            text = await responsemanager.load('intent.register.done');
+            text = await responsemanager.load('register.done');
           }
         }
       } else {
         request.contexts.fulfill = [config.CONTEXTS.FULFILL.registercode];
-        text = await responsemanager.load('intent.register.askcode');
+        text = await responsemanager.load('register.askcode');
       }
     } else {
       request.contexts.user.firstname = name;
-      text = await responsemanager.load('intent.register.asklastname');
+      text = await responsemanager.load('register.asklastname');
     }
     conf = 0.9;
   } else {
@@ -181,16 +179,14 @@ async function registerCode(request: IntentRequest) {
         ? groups[siteGroupNumber - 1]
         : undefined;
     if (!siteGroup) {
-      txt = await responsemanager.load('intent.register.ask_site_group_again');
+      txt = await responsemanager.load('register.ask_site_group_again');
     } else {
       request.contexts.fulfill = [];
       request.contexts.user.siteGroup = siteGroupNumber;
       if (registration(request.contexts, siteGroup)) {
-        txt = await responsemanager.load(
-          'intent.register.done_after_validation',
-        );
+        txt = await responsemanager.load('register.done_after_validation');
       } else {
-        txt = await responsemanager.load('intent.register.done');
+        txt = await responsemanager.load('register.done');
       }
     }
     conf = 0.9;
