@@ -1,6 +1,7 @@
 let cansave = true;
+let errors = false;
 save = () => {
-  if(!cansave) return;
+  if(!cansave || errors) return;
   cansave = false;
   document.getElementById('savebut').classList.add('disabled');
   var req = new XMLHttpRequest();
@@ -21,7 +22,7 @@ save = () => {
     }
   };
   console.log(source.getValue().replace(/\t/g, "  "));
-  req.send(JSON.stringify({code: source.getValue().replace(/\t/g, "  "), file: filename, cat: cat}));
+  req.send(JSON.stringify({code: source.getValue().replace(/\t/g, "  "), file: filename, cat: cat, oldcode: file}));
 }
 
 addparameter = (param) => {

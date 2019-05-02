@@ -1,6 +1,5 @@
 import { execrequest } from './async.util';
 import config from '../config';
-import uuid from 'uuid';
 
 /**
  * Get all the intents name in SAP recast
@@ -115,22 +114,24 @@ async function loadfile(file: string): Promise<string[]> {
   return final;
 }
 
-async function updatefile(file: string, newfile: any) {
+async function updatefile(file: string, news: string[], todelete: string[]) {
   // Delete all expressions
   const resdel = await loadexpressions(file);
   await resdel.reduce(async (previous: any, e: any) => {
     await previous;
-    await execrequest({
-      url: `https://api.cai.tools.sap/train/v2/users/${
-        config.SAP.userslug
-      }/bots/${config.SAP.botslug}/versions/${
-        config.SAP.versionslug
-      }/dataset/intents/${file}/expressions/${e.id}`,
-      method: 'DELETE',
-      headers: {
-        Authorization: `Token ${config.SAP.devtoken}`,
-      },
-    });
+    if (todelete.includes(e.source)) {
+      await execrequest({
+        url: `https://api.cai.tools.sap/train/v2/users/${
+          config.SAP.userslug
+        }/bots/${config.SAP.botslug}/versions/${
+          config.SAP.versionslug
+        }/dataset/intents/${file}/expressions/${e.id}`,
+        method: 'DELETE',
+        headers: {
+          Authorization: `Token ${config.SAP.devtoken}`,
+        },
+      });
+    }
   }, Promise.resolve());
   // Get entities
   let entities = await execrequest({
@@ -146,7 +147,7 @@ async function updatefile(file: string, newfile: any) {
   });
   entities = JSON.parse(entities.body).results;
   // Create new expressions
-  await newfile.reduce(async (previous: any, e: string) => {
+  await news.reduce(async (previous: any, e: string) => {
     await previous;
     let src = e;
     const ents: any[] = [];

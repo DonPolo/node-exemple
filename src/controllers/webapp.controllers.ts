@@ -110,7 +110,29 @@ async function save(
     if (req.body.cat === 'response') {
       await responsemanager.save(json);
     } else if (req.body.cat === 'training') {
-      await trainingmanager.updatefile(req.body.file.replace('.', '-'), json);
+      const oldjson = yaml.parse(req.body.oldcode);
+      let todelete: string[] = [];
+      const news: string[] = [];
+      if (json instanceof Array && oldjson instanceof Array) {
+        todelete = oldjson;
+        json.forEach(j => {
+          let already = false;
+          oldjson.forEach(o => {
+            if (j === o) {
+              already = true;
+              todelete.splice(todelete.indexOf(o), 1);
+            }
+          });
+          if (!already) {
+            news.push(j);
+          }
+        });
+      }
+      await trainingmanager.updatefile(
+        req.body.file.replace('.', '-'),
+        news,
+        todelete,
+      );
     }
   } catch (e) {
     console.log(e);

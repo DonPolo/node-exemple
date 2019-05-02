@@ -6,39 +6,210 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Page Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel='stylesheet' href='/CSS/testconsole.css'/>
   </head>
 
   <body>
 
-    <div id="msg-container">
+    <main>
+      <div id="msg-container">
 
-    </div>
-
-    <input type="text" id="input-msg">
-    <button type="button" onclick="sendMessage()">Send</button>
-
+      </div>
+      <span>
+        <input type="text" id="input-msg">
+        <button type="button" onclick="sendMessage()">Send</button>
+      </span>
+    </main>
+    <nav>
+      <h2>Accepted types</h2>
+      <div>
+        <label for='i-txt'> Text
+          <input type='checkbox' id='i-txt' disabled checked types='text'/>
+        </label>
+        <label for='i-btn'> Button
+          <input type='checkbox' id='i-btn' types='btn'/>
+        </label>
+        <label for='i-dd'> Dropdown
+          <input type='checkbox' id='i-dd' types='dropdown'/>
+        </label>
+        <label for='i-media'> Media
+          <input type='checkbox' id='i-media' types='media'/>
+        </label>
+        <label for='i-link'> Link
+          <input type='checkbox' id='i-link' types='link'/>
+        </label>
+      </div>
+    </nav>
     <script>
-      const container = document.getElementById("msg-container");
+      let container;
+      window.onload = function () {
+        container = document.getElementById("msg-container");
+        document.addEventListener('keypress', function(e) {
+          if(e.keyCode === 13) {
+            sendMessage();
+          }
+        });
+      }
+
       function sendMessage () {
         const msg = document.getElementById("input-msg").value;
         document.getElementById("input-msg").value = '';
-        const url = '/test/ajax/sendmessage?msg=' + msg + '&from=toto';
+        const url = '/test/ajax/sendmessage';
         var req = new XMLHttpRequest();
-        container.innerHTML += '<div style="text-align: right">' + msg + '</div>';
-        req.open("GET", url);
+        container.innerHTML += '<div style="text-align: right"><span>' + msg + '</span></div>';
+        req.open("POST", url);
+        req.setRequestHeader("Content-Type", "application/json");
+        req.onerror = function() {
+            console.log("Échec de chargement "+url);
+        };
+        req.onload = function() {
+            if (req.status === 200) {
+              var data = JSON.parse(req.responseText);
+              console.log(data);
+              data.responses.forEach(r => {
+                if (r.text) {
+                  container.innerHTML += '<div style="text-align: left"><span>' + r.text + '</span></div>';
+                } else if (r.btn) {
+                  let btn = '';
+                  r.btn.btns.forEach(b => {
+                    btn += '<button onclick="sendEvent(\'' + b.value + '|' + r.btn.nextaction + '\')">' + b.text + '</button>';
+                  });
+                  container.innerHTML += '<div style="text-align: left"><span>' + btn + '</span></div>';
+                } else if (r.dropdown) {
+                  let dd = '<select onchange="sendEventDD(this, \'' + r.dropdown.nextaction + '\')"><option>Choose</option>';
+                  r.dropdown.opts.forEach(o => {
+                    dd += '<option value="' + o.value + '">' + o.text + '</option>';
+                  });
+                  dd += '</select>'
+                  container.innerHTML += '<div style="text-align: left"><span>' + dd + '</span></div>';
+                } else if (r.media) {
+                  let img = '<img src="' + r.media + '"/>';
+                  container.innerHTML += '<div style="text-align: left"><span>' + img + '</span></div>';
+                } else if (r.link) {
+                  let link = '<a href="' + r.link + '">Link</a>';
+                  container.innerHTML += '<div style="text-align: left"><span>' + link + '</span></div>';
+                }
+              });
+            } else {
+              console.log("Erreur " + req.status);
+            }
+        };
+        let types = [];
+        document.querySelectorAll('input[type="checkbox"]').forEach(e => {
+          if(e.checked) {
+            types.push(e.getAttribute('types'));
+          }
+        });
+        req.send(JSON.stringify({ msg, from: 'toto', types }));
+      }
+
+      function sendEvent (ac) {
+        const url = '/test/ajax/event';
+        var req = new XMLHttpRequest();
+        req.open("POST", url);
+        req.setRequestHeader("Content-Type", "application/json");
         req.onerror = function() {
             console.log("Échec de chargement "+url);
         };
         req.onload = function() {
             if (req.status === 200) {
               var data = JSON.parse(req.responseText)
+              data.responses.forEach(r => {
+                if (r.text) {
+                  container.innerHTML += '<div style="text-align: left"><span>' + data.responses[0].text + '</span></div>';
+                } else if (r.btn) {
+                  let btn = '';
+                  r.btn.btns.forEach(b => {
+                    btn += '<button>' + b.text + '</button>';
+                  });
+                  container.innerHTML += '<div style="text-align: left"><span>' + btn + '</span></div>';
+                } else if (r.dropdown) {
+                  let dd = '<select>';
+                  r.dropdown.opts.forEach(o => {
+                    dd += '<option>' + o.text + '</option>';
+                  });
+                  dd += '</select>'
+                  container.innerHTML += '<div style="text-align: left"><span>' + dd + '</span></div>';
+                } else if (r.media) {
+                  let img = '<img src="' + r.media + '"/>';
+                  container.innerHTML += '<div style="text-align: left"><span>' + img + '</span></div>';
+                } else if (r.link) {
+                  let link = '<a href="' + r.link + '">Link</a>';
+                  container.innerHTML += '<div style="text-align: left"><span>' + link + '</span></div>';
+                }
+              });
               console.log(data);
-              container.innerHTML += '<div style="text-align: left">' + data[0].text + '</div>';
             } else {
               console.log("Erreur " + req.status);
             }
         };
-        req.send();
+        let types = [];
+        document.querySelectorAll('input[type="checkbox"]').forEach(e => {
+          if(e.checked) {
+            types.push(e.getAttribute('types'));
+          }
+        });
+        let event = [
+          {
+            action: ac
+          }
+        ];
+        req.send(JSON.stringify({ from: 'toto', types, event }));
+      }
+
+      function sendEventDD (elem, next) {
+        const url = '/test/ajax/event';
+        var req = new XMLHttpRequest();
+        req.open("POST", url);
+        req.setRequestHeader("Content-Type", "application/json");
+        req.onerror = function() {
+            console.log("Échec de chargement "+url);
+        };
+        req.onload = function() {
+            if (req.status === 200) {
+              var data = JSON.parse(req.responseText)
+              data.responses.forEach(r => {
+                if (r.text) {
+                  container.innerHTML += '<div style="text-align: left"><span>' + data.responses[0].text + '</span></div>';
+                } else if (r.btn) {
+                  let btn = '';
+                  r.btn.btns.forEach(b => {
+                    btn += '<button>' + b.text + '</button>';
+                  });
+                  container.innerHTML += '<div style="text-align: left"><span>' + btn + '</span></div>';
+                } else if (r.dropdown) {
+                  let dd = '<select>';
+                  r.dropdown.opts.forEach(o => {
+                    dd += '<option>' + o.text + '</option>';
+                  });
+                  dd += '</select>'
+                  container.innerHTML += '<div style="text-align: left"><span>' + dd + '</span></div>';
+                } else if (r.media) {
+                  let img = '<img src="' + r.media + '"/>';
+                  container.innerHTML += '<div style="text-align: left"><span>' + img + '</span></div>';
+                } else if (r.link) {
+                  let link = '<a href="' + r.link + '">Link</a>';
+                  container.innerHTML += '<div style="text-align: left"><span>' + link + '</span></div>';
+                }
+              });
+              console.log(data);
+            } else {
+              console.log("Erreur " + req.status);
+            }
+        };
+        let types = [];
+        document.querySelectorAll('input[type="checkbox"]').forEach(e => {
+          if(e.checked) {
+            types.push(e.getAttribute('types'));
+          }
+        });
+        ac = elem.value + '|' + next;
+        let event = [
+          {
+            action: ac
+          }
+        ];
+        req.send(JSON.stringify({ from: 'toto', types, event }));
       }
 
     </script>

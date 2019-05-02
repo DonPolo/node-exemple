@@ -13,6 +13,7 @@ import {
   FulfillResult,
   FulfillRequest,
   ParsedResponse,
+  ConciergeContexts,
 } from './types.util';
 
 /**
@@ -24,7 +25,7 @@ import {
 async function getSiteContexts(
   to: string,
   platform: string,
-): Promise<{ concierges: Concierge[]; site: Site | null }> {
+): Promise<{ concierges: ConciergeContexts; site: Site | null }> {
   let service = 'twilio';
   if (platform === 'slack') {
     service = 'slack';
@@ -36,8 +37,12 @@ async function getSiteContexts(
 
   const concierges = await Ecl.getConciergeList(site.code);
   return {
-    concierges,
     site,
+    concierges: {
+      concierges,
+      conciergeGivenName: ecl.getPrenomConcierge(concierges),
+      nb: concierges.length,
+    },
   };
 }
 
@@ -59,7 +64,7 @@ export default async function(
   /* Get contexts */
   const contexts: Contexts = await ContextsManager.load(request.from);
   const a: {
-    concierges: Concierge[];
+    concierges: ConciergeContexts;
     site: Site | null;
   } = await getSiteContexts(request.to, request.platform);
   contexts.site = a.site;
@@ -96,7 +101,6 @@ export default async function(
   } else if (request.result) {
     request.result.contexts = contexts;
   }
-
   /* Change language */
   let lang = 'fr-tu';
   if (request.to === '+33755536910') {

@@ -1,0 +1,70 @@
+body {
+  background: #d1f5f9;
+  font-family: "Arial";
+}
+
+main {
+  position: absolute;
+  top: 50px;
+  left: 300px;
+  bottom: 100px;
+  right: 300px;
+  background: rgba(200, 200, 200, 0.9);
+}
+main > div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 50px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+main > div div {
+  display: inline-block;
+  width: 80%;
+  margin: 2px 10%;
+}
+main > div div span {
+  padding: 10px 20px;
+  background: #d1f5f9;
+  border-radius: 10px;
+  display: inline-block;
+}
+main > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  height: 30px;
+  display: flex;
+}
+main > span input {
+  width: 100%;
+  flex-shrink: 1;
+  margin: 0 20px;
+}
+main > span button {
+  width: 100px;
+  flex-shrink: 0;
+  margin: 0 20px;
+}
+
+nav {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  bottom: 100px;
+  width: 300px;
+  text-align: center;
+}
+nav div {
+  width: 60%;
+  margin: auto;
+}
+nav label {
+  display: flex;
+  justify-content: space-between;
+}
+
+/*# sourceMappingURL=testconsole.css.map */

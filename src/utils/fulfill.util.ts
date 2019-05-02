@@ -48,8 +48,7 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
             responses: [
               {
                 text: {
-                  'fr-tu': [request.result.response],
-                  'fr-vous': [request.result.response],
+                  fr: [request.result.response],
                 },
               },
             ],
@@ -202,7 +201,7 @@ async function parseResponse(
     if (!r.desc) {
       if (r.alt && trouble) {
         trouble = false;
-        const texts = r.alt[lang];
+        const texts = getTexts(r.text, lang, request.intentResult.contexts);
         const text = texts[Math.floor(Math.random() * texts.length)];
         const realtxt = await getTextFormated(
           text,
@@ -214,7 +213,7 @@ async function parseResponse(
       } else if (types.includes(Object.keys(r)[0])) {
         trouble = false;
         if (typeof r.text !== 'undefined') {
-          const texts = r.text[lang];
+          const texts = getTexts(r.text, lang, request.intentResult.contexts);
           const text = texts[Math.floor(Math.random() * texts.length)];
           const realtxt = await getTextFormated(
             text,
@@ -232,7 +231,7 @@ async function parseResponse(
             link: r.link,
           });
         } else if (typeof r.btn !== 'undefined') {
-          const btns = r.btn[lang];
+          const btns = getTexts(r.btn, lang, request.intentResult.contexts);
           const realbtns: any[] = [];
           await btns.reduce(async (prev: any, b: any) => {
             await prev;
@@ -251,7 +250,11 @@ async function parseResponse(
             },
           });
         } else if (typeof r.dropdown !== 'undefined') {
-          const opts = r.dropdown[lang];
+          const opts = getTexts(
+            r.dropdown,
+            lang,
+            request.intentResult.contexts,
+          );
           const realopts: any[] = [];
           await opts.reduce(async (prev: any, b: any) => {
             await prev;
@@ -304,4 +307,87 @@ async function getTextFormated(text: string, params: Contexts) {
     user: params.user,
     concierges: params.concierges,
   });
+}
+
+function getTexts(texts: any, lang: string, contexts: Contexts) {
+  let res;
+  if (texts[lang]) {
+    res = texts[lang];
+  } else if (texts[`${lang}-cond`]) {
+    res = texts[`${lang}-cond`];
+  } else if (texts.fr) {
+    res = texts.fr;
+  } else {
+    res = texts['fr-cond'];
+  }
+  // First branch
+  if (!(res instanceof Array)) {
+    const cond = res.cond;
+    if (res.masc || res['masc-cond']) {
+      // Masc / Fem
+      const prop = getProperty(contexts, cond);
+      if (prop === 1) {
+        // Fem
+        res = res.fem;
+      } else {
+        // Masc
+        res = res.masc;
+      }
+    } else {
+      // Sing / Plur
+      const prop = getProperty(contexts, cond);
+      if (prop > 1) {
+        // Use Plur
+        if (res.plur) {
+          res = res.plur;
+        } else {
+          res = res['plur-cond'];
+        }
+      } else {
+        // Use Sing
+        if (res.sing) {
+          res = res.sing;
+        } else {
+          res = res['sing-cond'];
+        }
+      }
+    }
+  }
+  // Second branch
+  if (!(res instanceof Array)) {
+    const cond = res.cond;
+    if (res.masc) {
+      // Masc / Fem
+      const prop = getProperty(contexts, cond);
+      if (prop === 1) {
+        // Fem
+        res = res.fem;
+      } else {
+        // Masc
+        res = res.masc;
+      }
+    } else {
+      // Sing / Plur
+      const prop = getProperty(contexts, cond);
+      if (prop > 1) {
+        // Use Plur
+        res = res.plur;
+      } else {
+        // Use Sing
+        res = res.sing;
+      }
+    }
+  }
+  return res;
+}
+
+function getProperty(obj: any, attr: string): any {
+  const tab = attr.split('.');
+  if (tab.length > 1) {
+    const a = tab.shift();
+    if (a) {
+      return getProperty(obj[a], tab.join('.'));
+    }
+  }
+  return obj[attr];
 }

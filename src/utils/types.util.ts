@@ -17,7 +17,7 @@ export interface Contexts {
   service: any;
   site: Site | null;
   user: UserContexts | null;
-  concierges: Concierge[] | null;
+  concierges: ConciergeContexts | null;
 }
 export interface UserContexts {
   lastname: string;
@@ -25,6 +25,12 @@ export interface UserContexts {
   email: string;
   siteGroup: number | null;
   userId: string;
+}
+
+export interface ConciergeContexts {
+  concierges: Concierge[] | null;
+  conciergeGivenName: string;
+  nb: number;
 }
 
 /* Result from the service (Dialogflow, Luis, Watson) */
@@ -76,6 +82,7 @@ export interface IntentResult {
 export interface Response {
   intent: string;
   type: string;
+  // tslint:disable-next-line: prefer-array-literal
   responses: Array<
     | UnparsedResponseDesc
     | UnparsedResponseText
@@ -87,6 +94,7 @@ export interface Response {
 }
 
 export interface ParsedResponse {
+  // tslint:disable-next-line: prefer-array-literal
   responses: Array<
     | ParsedResponseBtn
     | ParsedResponseDropdown
@@ -114,10 +122,7 @@ export interface UnparsedResponseDesc {
   desc: string;
 }
 export interface UnparsedResponseText {
-  text: {
-    'fr-tu': string[];
-    'fr-vous': string[];
-  };
+  text: UnparsedText;
 }
 export interface UnparsedResponseMedia {
   media: string;
@@ -128,11 +133,18 @@ export interface UnparsedResponseLink {
 export interface UnparsedResponseBtn {
   btn: {
     nextaction: string;
+    // tslint:disable-next-line: prefer-array-literal
     'fr-tu': Array<{
       text: string;
       value: string;
     }>;
+    // tslint:disable-next-line: prefer-array-literal
     'fr-vous': Array<{
+      text: string;
+      value: string;
+    }>;
+    // tslint:disable-next-line: prefer-array-literal
+    fr?: Array<{
       text: string;
       value: string;
     }>;
@@ -141,15 +153,59 @@ export interface UnparsedResponseBtn {
 export interface UnparsedResponseDropdown {
   dropdown: {
     nextaction: string;
-    'fr-tu': Array<{
+    // tslint:disable-next-line: prefer-array-literal
+    'fr-tu'?: Array<{
       text: string;
       value: string;
     }>;
-    'fr-vous': Array<{
+    // tslint:disable-next-line: prefer-array-literal
+    'fr-vous'?: Array<{
+      text: string;
+      value: string;
+    }>;
+    // tslint:disable-next-line: prefer-array-literal
+    fr?: Array<{
       text: string;
       value: string;
     }>;
   };
+}
+
+export interface UnparsedText {
+  fr?: string[];
+  'fr-tu'?: string[];
+  'fr-vous'?: string[];
+  'fr-cond'?: UnparsedLang;
+  'fr-tu-cond'?: UnparsedLang;
+  'fr-vous-cond'?: UnparsedLang;
+}
+
+export interface UnparsedLang {
+  cond: string;
+  'sing-cond'?: {
+    cond: string;
+    masc: string[];
+    fem: string[];
+  };
+  'plur-cond'?: {
+    cond: string;
+    masc: string[];
+    fem: string[];
+  };
+  'masc-cond'?: {
+    cond: string;
+    sing: string[];
+    plur: string[];
+  };
+  'fem-cond'?: {
+    cond: string;
+    sing: string[];
+    plur: string[];
+  };
+  sing: string[];
+  plur: string[];
+  masc: string[];
+  fem: string[];
 }
 
 /* Parsed Response Attributes */
@@ -165,6 +221,7 @@ export interface ParsedResponseLink {
 export interface ParsedResponseBtn {
   btn: {
     nextaction: string;
+    // tslint:disable-next-line: prefer-array-literal
     btns: Array<{
       text: string;
       value: string;
@@ -174,6 +231,7 @@ export interface ParsedResponseBtn {
 export interface ParsedResponseDropdown {
   dropdown: {
     nextaction: string;
+    // tslint:disable-next-line: prefer-array-literal
     opts: Array<{
       text: string;
       value: string;
