@@ -133,7 +133,11 @@ function checkJson (json) {
 
   let btndd = json.responses.filter(u => u.btn || u.dropdown);
   btndd.forEach(b => {
-    b = b.btn;
+    if (b.btn) {
+      b = b.btn;
+    } else {
+      b = b.dropdown;
+    }
     if (b['fr']) {
       check(b, [], ['fr-tu', 'fr-vous', 'fr-cond', 'fr-vous-cond', 'fr-tu-cond'], b.btn ? 'btn' : 'dropdown');
       if (b['fr'] instanceof Array) {
@@ -143,6 +147,9 @@ function checkJson (json) {
           }
           if (!e.value) {
             found.push({message: "Missing 'value' in 'fr'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
+          }
+          if (!e.followupintent) {
+            found.push({message: "Missing 'followupintent' in 'fr'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
           }
         });
       }
@@ -157,6 +164,9 @@ function checkJson (json) {
           if (!e.value) {
             found.push({message: "Missing 'value' in 'fr-tu'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
           }
+          if (!e.followupintent) {
+            found.push({message: "Missing 'followupintent' in 'fr'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
+          }
         });
       }
     }
@@ -169,6 +179,9 @@ function checkJson (json) {
           }
           if (!e.value) {
             found.push({message: "Missing 'value' in 'fr-vous'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
+          }
+          if (!e.followupintent) {
+            found.push({message: "Missing 'followupintent' in 'fr'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
           }
         });
       }
@@ -279,135 +292,401 @@ function lintResponse (text, found, json) {
           },
         }
       },
-      media: "string",
-      link: "string",
-      alt: {
-        '?fr-tu': [],
-        '?fr-vous': [],
-        '?fr': [],
-        '?fr-tu-cond': {
-          'cond': 'string',
-          '?sing': [],
-          '?plur': [],
-          '?fem': [],
-          '?masc': [],
-          '?sing-cond': {
+      media: {
+        value: "string",
+        '?alt': {
+          '?fr-tu': [],
+          '?fr-vous': [],
+          '?fr': [],
+          '?fr-tu-cond': {
             'cond': 'string',
-            'masc': [],
-            'fem': []
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
           },
-          '?plur-cond': {
+          '?fr-vous-cond': {
             'cond': 'string',
-            'masc': [],
-            'fem': []
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
           },
-          '?fem-cond': {
+          '?fr-cond': {
             'cond': 'string',
-            'sing': [],
-            'plur': []
-          },
-          '?masc-cond': {
-            'cond': 'string',
-            'sing': [],
-            'plur': []
-          },
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          }
         },
-        '?fr-vous-cond': {
-          'cond': 'string',
-          '?sing': [],
-          '?plur': [],
-          '?fem': [],
-          '?masc': [],
-          '?sing-cond': {
+      },
+      link: {
+        value: "string",
+        '?alt': {
+          '?fr-tu': [],
+          '?fr-vous': [],
+          '?fr': [],
+          '?fr-tu-cond': {
             'cond': 'string',
-            'masc': [],
-            'fem': []
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
           },
-          '?plur-cond': {
+          '?fr-vous-cond': {
             'cond': 'string',
-            'masc': [],
-            'fem': []
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
           },
-          '?fem-cond': {
+          '?fr-cond': {
             'cond': 'string',
-            'sing': [],
-            'plur': []
-          },
-          '?masc-cond': {
-            'cond': 'string',
-            'sing': [],
-            'plur': []
-          },
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          }
         },
-        '?fr-cond': {
-          'cond': 'string',
-          '?sing': [],
-          '?plur': [],
-          '?fem': [],
-          '?masc': [],
-          '?sing-cond': {
-            'cond': 'string',
-            'masc': [],
-            'fem': []
-          },
-          '?plur-cond': {
-            'cond': 'string',
-            'masc': [],
-            'fem': []
-          },
-          '?fem-cond': {
-            'cond': 'string',
-            'sing': [],
-            'plur': []
-          },
-          '?masc-cond': {
-            'cond': 'string',
-            'sing': [],
-            'plur': []
-          },
-        }
       },
       btn: {
-        nextaction: "string",
         '?fr-tu': [
           {
             'text': 'string',
-            'value': 'string'
+            'value': 'string',
+            'followupintent': 'string',
           }
         ],
         '?fr-vous': [
           {
             'text': 'string',
-            'value': 'string'
+            'value': 'string',
+            'followupintent': 'string',
           }
         ],
         '?fr': [
           {
             'text': 'string',
-            'value': 'string'
+            'value': 'string',
+            'followupintent': 'string',
           }
-        ]
+        ],
+        '?alt': {
+          '?fr-tu': [],
+          '?fr-vous': [],
+          '?fr': [],
+          '?fr-tu-cond': {
+            'cond': 'string',
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          },
+          '?fr-vous-cond': {
+            'cond': 'string',
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          },
+          '?fr-cond': {
+            'cond': 'string',
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          }
+        },
       },
       dropdown: {
-        nextaction: "string",
         '?fr-tu': [
           {
             'text': 'string',
-            'value': 'string'
+            'value': 'string',
+            'followupintent': 'string'
           }
         ],
         '?fr-vous': [
           {
             'text': 'string',
-            'value': 'string'
+            'value': 'string',
+            'followupintent': 'string'
           }
         ],
         '?fr': [
           {
             'text': 'string',
-            'value': 'string'
+            'value': 'string',
+            'followupintent': 'string'
           }
-        ]
+        ],
+        '?alt': {
+          '?fr-tu': [],
+          '?fr-vous': [],
+          '?fr': [],
+          '?fr-tu-cond': {
+            'cond': 'string',
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          },
+          '?fr-vous-cond': {
+            'cond': 'string',
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          },
+          '?fr-cond': {
+            'cond': 'string',
+            '?sing': [],
+            '?plur': [],
+            '?fem': [],
+            '?masc': [],
+            '?sing-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?plur-cond': {
+              'cond': 'string',
+              'masc': [],
+              'fem': []
+            },
+            '?fem-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+            '?masc-cond': {
+              'cond': 'string',
+              'sing': [],
+              'plur': []
+            },
+          }
+        },
       }
     },
   }

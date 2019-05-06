@@ -45,6 +45,7 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
           response: {
             intent: '',
             type: '',
+            displayname: '',
             responses: [
               {
                 text: {
@@ -143,6 +144,10 @@ function getConfig(): Intent[] {
       func: intentInfos.relaiscolis,
     },
     {
+      name: config.INTENTS.infos,
+      func: intentInfos.infos,
+    },
+    {
       name: config.INTENTS.fallback,
       func: intentDefault.fallback,
     },
@@ -194,27 +199,16 @@ async function parseResponse(
   const newres: ParsedResponse = {
     responses: [],
   };
-  let trouble = false;
   // Build it
   await res.reduce(async (previous: any, r: any) => {
     await previous;
     if (!r.desc) {
-      if (r.alt && trouble) {
-        trouble = false;
-        const texts = getTexts(r.text, lang, request.intentResult.contexts);
-        const text = texts[Math.floor(Math.random() * texts.length)];
-        const realtxt = await getTextFormated(
-          text,
-          request.intentResult.contexts,
-        );
-        newres.responses.push({
-          text: realtxt,
-        });
-      } else if (types.includes(Object.keys(r)[0])) {
-        trouble = false;
+      if (types.includes(Object.keys(r)[0])) {
         if (typeof r.text !== 'undefined') {
           const texts = getTexts(r.text, lang, request.intentResult.contexts);
+          console.log('t');
           const text = texts[Math.floor(Math.random() * texts.length)];
+          console.log('tt');
           const realtxt = await getTextFormated(
             text,
             request.intentResult.contexts,
@@ -224,11 +218,11 @@ async function parseResponse(
           });
         } else if (typeof r.media !== 'undefined') {
           newres.responses.push({
-            media: r.media,
+            media: r.media.value,
           });
         } else if (typeof r.link !== 'undefined') {
           newres.responses.push({
-            link: r.link,
+            link: r.link.value,
           });
         } else if (typeof r.btn !== 'undefined') {
           const btns = getTexts(r.btn, lang, request.intentResult.contexts);
@@ -241,12 +235,12 @@ async function parseResponse(
                 request.intentResult.contexts,
               ),
               value: b.value,
+              followupintent: b.followupintent,
             });
           }, Promise.resolve());
           newres.responses.push({
             btn: {
               btns: realbtns,
-              nextaction: r.btn.nextaction,
             },
           });
         } else if (typeof r.dropdown !== 'undefined') {
@@ -264,20 +258,30 @@ async function parseResponse(
                 request.intentResult.contexts,
               ),
               value: b.value,
+              followupintent: b.followupintent,
             });
           }, Promise.resolve());
           newres.responses.push({
             dropdown: {
               opts: realopts,
-              nextaction: r.dropdown.nextaction,
             },
           });
         }
-      } else {
-        trouble = true;
+      } else if (r[Object.keys(r)[0]].alt) {
+        const texts = getTexts(
+          r[Object.keys(r)[0]].alt,
+          lang,
+          request.intentResult.contexts,
+        );
+        const text = texts[Math.floor(Math.random() * texts.length)];
+        const realtxt = await getTextFormated(
+          text,
+          request.intentResult.contexts,
+        );
+        newres.responses.push({
+          text: realtxt,
+        });
       }
-    } else {
-      trouble = false;
     }
   }, Promise.resolve());
   return newres;
@@ -305,7 +309,6 @@ async function getTextFormated(text: string, params: Contexts) {
   return i18n.t(text, {
     site: params.site,
     user: params.user,
-    concierges: params.concierges,
   });
 }
 

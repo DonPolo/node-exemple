@@ -102,6 +102,20 @@ main .CodeMirror {
   z-index: -9;
 }
 
+.loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loader img {
+  width: 50px;
+}
+
 nav {
   position: absolute;
   top: 50px;
@@ -183,6 +197,11 @@ nav .but a.disabled img {
   left: 0;
   right: 0;
   bottom: 0;
+}
+.rightmenu .paramcontainer h2 {
+  width: 80%;
+  margin: 10px 10%;
+  font-size: 18px;
 }
 .rightmenu .paramcontainer strong {
   display: block;

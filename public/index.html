@@ -16,6 +16,9 @@
 
       </div>
       <span>
+        <div class="proposition" id="prop" style='display: none'>
+          <div>Hello</div>
+        </div>
         <input type="text" id="input-msg">
         <button type="button" onclick="sendMessage()">Send</button>
       </span>
@@ -42,17 +45,105 @@
     </nav>
     <script>
       let container;
+      let oldphrases = [];
+      let prop;
       window.onload = function () {
         container = document.getElementById("msg-container");
+        prop = document.getElementById('prop');
         document.addEventListener('keypress', function(e) {
           if(e.keyCode === 13) {
             sendMessage();
           }
         });
+        document.getElementById('input-msg').addEventListener('focus', function (e) {
+          e.stopPropagation();
+          prop.style.display = null;
+          prop.innerHTML = '';
+          oldphrases.forEach(e => {
+            prop.innerHTML += '<div onclick="replace(\'' + e + '\')">' + e + '</div>';
+          });
+        });
+
+        document.getElementById('input-msg').addEventListener('input', function () {
+          prop.innerHTML = '';
+          let val = document.getElementById('input-msg').value;
+          oldphrases.forEach(e => {
+            if (e.startsWith(val)) {
+              prop.innerHTML += '<div onclick="replace(\'' + e + '\')">' + e + '</div>';
+            }
+          });
+        });
+
+        document.getElementById('input-msg').addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+
+        document.body.addEventListener('click', function (e) {
+          prop.style.display = 'none';
+        });
+
+      }
+
+      function replace (text) {
+        document.getElementById('input-msg').value = text;
+      }
+
+      function showResponse (data) {
+        var int = setInterval(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 20);
+        setTimeout(() => {
+          clearInterval(int);
+        }, 2000);
+
+        data.responses.forEach(r => {
+          let d = document.createElement('div');
+          d.setAttribute('style', 'text-align: left');
+          let s = document.createElement('span');
+          if (r.text) {
+            s.textContent = r.text;
+          } else if (r.btn) {
+            r.btn.btns.forEach(b => {
+              let but = document.createElement('button');
+              but.setAttribute('onclick', 'sendEvent(\'' + b.value + '|' + b.followupintent + '\')');
+              but.textContent = b.text;
+              s.appendChild(but);
+            });
+          } else if (r.dropdown) {
+            let dd = document.createElement('select');
+            dd.setAttribute('onchange', 'sendEventDD(this)');
+            let o = document.createElement('option');
+            o.textContent = 'Choose';
+            dd.appendChild(o);
+            r.dropdown.opts.forEach(op => {
+              let o = document.createElement('option');
+              o.textContent = op.text;
+              o.setAttribute('value', op.value + '|' + op.followupintent);
+              dd.appendChild(o);
+            });
+            s.appendChild(dd);
+          } else if (r.media) {
+            let img = document.createElement('img');
+            img.setAttribute('src', r.media);
+            s.appendChild(img);
+          } else if (r.link) {
+            let link = document.createElement('a');
+            link.setAttribute('href', r.link);
+            link.textContent = 'Link';
+            s.appendChild(link);
+          }
+          d.appendChild(s);
+          container.appendChild(d);
+        });
+
+        //window.scrollTo(0,container.scrollHeight);
       }
 
       function sendMessage () {
         const msg = document.getElementById("input-msg").value;
+        if (!oldphrases.includes(msg)) {
+          oldphrases.push(msg);
+        }
         document.getElementById("input-msg").value = '';
         const url = '/test/ajax/sendmessage';
         var req = new XMLHttpRequest();
@@ -65,31 +156,7 @@
         req.onload = function() {
             if (req.status === 200) {
               var data = JSON.parse(req.responseText);
-              console.log(data);
-              data.responses.forEach(r => {
-                if (r.text) {
-                  container.innerHTML += '<div style="text-align: left"><span>' + r.text + '</span></div>';
-                } else if (r.btn) {
-                  let btn = '';
-                  r.btn.btns.forEach(b => {
-                    btn += '<button onclick="sendEvent(\'' + b.value + '|' + r.btn.nextaction + '\')">' + b.text + '</button>';
-                  });
-                  container.innerHTML += '<div style="text-align: left"><span>' + btn + '</span></div>';
-                } else if (r.dropdown) {
-                  let dd = '<select onchange="sendEventDD(this, \'' + r.dropdown.nextaction + '\')"><option>Choose</option>';
-                  r.dropdown.opts.forEach(o => {
-                    dd += '<option value="' + o.value + '">' + o.text + '</option>';
-                  });
-                  dd += '</select>'
-                  container.innerHTML += '<div style="text-align: left"><span>' + dd + '</span></div>';
-                } else if (r.media) {
-                  let img = '<img src="' + r.media + '"/>';
-                  container.innerHTML += '<div style="text-align: left"><span>' + img + '</span></div>';
-                } else if (r.link) {
-                  let link = '<a href="' + r.link + '">Link</a>';
-                  container.innerHTML += '<div style="text-align: left"><span>' + link + '</span></div>';
-                }
-              });
+              showResponse(data);
             } else {
               console.log("Erreur " + req.status);
             }
@@ -114,30 +181,7 @@
         req.onload = function() {
             if (req.status === 200) {
               var data = JSON.parse(req.responseText)
-              data.responses.forEach(r => {
-                if (r.text) {
-                  container.innerHTML += '<div style="text-align: left"><span>' + data.responses[0].text + '</span></div>';
-                } else if (r.btn) {
-                  let btn = '';
-                  r.btn.btns.forEach(b => {
-                    btn += '<button>' + b.text + '</button>';
-                  });
-                  container.innerHTML += '<div style="text-align: left"><span>' + btn + '</span></div>';
-                } else if (r.dropdown) {
-                  let dd = '<select>';
-                  r.dropdown.opts.forEach(o => {
-                    dd += '<option>' + o.text + '</option>';
-                  });
-                  dd += '</select>'
-                  container.innerHTML += '<div style="text-align: left"><span>' + dd + '</span></div>';
-                } else if (r.media) {
-                  let img = '<img src="' + r.media + '"/>';
-                  container.innerHTML += '<div style="text-align: left"><span>' + img + '</span></div>';
-                } else if (r.link) {
-                  let link = '<a href="' + r.link + '">Link</a>';
-                  container.innerHTML += '<div style="text-align: left"><span>' + link + '</span></div>';
-                }
-              });
+              showResponse(data);
               console.log(data);
             } else {
               console.log("Erreur " + req.status);
@@ -157,7 +201,7 @@
         req.send(JSON.stringify({ from: 'toto', types, event }));
       }
 
-      function sendEventDD (elem, next) {
+      function sendEventDD (elem) {
         const url = '/test/ajax/event';
         var req = new XMLHttpRequest();
         req.open("POST", url);
@@ -168,30 +212,7 @@
         req.onload = function() {
             if (req.status === 200) {
               var data = JSON.parse(req.responseText)
-              data.responses.forEach(r => {
-                if (r.text) {
-                  container.innerHTML += '<div style="text-align: left"><span>' + data.responses[0].text + '</span></div>';
-                } else if (r.btn) {
-                  let btn = '';
-                  r.btn.btns.forEach(b => {
-                    btn += '<button>' + b.text + '</button>';
-                  });
-                  container.innerHTML += '<div style="text-align: left"><span>' + btn + '</span></div>';
-                } else if (r.dropdown) {
-                  let dd = '<select>';
-                  r.dropdown.opts.forEach(o => {
-                    dd += '<option>' + o.text + '</option>';
-                  });
-                  dd += '</select>'
-                  container.innerHTML += '<div style="text-align: left"><span>' + dd + '</span></div>';
-                } else if (r.media) {
-                  let img = '<img src="' + r.media + '"/>';
-                  container.innerHTML += '<div style="text-align: left"><span>' + img + '</span></div>';
-                } else if (r.link) {
-                  let link = '<a href="' + r.link + '">Link</a>';
-                  container.innerHTML += '<div style="text-align: left"><span>' + link + '</span></div>';
-                }
-              });
+              showResponse(data);
               console.log(data);
             } else {
               console.log("Erreur " + req.status);
@@ -203,7 +224,7 @@
             types.push(e.getAttribute('types'));
           }
         });
-        ac = elem.value + '|' + next;
+        ac = elem.value;
         let event = [
           {
             action: ac

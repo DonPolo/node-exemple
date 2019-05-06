@@ -15,13 +15,11 @@ save = () => {
     cansave = true;
     if (req.status === 200) {
       document.getElementById('savebut').classList.remove('disabled');
-      console.log(req.responseText);
       console.log("Saved !");
     } else {
       console.log("Erreur " + req.status);
     }
   };
-  console.log(source.getValue().replace(/\t/g, "  "));
   req.send(JSON.stringify({code: source.getValue().replace(/\t/g, "  "), file: filename, cat: cat, oldcode: file}));
 }
 
@@ -31,7 +29,6 @@ addparameter = (param) => {
 
 addentity = (entity) => {
   source.replaceSelection('{{  | ' + entity + ' }}');
-  console.log(source.getCursor());
   let pos = source.getCursor();
   pos.ch -= (6 + entity.length);
   source.setCursor(pos);
@@ -43,43 +40,33 @@ capitalize = (s) => {
 }
 
 getFiles = () => {
+  let container = document.getElementById("filecontainer");
+
   var req = new XMLHttpRequest();
   req.open("POST", "/webapp/getfiles");
   req.setRequestHeader("Content-Type", "application/json");
   req.onerror = function() {
+    container.getElementsByTagName('div')[0].innerHTML = '<strong>Erreur de chargement</strong>';
     console.log("Échec de chargement ");
   };
   req.onload = function() {
     if (req.status === 200) {
       let types = JSON.parse(req.responseText);
-      let container = document.getElementById("filecontainer");
-      types.forEach(type => {
-        let cat = document.createElement('span');
-        cat.setAttribute('s-cat', type.name);
-        cat.innerHTML += '<h2>' + capitalize(type.name) + '</h2>';
-
-        container.appendChild(cat);
-        if (type.response.length > 0) {
-          let c = document.createElement('span');
-          c.setAttribute('s-type', 'responses');
-          c.innerHTML += "<h3>Responses</h3>";
-          type.response.forEach(file => {
-            c.innerHTML += '<a href="/webapp/' + type.name + '/response/' + file + '" s-val="' + file + '">' + capitalize(file) + '</a>';
-          });
-          cat.appendChild(c);
-        }
-        if (type.training.length > 0) {
-          c = document.createElement('span');
-          c.setAttribute('s-type', 'training');
-          c.innerHTML += "<h3>Training</h3>";
-          type.training.forEach(file => {
-            c.innerHTML += '<a href="/webapp/' + type.name + '/training/' + file + '" s-val="' + file + '">' + capitalize(file) + '</a>';
-          })
-          cat.appendChild(c);
-        }
+      container.innerHTML = "<h2>Training</h2>";
+      types.training.forEach(files => {
+        files.files.forEach(f => {
+          container.innerHTML += '<a href="/webapp/' + files.type + '/training/' + f + '" s-val="' + files.type + '.' + f + '">' + capitalize(files.type) + '.' + capitalize(f) + '</a>';
+        });
+      });
+      container.innerHTML += "<h2>Responses</h2>";
+      types.response.forEach(files => {
+        files.files.forEach(f => {
+          container.innerHTML += '<a href="/webapp/' + files.type + '/response/' + f + '" s-val="' + files.type + '.' + f + '">' + capitalize(files.type) + '.' + capitalize(f) + '</a>';
+        });
       });
     } else {
       console.log("Erreur " + req.status);
+      container.getElementsByTagName('div')[0].innerHTML = '<strong>Erreur de chargement</strong>';
     }
   };
   req.send(JSON.stringify({token: 'MmFJYmkWa1Qfg730c5gORJaEOTsBmXfw'}));
@@ -87,22 +74,25 @@ getFiles = () => {
 }
 
 getEntities = () => {
+  let container = document.getElementById("paramcontainer");
   var req = new XMLHttpRequest();
   req.open("POST", "/webapp/getentities");
   req.setRequestHeader("Content-Type", "application/json");
   req.onerror = function() {
     console.log("Échec de chargement ");
+    container.getElementsByTagName('div')[0].innerHTML = '<strong>Erreur de chargement</strong>';
   };
   req.onload = function() {
     if (req.status === 200) {
       let entities = JSON.parse(req.responseText);
-      let container = document.getElementById("paramcontainer");
       params = entities;
+      container.innerHTML = '<h2>Entities</h2>';
       entities.forEach(entity => {
         container.innerHTML += "<strong onclick=\"addentity('" + entity + "')\" s-val='" + entity + "'>" + entity + "</strong>";
       });
     } else {
       console.log("Erreur " + req.status);
+      container.getElementsByTagName('div')[0].innerHTML = '<strong>Erreur de chargement</strong>';
     }
   };
   req.send(JSON.stringify({token: 'MmFJYmkWa1Qfg730c5gORJaEOTsBmXfw'}));

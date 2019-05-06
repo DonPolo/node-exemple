@@ -87,7 +87,7 @@ async function save(response: any) {
  */
 async function load(intent: string): Promise<Response> {
   let response = await findone({ intent });
-  if (response.clone) {
+  if (response && response.clone) {
     response = await load(response.clone);
   }
   if (!response) {

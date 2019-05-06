@@ -5,7 +5,7 @@ import sap from './services/sap.util';
 
 import fulfill from './fulfill.util';
 import ContextsManager from './contextsmanager.util';
-import ecl, { Concierge, Site } from '../models/ecl';
+import ecl, { Site } from '../models/ecl';
 import {
   Contexts,
   Request,
@@ -13,7 +13,6 @@ import {
   FulfillResult,
   FulfillRequest,
   ParsedResponse,
-  ConciergeContexts,
 } from './types.util';
 
 /**
@@ -22,10 +21,7 @@ import {
  * @param platform Platform which received the message (slack, tel) : string
  * @returns An object which contains the informations relative to the user site : SiteContexts
  */
-async function getSiteContexts(
-  to: string,
-  platform: string,
-): Promise<{ concierges: ConciergeContexts; site: Site | null }> {
+async function getSiteContexts(to: string, platform: string): Promise<Site> {
   let service = 'twilio';
   if (platform === 'slack') {
     service = 'slack';
@@ -36,14 +32,13 @@ async function getSiteContexts(
   if (!site) throw Error(`Unknown Site for service ${service} with id ${to}`);
 
   const concierges = await Ecl.getConciergeList(site.code);
-  return {
-    site,
-    concierges: {
-      concierges,
-      conciergeGivenName: ecl.getPrenomConcierge(concierges),
-      nb: concierges.length,
-    },
+  site.concierges = {
+    concierges,
+    prenomsconcierges: ecl.getPrenomConcierge(concierges),
+    nb: concierges.length,
+    genre: 'fem',
   };
+  return site;
 }
 
 /**
@@ -63,13 +58,8 @@ export default async function(
 
   /* Get contexts */
   const contexts: Contexts = await ContextsManager.load(request.from);
-  const a: {
-    concierges: ConciergeContexts;
-    site: Site | null;
-  } = await getSiteContexts(request.to, request.platform);
-  contexts.site = a.site;
-  contexts.concierges = a.concierges;
-
+  const a = await getSiteContexts(request.to, request.platform);
+  contexts.site = a;
   if (request.service) {
     /* Get service (NLP) Result */
     const serviceRequest: ServiceRequest = {
@@ -101,6 +91,7 @@ export default async function(
   } else if (request.result) {
     request.result.contexts = contexts;
   }
+  console.log(request.result);
   /* Change language */
   let lang = 'fr-tu';
   if (request.to === '+33755536910') {

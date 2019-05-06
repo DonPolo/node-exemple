@@ -1,11 +1,12 @@
 // @flow
 
-import { Sequelize, DataTypes } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import moment from 'moment';
 import uuid from 'uuid';
 
 import config from '../config';
 import t from '../utils/translate.util';
+import format from '../utils/format.util';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -35,16 +36,22 @@ export interface Site {
   telephone: string;
   botNumber: string;
   horaires: string;
+  horairesplus: any;
   infos: string;
   guideServices: string;
   relaisColis: string;
+  concierges?: {
+    concierges: Concierge[];
+    prenomsconcierges: string;
+    nb: number;
+    genre: string;
+  };
 }
 
 export interface SiteGroup {
   id: string;
   nom: string;
 }
-
 
 export interface Concierge {
   prenom: string;
@@ -103,7 +110,7 @@ export default class Ecl {
     // Cas de la console. On fait un remplacement de valeur pour aller chercher un code site
     if (service === 'console') serviceColumn = 'corresp_04';
     else serviceColumn = service;
-    const sites: Site[] = await this.ecl.query(
+    const sites: any[] = await this.ecl.query(
       'SELECT `id_re_03` AS `id` , `corresp_04` AS `code` , `cl_lb_01` AS `libelle` , `cl_re_01_u` AS `email`, `site_telephone` AS `telephone`, `site_horaires` AS `horaires`, `botInfo` AS `infos`, `botNumber` FROM `client` ' +
         `WHERE ${serviceColumn} = :serviceId LIMIT 1`,
       {
@@ -111,12 +118,21 @@ export default class Ecl {
         replacements: { serviceId },
       },
     );
-    if (sites && sites.length)
-      return {
-        ...sites[0],
-        guideServices: `http://ecl.easy-life.fr/gds/${sites[0].code}.pdf`,
-        relaisColis: `http://ecl.easy-life.fr/gds/${sites[0].code}_RC.pdf`,
-      };
+    if (sites && sites.length) {
+      const site = sites[0];
+      site.guideServices = `http://ecl.easy-life.fr/gds/${sites[0].code}.pdf`;
+      site.relaisColis = `http://ecl.easy-life.fr/gds/${sites[0].code}_RC.pdf`;
+      const horairesplus = await this.ecl.query(
+        'SELECT `JSEM` AS `jour`, `Hdeb` AS `start`, `Hfin` AS `end` FROM horaires_conciergerie WHERE `CodeSite`= :codesite',
+        {
+          type: Sequelize.QueryTypes.SELECT,
+          replacements: { codesite: sites[0].id },
+        },
+      );
+      site.horaires = format.horaires.formatHoraires(horairesplus);
+      site.horairesplus = horairesplus;
+      return site;
+    }
     return Promise.resolve(null);
   }
 

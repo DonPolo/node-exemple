@@ -6,15 +6,22 @@
 {% endblock %}
 
 {% block body %}
-  <div class="search" id="search" search="simple">
+  <div class="search" id="search" search="simple" s-con="container">
     <input type="text" placeholder="Search..."/>
   </div>
-  <main>
+  <main id="container">
+    <h2>Train : </h2>
+    {% for file in files.training %}
+      {% for f in file.files %}
+        <a class="b" href="/webapp/{{ file.type }}/training/{{ f }}" s-val="{{ file.type }}.{{ f }}">{{ file.type | capitalize }}.{{ f | capitalize }}</a>
+      {% endfor %}
+    {% endfor %}
 
-    {% for type in types %}
-      <a href="/webapp/{{ type }}" s-val="{{ type }}">{{ type | capitalize }}</a>
-    {% else %}
-      No types found
+    <h2>Response : </h2>
+    {% for file in files.response %}
+      {% for f in file.files %}
+        <a class="b" href="/webapp/{{ file.type }}/response/{{ f }}" s-val="{{ file.type }}.{{ f }}">{{ file.type | capitalize }}.{{ f | capitalize }}</a>
+      {% endfor %}
     {% endfor %}
   </main>
 {% endblock %}

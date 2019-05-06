@@ -12,7 +12,11 @@ function simplesearch (search) {
         if (elemval.startsWith(val)) {
           e.style.display = null;
         } else {
-          e.style.display = 'none';
+          if (elemval.includes('.') && elemval.split('.')[1].startsWith(val)) {
+            e.style.display = null;
+          } else {
+            e.style.display = 'none';
+          }
         }
       }
     });

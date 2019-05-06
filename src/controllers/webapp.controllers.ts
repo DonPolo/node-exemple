@@ -24,24 +24,27 @@ async function home(
       types.push(t);
     }
   });
-  res.render('home.twig', { types });
-}
-
-/**
- * Show the different responses and trainings for one type
- * @param req
- * @param res
- * @param next
- */
-async function type(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const typeparam = req.params.type;
-  const responsefiles = await responsemanager.loadtype(typeparam);
-  const trainfiles = await trainingmanager.loadtype(typeparam);
-  res.render('type.twig', { responsefiles, trainfiles, type: typeparam });
+  const result: {
+    response: any[];
+    training: any[];
+  } = {
+    response: [],
+    training: [],
+  };
+  await types.reduce(async (previous: any, e: any) => {
+    await previous;
+    const responsefiles = await responsemanager.loadtype(e);
+    const trainfiles = await trainingmanager.loadtype(e);
+    result.response.push({
+      files: responsefiles,
+      type: e,
+    });
+    result.training.push({
+      files: trainfiles,
+      type: e,
+    });
+  }, Promise.resolve());
+  res.render('home.twig', { files: result });
 }
 
 /**
@@ -78,7 +81,9 @@ async function file(
       'site.infos',
       'site.guideServices',
       'site.relaisColis',
-      'concierges.conciergeGivenName',
+      'site.concierges.prenomsconcierges',
+      'site.concierges.nb',
+      'site.concierges.genre',
     ];
   } else if (catparam === 'training') {
     fileres = await trainingmanager.loadfile(`${typeparam}-${nameparam}`);
@@ -135,7 +140,6 @@ async function save(
       );
     }
   } catch (e) {
-    console.log(e);
     error = e;
   }
 
@@ -156,7 +160,6 @@ async function getfiles(
 ) {
   try {
     if (req.body.token === 'MmFJYmkWa1Qfg730c5gORJaEOTsBmXfw') {
-      const realtypes: any[] = [];
       const restypes = await responsemanager.gettypes();
       const traintypes = await trainingmanager.getTypes();
       const types = restypes;
@@ -165,19 +168,28 @@ async function getfiles(
           types.push(t);
         }
       });
-      const entities = await trainingmanager.getEntities();
+      const result: {
+        response: any[];
+        training: any[];
+      } = {
+        response: [],
+        training: [],
+      };
       await types.reduce(async (previous: any, e: any) => {
         await previous;
         const responsefiles = await responsemanager.loadtype(e);
         const trainfiles = await trainingmanager.loadtype(e);
-        realtypes.push({
-          response: responsefiles,
-          training: trainfiles,
-          name: e,
+        result.response.push({
+          files: responsefiles,
+          type: e,
+        });
+        result.training.push({
+          files: trainfiles,
+          type: e,
         });
       }, Promise.resolve());
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(realtypes));
+      res.end(JSON.stringify(result));
       return;
     }
   } catch (e) {
@@ -206,7 +218,6 @@ async function getentities(
 
 export default {
   home,
-  type,
   file,
   save,
   getfiles,

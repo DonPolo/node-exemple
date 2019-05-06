@@ -7,7 +7,7 @@ import { sendMessage } from '../message.util';
 const ecl = new Ecl();
 
 async function registration(c: Contexts, siteGroup: SiteGroup | null) {
-  if (!c.site || !c.fulfill || !siteGroup || !c.user || !c.concierges)
+  if (!c.site || !c.fulfill || !siteGroup || !c.user || !c.site.concierges)
     return null;
   try {
     // Store registration request in database
@@ -49,7 +49,7 @@ async function registration(c: Contexts, siteGroup: SiteGroup | null) {
     return true;
   } catch (err) {
     // Send registration request by mail to concierge
-    const nomConcierge = Ecl.getPrenomConcierge(c.concierges.concierges, false);
+    const nomConcierge = c.site.concierges.prenomsconcierges;
     await sendMessage(
       {
         from: config.MAIL.sender,

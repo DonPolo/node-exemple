@@ -30,6 +30,7 @@ const defaultConfig = {
     services: process.env.INTENT_SERVICES || '',
     relaiscolis: process.env.INTENT_RELAISCOLIS || '',
     fallback: process.env.INTENT_FALLBACK || '',
+    infos: process.env.INTENT_INFOS || '',
   },
   CONTEXTS: {
     FULFILL: {

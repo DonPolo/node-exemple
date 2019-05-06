@@ -1,4 +1,4 @@
-import { Concierge, Site } from '../models/ecl';
+import { Site } from '../models/ecl';
 
 /* Request sent by a media */
 export interface Request {
@@ -17,7 +17,6 @@ export interface Contexts {
   service: any;
   site: Site | null;
   user: UserContexts | null;
-  concierges: ConciergeContexts | null;
 }
 export interface UserContexts {
   lastname: string;
@@ -25,12 +24,6 @@ export interface UserContexts {
   email: string;
   siteGroup: number | null;
   userId: string;
-}
-
-export interface ConciergeContexts {
-  concierges: Concierge[] | null;
-  conciergeGivenName: string;
-  nb: number;
 }
 
 /* Result from the service (Dialogflow, Luis, Watson) */
@@ -82,6 +75,7 @@ export interface IntentResult {
 export interface Response {
   intent: string;
   type: string;
+  displayname: string;
   // tslint:disable-next-line: prefer-array-literal
   responses: Array<
     | UnparsedResponseDesc
@@ -125,49 +119,61 @@ export interface UnparsedResponseText {
   text: UnparsedText;
 }
 export interface UnparsedResponseMedia {
-  media: string;
+  media: {
+    value: string;
+    alt?: UnparsedResponseText;
+  };
 }
 export interface UnparsedResponseLink {
-  link: string;
+  link: {
+    value: string;
+    alt?: UnparsedResponseText;
+  };
 }
 export interface UnparsedResponseBtn {
   btn: {
-    nextaction: string;
     // tslint:disable-next-line: prefer-array-literal
     'fr-tu': Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
     // tslint:disable-next-line: prefer-array-literal
     'fr-vous': Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
     // tslint:disable-next-line: prefer-array-literal
     fr?: Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
+    alt?: UnparsedResponseText;
   };
 }
 export interface UnparsedResponseDropdown {
   dropdown: {
-    nextaction: string;
     // tslint:disable-next-line: prefer-array-literal
     'fr-tu'?: Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
     // tslint:disable-next-line: prefer-array-literal
     'fr-vous'?: Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
     // tslint:disable-next-line: prefer-array-literal
     fr?: Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
+    alt?: UnparsedResponseText;
   };
 }
 
@@ -220,21 +226,21 @@ export interface ParsedResponseLink {
 }
 export interface ParsedResponseBtn {
   btn: {
-    nextaction: string;
     // tslint:disable-next-line: prefer-array-literal
     btns: Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
   };
 }
 export interface ParsedResponseDropdown {
   dropdown: {
-    nextaction: string;
     // tslint:disable-next-line: prefer-array-literal
     opts: Array<{
       text: string;
       value: string;
+      followupintent: string;
     }>;
   };
 }

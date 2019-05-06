@@ -8,6 +8,10 @@ main {
 main > a {
   margin: 20px 10px;
 }
+main > a.b {
+  font-size: 18px;
+  width: 250px;
+}
 main h2 {
   width: 100%;
 }

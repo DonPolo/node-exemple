@@ -88,7 +88,6 @@ export async function events(
         site: null,
         service: null,
         user: null,
-        concierges: null,
       },
     };
     const request: Request = {
@@ -175,7 +174,7 @@ async function sendSlackResponse(res: ParsedResponse, channel: string) {
             type: 'plain_text',
             text: b.text,
           },
-          value: `${b.value}|${response.btn.nextaction}`,
+          value: `${b.value}|${b.followupintent}`,
         });
       });
       blocks.push({
@@ -191,7 +190,7 @@ async function sendSlackResponse(res: ParsedResponse, channel: string) {
             text: e.text,
             emoji: true,
           },
-          value: `${e.value}|${response.dropdown.nextaction}`,
+          value: `${e.value}|${e.followupintent}`,
         });
       });
       blocks.push({

@@ -33,11 +33,13 @@
 
 {% block body %}
   <nav>
-    <div class="search" id="search" search='complex' s-con='filecontainer'>
+    <div class="search" id="search" search='simple' s-con='filecontainer'>
       <input type="text" placeholder="Search..."/>
     </div>
     <div class="container" id="filecontainer">
-
+      <div class="loader">
+        <img src='/PIC/load.gif' />
+      </div>
     </div>
     <div class="but">
       <a onclick="save()" id="savebut">
@@ -52,7 +54,7 @@
       <i class="fas fa-info"></i>
     </span>
     <span class="back-but">
-      <a href="/webapp/{{ type }}" class="fas fa-chevron-left"></a>
+      <a href="/webapp" class="fas fa-chevron-left"></a>
     </span>
   </main>
   <div class="console" id="console"></div>
@@ -61,8 +63,13 @@
       <input type="text" placeholder="Search..."/>
     </div>
     <div class="paramcontainer" id="paramcontainer">
+      <h2>Parameters</h2>
       {% for param in params %}
         <strong onclick="addparameter('{{ param }}')" s-val='{{ param }}'>{{ param }}</strong>
+      {% else %}
+      <div class="loader">
+        <img src='/PIC/load.gif' />
+      </div>
       {% endfor %}
     </div>
   </div>

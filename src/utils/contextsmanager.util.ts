@@ -133,7 +133,6 @@ async function load(user: string): Promise<Contexts> {
       watson: null,
     },
     site: null,
-    concierges: null,
   };
 }
 

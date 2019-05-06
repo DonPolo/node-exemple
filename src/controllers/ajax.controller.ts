@@ -7,6 +7,7 @@ import {
   ResultEntity,
   ServiceResult,
 } from '../utils/types.util';
+import logger from '../config/logger';
 
 export default async function(
   req: express.Request,
@@ -31,6 +32,7 @@ export default async function(
       return res.end(JSON.stringify(response));
     }
   } catch (ex) {
+    console.log(ex);
     res.writeHead(500);
     return res.end('Error');
   }
@@ -69,7 +71,6 @@ export async function ajaxevent(
           site: null,
           service: null,
           user: null,
-          concierges: null,
         },
       };
       const request: Request = {
