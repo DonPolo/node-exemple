@@ -1,5 +1,6 @@
 import * as nodemailer from 'nodemailer';
 import config from '../config/';
+import logger from '../config/logger';
 
 const transporter = nodemailer.createTransport({
   host: config.MAIL.host,
@@ -42,6 +43,7 @@ export const sendMessage = async (
       const result = await transporter.sendMail(mailOptions);
     }
   } catch (e) {
+    logger.error(e);
     if (throwError) throw e;
   }
 };

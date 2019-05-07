@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Log In</title>
+    <link rel="stylesheet" href="/CSS/header.css"/>
+    <link rel="stylesheet" href="/CSS/login.css"/>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="/PIC/lifee.png" />
+  </head>
+
+  <body>
+    <main>
+      <form method="post">
+        <h2>Log In</h2>
+        {% if error %}
+        <span>{{ error }}</span>
+        {% endif %}
+        <label for="pseudo" class="label">Pseudo
+          <input type="text" name="pseudo" id="pseudo" class="input"/>
+        </label>
+        <label for="pwd" class="label">Password
+          <input type="password" name="pwd" id="pwd" class="input"/>
+        </label>
+        <button type="submit" class="btn">Continue</button>
+      </form>
+    </main>
+  </body>
+</html>

@@ -4,6 +4,7 @@ import config from './config';
 import chalk from 'chalk';
 import logger from './config/logger';
 import middlewaresConfig from './config/middlewares';
+import './config/templateloader';
 
 import './models/ecl';
 const app = express();

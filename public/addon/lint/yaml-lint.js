@@ -471,6 +471,7 @@ function lintResponse (text, found, json) {
         },
       },
       btn: {
+        '?foreach': 'string',
         '?fr-tu': [
           {
             'text': 'string',
@@ -580,6 +581,7 @@ function lintResponse (text, found, json) {
         },
       },
       dropdown: {
+        '?foreach': 'string',
         '?fr-tu': [
           {
             'text': 'string',
@@ -799,7 +801,7 @@ function lintResponse (text, found, json) {
       }
       if (a instanceof Array) {
         if (a.length === 0){
-          if (l.split(":").length > 1) {
+          if (l.split(":").length > 1 && l.split(':')[1].length !== 0) {
             addWarning("Property of '" + attrs.actualpos[pos-1].name + "' must be an array", {ch: 0, line: i}, {ch: l.length, line: i});
           }
           attrs.actualpos[pos-1].found.push(name);

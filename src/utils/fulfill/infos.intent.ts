@@ -3,7 +3,7 @@ import { IntentRequest, IntentResult, ResultEntity } from '../types.util';
 import format from '../format.util';
 import { isEmpty } from '../func.util';
 
-async function opentime(request: IntentRequest) {
+async function opentime(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.schedule');
   if (request.contexts.site) {
     const precision = request.entities.filter(ex => ex.name === 'datetime');
@@ -32,7 +32,6 @@ async function opentime(request: IntentRequest) {
             request.contexts.site.horairesplus,
             day,
           );
-          console.log(daysinfos);
           if (daysinfos && !isEmpty(daysinfos)) {
             // It's open
             if (close) {
@@ -70,7 +69,7 @@ async function opentime(request: IntentRequest) {
   return res;
 }
 
-async function contact(request: IntentRequest) {
+async function contact(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.contactnotfound');
   if (request.contexts.site) {
     txt = await responsemanager.load('infos.contact');
@@ -83,7 +82,7 @@ async function contact(request: IntentRequest) {
   return res;
 }
 
-async function services(request: IntentRequest) {
+async function services(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.servicesnotfound');
   if (request.contexts.site) {
     txt = await responsemanager.load('infos.services');
@@ -96,7 +95,7 @@ async function services(request: IntentRequest) {
   return res;
 }
 
-async function relaiscolis(request: IntentRequest) {
+async function relaiscolis(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.relaiscolisnotfound');
   if (request.contexts.site) {
     txt = await responsemanager.load('infos.relaiscolis');
@@ -109,7 +108,7 @@ async function relaiscolis(request: IntentRequest) {
   return res;
 }
 
-async function infos(request: IntentRequest) {
+async function infos(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.infosnotfound');
   if (request.contexts.site) {
     txt = await responsemanager.load('infos.infos');

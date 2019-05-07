@@ -9,6 +9,7 @@ import twilio from 'twilio';
 const { MessagingResponse } = twilio.twiml;
 // Nexmo
 import Nexmo from 'nexmo';
+import logger from '../config/logger';
 
 async function process(
   msg: string,
@@ -59,6 +60,7 @@ async function twiliowebhook(
       ),
     );
   } catch (err) {
+    logger.error(err);
     err.status = HTTPStatus.INTERNAL_SERVER_ERROR;
     return next(err);
   }
@@ -96,6 +98,7 @@ async function nexmowebhook(
       ),
     );
   } catch (err) {
+    logger.error(err);
     err.status = HTTPStatus.INTERNAL_SERVER_ERROR;
     return next(err);
   }

@@ -14,7 +14,15 @@ routes.post('/save', urlencodedParser, WebappControllers.save);
 routes.post('/getfiles', urlencodedParser, WebappControllers.getfiles);
 // Ajax call
 routes.post('/getentities', urlencodedParser, WebappControllers.getentities);
+// Ajax call
+routes.post('/sendmessage', urlencodedParser, WebappControllers.sendmessage);
+// Ajax call
+routes.post('/sendevent', urlencodedParser, WebappControllers.sendevent);
 
+routes.all('/login', WebappControllers.login);
+routes.get('/disconnect', WebappControllers.disconnect);
+routes.get('/chat', WebappControllers.chat);
+routes.all('/addresponse', WebappControllers.addresponse);
 routes.all('/:type/:cat/:name', WebappControllers.file);
 
 export default routes;

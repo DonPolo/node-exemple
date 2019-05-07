@@ -20,7 +20,7 @@ module.exports = {
     devtoolModuleFilenameTemplate: '[absolute-resource-path]'
   },
   resolve : {
-    extensions : ['.ts', '.js', '.json']
+    extensions : ['.ts', '.js', '.json', '.twig']
   },
   module: {
     rules: [
@@ -28,7 +28,15 @@ module.exports = {
         test: /\.ts$/,
         exclude: /node_modules/,
         use: 'ts-loader'
+      },
+      {
+        test: /\.twig$/,
+        loader: "twig-loader",
+        options: {},
       }
     ]
-  }
+  },
+  node: {
+    fs: "empty",
+  },
 };

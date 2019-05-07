@@ -15,8 +15,9 @@ export interface Request {
 export interface Contexts {
   fulfill: string[];
   service: any;
-  site: Site | null;
-  user: UserContexts | null;
+  site: Site;
+  user: UserContexts;
+  other: any;
 }
 export interface UserContexts {
   lastname: string;
@@ -24,6 +25,50 @@ export interface UserContexts {
   email: string;
   siteGroup: number | null;
   userId: string;
+  registered: boolean;
+  type: string;
+  request: {
+    type: string;
+    numLocker: number | undefined;
+    text: string;
+    ref: string;
+  } | null;
+}
+
+export function getEmptyUserContexts(): UserContexts {
+  return {
+    lastname: '',
+    firstname: '',
+    email: '',
+    siteGroup: null,
+    userId: '',
+    registered: false,
+    type: '',
+    request: null,
+  };
+}
+
+export function getEmptySiteContexts(): Site {
+  return {
+    id: '',
+    code: '',
+    libelle: '',
+    email: '',
+    telephone: '',
+    botNumber: '',
+    horaires: '',
+    horairesplus: null,
+    infos: '',
+    guideServices: '',
+    relaisColis: '',
+    concierges: {
+      concierges: [],
+      prenomsconcierges: '',
+      nb: 0,
+      genre: '',
+    },
+    groups: [],
+  };
 }
 
 /* Result from the service (Dialogflow, Luis, Watson) */
@@ -132,14 +177,15 @@ export interface UnparsedResponseLink {
 }
 export interface UnparsedResponseBtn {
   btn: {
+    foreach?: string;
     // tslint:disable-next-line: prefer-array-literal
-    'fr-tu': Array<{
+    'fr-tu'?: Array<{
       text: string;
       value: string;
       followupintent: string;
     }>;
     // tslint:disable-next-line: prefer-array-literal
-    'fr-vous': Array<{
+    'fr-vous'?: Array<{
       text: string;
       value: string;
       followupintent: string;
@@ -155,6 +201,7 @@ export interface UnparsedResponseBtn {
 }
 export interface UnparsedResponseDropdown {
   dropdown: {
+    foreach?: string;
     // tslint:disable-next-line: prefer-array-literal
     'fr-tu'?: Array<{
       text: string;

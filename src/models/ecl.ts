@@ -40,12 +40,13 @@ export interface Site {
   infos: string;
   guideServices: string;
   relaisColis: string;
-  concierges?: {
+  concierges: {
     concierges: Concierge[];
     prenomsconcierges: string;
     nb: number;
     genre: string;
   };
+  groups: SiteGroup[];
 }
 
 export interface SiteGroup {
@@ -67,7 +68,7 @@ export interface User {
   telephone: string;
 }
 
-type RequestType = 'SMS' | 'casier';
+export type RequestType = 'SMS' | 'casier';
 
 interface Request {
   text: string;

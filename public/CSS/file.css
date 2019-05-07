@@ -1,3 +1,4 @@
+@charset "UTF-8";
 body {
   margin: 0;
   padding: 0;
@@ -34,10 +35,30 @@ a {
   display: flex;
   width: 200px;
   height: 40px;
-  background: #d1f5f9;
+  background: #F9D5D1;
   align-items: center;
   justify-content: center;
   font-size: 20px;
+  border: none;
+}
+
+.label {
+  display: block;
+  font-size: 22px;
+  width: 80%;
+  margin: 10px auto;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  background: none;
+  border: none;
+  border-bottom: solid 2px black;
+  height: 30px;
+  font-size: 20px;
+  font-family: "Arial";
 }
 
 main {
@@ -233,8 +254,68 @@ nav .but a.disabled img {
   right: 25px;
   bottom: 25px;
   background: #d1f5f9;
-  padding: 30px;
+  box-shadow: 0 0 5px 0 black;
   overflow: auto;
+}
+.infos > span > div h2 {
+  height: 100px;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.infos > span > div > div {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.infos > span > div > div .accordion {
+  background: none;
+  color: black;
+  cursor: pointer;
+  font-family: "Arial";
+  padding: 18px;
+  width: 100%;
+  font-size: 20px;
+  text-align: left;
+  border: none;
+  outline: none;
+  transition: 0.4s;
+  border-bottom: solid 1px black;
+}
+.infos > span > div > div .accordion:first-child {
+  border-top: solid 1px black;
+}
+.infos > span > div > div .active, .infos > span > div > div .accordion:hover {
+  background: #F9D5D1;
+}
+.infos > span > div > div .panel {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+.infos > span > div > div .panel pre {
+  border: solid 1px black;
+  border-radius: 5px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+}
+.infos > span > div > div .accordion:after {
+  content: "➕";
+  font-size: 13px;
+  color: black;
+  float: right;
+  margin-left: 5px;
+}
+.infos > span > div > div .active:after {
+  content: "➖";
 }
 
 /*# sourceMappingURL=file.css.map */

@@ -8,6 +8,8 @@ import {
   ResultEntity,
   ParsedResponse,
   ServiceResult,
+  getEmptySiteContexts,
+  getEmptyUserContexts,
 } from '../utils/types.util';
 import config from '../config';
 
@@ -85,9 +87,10 @@ export async function events(
       query: '',
       contexts: {
         fulfill: [],
-        site: null,
+        site: getEmptySiteContexts(),
         service: null,
-        user: null,
+        user: getEmptyUserContexts(),
+        other: null,
       },
     };
     const request: Request = {

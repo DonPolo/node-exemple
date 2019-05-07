@@ -2,6 +2,7 @@ import { Wit } from 'node-wit';
 
 import { ServiceResult, ServiceRequest } from '../types.util';
 import config from '../../config';
+import logger from '../../config/logger';
 
 export default async function(request: ServiceRequest) {
   const result: ServiceResult = {
@@ -35,6 +36,7 @@ export default async function(request: ServiceRequest) {
     }
     return result;
   } catch (e) {
+    logger.error(e);
     return result;
   }
 }

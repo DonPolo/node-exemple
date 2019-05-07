@@ -1,6 +1,7 @@
 import watson from 'watson-developer-cloud/assistant/v2';
 import config from '../../config';
 import { ServiceRequest, ServiceResult } from '../types.util';
+import logger from '../../config/logger';
 
 const createSession: any = async (assistant: any, obj: any) => {
   // tslint:disable-next-line: no-unused-expression
@@ -79,6 +80,7 @@ export default async function(request: ServiceRequest) {
     });
     return result;
   } catch (err) {
+    logger.error(err);
     return result;
   }
 }

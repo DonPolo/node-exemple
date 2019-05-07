@@ -28,7 +28,7 @@ async function getSiteContexts(to: string, platform: string): Promise<Site> {
   }
   if (!to) throw Error(`Unknown to for service ${service}`);
   const Ecl = new ecl();
-  const site = await Ecl.getSiteInfos(service, to);
+  const site: Site = await Ecl.getSiteInfos(service, to);
   if (!site) throw Error(`Unknown Site for service ${service} with id ${to}`);
 
   const concierges = await Ecl.getConciergeList(site.code);
@@ -38,6 +38,8 @@ async function getSiteContexts(to: string, platform: string): Promise<Site> {
     nb: concierges.length,
     genre: 'fem',
   };
+  const groups = await Ecl.getSiteGroups(site.id);
+  site.groups = groups;
   return site;
 }
 
@@ -60,6 +62,7 @@ export default async function(
   const contexts: Contexts = await ContextsManager.load(request.from);
   const a = await getSiteContexts(request.to, request.platform);
   contexts.site = a;
+  contexts.user.type = request.platform === 'slack' ? 'userId' : 'mobile';
   if (request.service) {
     /* Get service (NLP) Result */
     const serviceRequest: ServiceRequest = {
@@ -91,7 +94,6 @@ export default async function(
   } else if (request.result) {
     request.result.contexts = contexts;
   }
-  console.log(request.result);
   /* Change language */
   let lang = 'fr-tu';
   if (request.to === '+33755536910') {

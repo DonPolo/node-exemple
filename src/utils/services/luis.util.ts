@@ -2,6 +2,7 @@ import querystring from 'querystring';
 import config from '../../config';
 import { ServiceRequest, ServiceResult } from '../types.util';
 import { execrequest } from '../async.util';
+import logger from '../../config/logger';
 
 export default async function(request: ServiceRequest) {
   const result: ServiceResult = {
@@ -39,6 +40,7 @@ export default async function(request: ServiceRequest) {
     });
     return result;
   } catch (err) {
+    logger.error(err);
     return result;
   }
 }

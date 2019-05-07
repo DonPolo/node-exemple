@@ -36,7 +36,7 @@ addentity = (entity) => {
 }
 
 capitalize = (s) => {
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 getFiles = () => {
@@ -52,6 +52,7 @@ getFiles = () => {
   req.onload = function() {
     if (req.status === 200) {
       let types = JSON.parse(req.responseText);
+      console.log(types);
       container.innerHTML = "<h2>Training</h2>";
       types.training.forEach(files => {
         files.files.forEach(f => {
@@ -127,6 +128,20 @@ window.addEventListener("load", () => {
       }
     }
   });
+  var acc = document.getElementsByClassName("accordion");
+  var i;
+
+  for (i = 0; i < acc.length; i++) {
+    acc[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      var panel = this.nextElementSibling;
+      if (panel.style.maxHeight){
+        panel.style.maxHeight = null;
+      } else {
+        panel.style.maxHeight = panel.scrollHeight + "px";
+      }
+    });
+  }
 });
 
 openinfos = () => {

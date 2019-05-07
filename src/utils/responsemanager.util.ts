@@ -142,10 +142,15 @@ async function loadfile(intent: string): Promise<any> {
   return response;
 }
 
+async function addResponse(obj: any) {
+  await insert(obj);
+}
+
 export default {
   save,
   load,
   loadtype,
   gettypes,
   loadfile,
+  addResponse,
 };

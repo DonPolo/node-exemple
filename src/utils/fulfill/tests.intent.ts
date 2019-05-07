@@ -1,7 +1,7 @@
 import { IntentRequest, IntentResult } from '../types.util';
 import responsemanager from '../responsemanager.util';
 
-async function buttons(request: IntentRequest) {
+async function buttons(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
@@ -10,7 +10,7 @@ async function buttons(request: IntentRequest) {
   return res;
 }
 
-async function dropdown(request: IntentRequest) {
+async function dropdown(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
@@ -19,7 +19,7 @@ async function dropdown(request: IntentRequest) {
   return res;
 }
 
-async function link(request: IntentRequest) {
+async function link(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
@@ -28,7 +28,7 @@ async function link(request: IntentRequest) {
   return res;
 }
 
-async function text(request: IntentRequest) {
+async function text(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
@@ -37,7 +37,7 @@ async function text(request: IntentRequest) {
   return res;
 }
 
-async function media(request: IntentRequest) {
+async function media(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
@@ -46,7 +46,7 @@ async function media(request: IntentRequest) {
   return res;
 }
 
-async function mix(request: IntentRequest) {
+async function mix(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
@@ -55,7 +55,7 @@ async function mix(request: IntentRequest) {
   return res;
 }
 
-async function clone(request: IntentRequest) {
+async function clone(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,

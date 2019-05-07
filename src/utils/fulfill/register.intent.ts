@@ -3,6 +3,7 @@ import responsemanager from '../responsemanager.util';
 import config from '../../config';
 import Ecl, { SiteGroup } from '../../models/ecl';
 import { sendMessage } from '../message.util';
+import logger from '../../config/logger';
 
 const ecl = new Ecl();
 
@@ -48,6 +49,7 @@ async function registration(c: Contexts, siteGroup: SiteGroup | null) {
 
     return true;
   } catch (err) {
+    logger.error(err);
     // Send registration request by mail to concierge
     const nomConcierge = c.site.concierges.prenomsconcierges;
     await sendMessage(
@@ -70,8 +72,7 @@ async function registration(c: Contexts, siteGroup: SiteGroup | null) {
   }
 }
 
-async function register(request: IntentRequest) {
-  if (!request.contexts.fulfill) return null;
+async function register(request: IntentRequest): Promise<IntentResult> {
   request.contexts.fulfill = [config.CONTEXTS.FULFILL.register];
   const res: IntentResult = {
     confidence: request.confidence,
@@ -81,16 +82,14 @@ async function register(request: IntentRequest) {
   return res;
 }
 
-async function registerMail(request: IntentRequest) {
-  if (!request.contexts.fulfill || !request.contexts.user) return null;
+async function registerMail(request: IntentRequest): Promise<IntentResult> {
   let conf = request.confidence;
   if (
-    request.contexts.fulfill &&
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.register) &&
-    request.entities.filter(e => e.name === 'builtin.email').length > 0
+    request.entities.filter(e => e.name === 'email').length > 0
   ) {
     request.contexts.user.email = request.entities.filter(
-      e => e.name === 'builtin.email',
+      e => e.name === 'email',
     )[0].value;
     request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
   } else {
@@ -104,8 +103,7 @@ async function registerMail(request: IntentRequest) {
   return res;
 }
 
-async function registerName(request: IntentRequest) {
-  if (!request.contexts.fulfill || !request.contexts.user) return null;
+async function registerName(request: IntentRequest): Promise<IntentResult> {
   let conf = request.confidence;
   const names = request.entities.filter(e => e.name === 'name');
   let text = await responsemanager.load('default.fallback');
@@ -131,6 +129,7 @@ async function registerName(request: IntentRequest) {
           text = await responsemanager.load('register.askcode');
         } else {
           request.contexts.fulfill = [];
+          request.contexts.user.registered = true;
           if (
             registration(request.contexts, groups.length ? groups[0] : null)
           ) {
@@ -159,18 +158,16 @@ async function registerName(request: IntentRequest) {
   return res;
 }
 
-async function registerCode(request: IntentRequest) {
-  if (!request.contexts.fulfill || !request.contexts.user) return null;
+async function registerCode(request: IntentRequest): Promise<IntentResult> {
   let conf = request.confidence;
   let txt = await responsemanager.load('default.fallback');
   if (
-    request.contexts.fulfill &&
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.registercode) &&
-    request.entities.filter(e => e.name === 'builtin.number').length > 0 &&
+    request.entities.filter(e => e.name === 'number').length > 0 &&
     request.contexts.site
   ) {
     const siteGroupNumber = parseInt(
-      request.entities.filter(e => e.name === 'builtin.number')[0].value,
+      request.entities.filter(e => e.name === 'number')[0].value,
       10,
     );
     // Check given number exists in ECL
@@ -184,6 +181,7 @@ async function registerCode(request: IntentRequest) {
     } else {
       request.contexts.fulfill = [];
       request.contexts.user.siteGroup = siteGroupNumber;
+      request.contexts.user.registered = true;
       if (registration(request.contexts, siteGroup)) {
         txt = await responsemanager.load('register.done_after_validation');
       } else {

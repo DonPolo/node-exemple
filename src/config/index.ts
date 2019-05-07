@@ -9,6 +9,10 @@ const defaultConfig = {
   ECL: {
     url: process.env.ECL_URL || 'http://localhost',
   },
+  ACCESS: {
+    PSEUDO: process.env.ACCESS_PSEUDO || '',
+    PWD: process.env.ACCESS_PWD || '',
+  },
   DB_LOGGING: isDev,
   API_ACCESS_USERNAME: process.env.API_ACCESS_USERNAME || null,
   API_ACCESS_PASSWORD: process.env.API_ACCESS_PASSWORD || null,
@@ -31,12 +35,15 @@ const defaultConfig = {
     relaiscolis: process.env.INTENT_RELAISCOLIS || '',
     fallback: process.env.INTENT_FALLBACK || '',
     infos: process.env.INTENT_INFOS || '',
+    requestglobal: process.env.INTENT_REQUESTGLOBAL || '',
+    requestupdate: process.env.INTENT_REQUESTUPDATE || '',
   },
   CONTEXTS: {
     FULFILL: {
       register: process.env.CONTEXT_FULFILL_REGISTER || '',
       registermail: process.env.CONTEXT_FULFILL_REGISTERMAIL || '',
       registercode: process.env.CONTEXT_FULFILL_REGISTERCODE || '',
+      requestdetails: process.env.CONTEXT_FULFILL_REQUESTDETAILS || '',
     },
   },
   LUIS: {

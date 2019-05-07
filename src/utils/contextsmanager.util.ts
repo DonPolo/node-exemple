@@ -1,5 +1,9 @@
 import Datastore from 'nedb';
-import { Contexts } from './types.util';
+import {
+  Contexts,
+  getEmptySiteContexts,
+  getEmptyUserContexts,
+} from './types.util';
 import config from '../config';
 
 // Connect to ad db stored in DB/contexts
@@ -98,6 +102,7 @@ async function save(user: string, c: Contexts) {
     };
     if (!nb) {
       // Inserting context
+      contexts.user.userId = user;
       await insert({ user, contexts, createTime: Date.now() });
     } else {
       // Updating context
@@ -122,17 +127,12 @@ async function load(user: string): Promise<Contexts> {
   }
   return {
     fulfill: [],
-    user: {
-      lastname: '',
-      firstname: '',
-      email: '',
-      siteGroup: null,
-      userId: '',
-    },
+    user: getEmptyUserContexts(),
     service: {
       watson: null,
     },
-    site: null,
+    site: getEmptySiteContexts(),
+    other: null,
   };
 }
 

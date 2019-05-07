@@ -8,15 +8,15 @@ import {
   Contexts,
 } from './types.util';
 import config from '../config';
-import '../config/i18n';
 
 import intentRegister from './fulfill/register.intent';
 import intentDefault from './fulfill/default.intent';
 import intentInfos from './fulfill/infos.intent';
+import intentRequest from './fulfill/request.intent';
 import intentTests from './fulfill/tests.intent';
 
-import i18n from 'i18next';
 import { clone } from './func.util';
+import twig, { Template } from 'twig';
 
 /**
  * Find and return the most probable response
@@ -76,6 +76,14 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
       intentsRes.push(res);
     }
   }, Promise.resolve());
+  intentsRes.push(
+    await intentRegister.registerName({
+      entities: request.result.entities,
+      contexts: clone(request.result.contexts),
+      confidence: 0.6,
+      query: request.result.query,
+    }),
+  );
 
   // Get the most probable one
   let intentResult: IntentResult = await intentDefault.fallback({
@@ -148,6 +156,14 @@ function getConfig(): Intent[] {
       func: intentInfos.infos,
     },
     {
+      name: config.INTENTS.requestglobal,
+      func: intentRequest.global,
+    },
+    {
+      name: config.INTENTS.requestupdate,
+      func: intentRequest.details,
+    },
+    {
       name: config.INTENTS.fallback,
       func: intentDefault.fallback,
     },
@@ -206,9 +222,7 @@ async function parseResponse(
       if (types.includes(Object.keys(r)[0])) {
         if (typeof r.text !== 'undefined') {
           const texts = getTexts(r.text, lang, request.intentResult.contexts);
-          console.log('t');
           const text = texts[Math.floor(Math.random() * texts.length)];
-          console.log('tt');
           const realtxt = await getTextFormated(
             text,
             request.intentResult.contexts,
@@ -225,7 +239,41 @@ async function parseResponse(
             link: r.link.value,
           });
         } else if (typeof r.btn !== 'undefined') {
-          const btns = getTexts(r.btn, lang, request.intentResult.contexts);
+          let btns = getTexts(r.btn, lang, request.intentResult.contexts);
+          if (r.btn.foreach) {
+            const b = btns[0];
+            const foreach = r.btn.foreach.split(' in ');
+            const elem = foreach[0].trim().split(', ');
+            btns = [];
+            const newtext = reverseBracketsCurlyBraces(b.text);
+            const newval = reverseBracketsCurlyBraces(b.value);
+            await getProperty(
+              request.intentResult.contexts,
+              foreach[1].trim(),
+            ).reduce(async (prev: any, e: any, key: any) => {
+              await prev;
+              const obj: any = {};
+              if (elem.length > 1) {
+                obj[elem[0].trim()] = key;
+                obj[elem[1].trim()] = e;
+              } else {
+                obj[elem[0].trim()] = e;
+              }
+              const tpl1 = twig.twig({
+                data: newtext,
+              });
+              const txt = await tpl1.renderAsync(obj);
+              const tpl2 = twig.twig({
+                data: newval,
+              });
+              const val = await tpl2.renderAsync(obj);
+              btns.push({
+                followupintent: b.followupintent,
+                text: changeBrackets(txt),
+                value: changeBrackets(val),
+              });
+            }, Promise.resolve());
+          }
           const realbtns: any[] = [];
           await btns.reduce(async (prev: any, b: any) => {
             await prev;
@@ -244,11 +292,41 @@ async function parseResponse(
             },
           });
         } else if (typeof r.dropdown !== 'undefined') {
-          const opts = getTexts(
-            r.dropdown,
-            lang,
-            request.intentResult.contexts,
-          );
+          let opts = getTexts(r.dropdown, lang, request.intentResult.contexts);
+          if (r.dropdown.foreach) {
+            const d = opts[0];
+            const foreach = r.dropdown.foreach.split(' in ');
+            const elem = foreach[0].trim().split(', ');
+            opts = [];
+            const newtext = reverseBracketsCurlyBraces(d.text);
+            const newval = reverseBracketsCurlyBraces(d.value);
+            await getProperty(
+              request.intentResult.contexts,
+              foreach[1].trim(),
+            ).reduce(async (prev: any, e: any, key: any) => {
+              await prev;
+              const obj: any = {};
+              if (elem.length > 1) {
+                obj[elem[0].trim()] = key;
+                obj[elem[1].trim()] = e;
+              } else {
+                obj[elem[0].trim()] = e;
+              }
+              const tpl1 = twig.twig({
+                data: newtext,
+              });
+              const txt = await tpl1.renderAsync(obj);
+              const tpl2 = twig.twig({
+                data: newval,
+              });
+              const val = await tpl2.renderAsync(obj);
+              opts.push({
+                followupintent: d.followupintent,
+                text: changeBrackets(txt),
+                value: changeBrackets(val),
+              });
+            }, Promise.resolve());
+          }
           const realopts: any[] = [];
           await opts.reduce(async (prev: any, b: any) => {
             await prev;
@@ -293,22 +371,22 @@ async function parseResponse(
  * @param params the parameters for your text
  */
 async function getTextFormated(text: string, params: Contexts) {
-  if (i18n.isInitialized) {
-    await i18n.reloadResources();
+  let newtext = text;
+  if (text.indexOf('::foreach') !== -1) {
+    const foreach = text.substring(text.indexOf('::foreach') + 9, text.length);
+    newtext = `{% for ${foreach} %}${text.substring(
+      0,
+      text.indexOf('::foreach'),
+    )}{% endfor %}`;
+    newtext = changeBrackets(newtext);
   }
-  await i18n.init({
-    lng: 'lang',
-    resources: {
-      lang: {
-        translation: {
-          text,
-        },
-      },
-    },
+  const template: Template = twig.twig({
+    data: newtext,
   });
-  return i18n.t(text, {
+  return await template.renderAsync({
     site: params.site,
     user: params.user,
+    other: params.other,
   });
 }
 
@@ -393,4 +471,70 @@ function getProperty(obj: any, attr: string): any {
     }
   }
   return obj[attr];
+}
+
+function changeBrackets(text: string) {
+  let newtext = text;
+  let a = newtext.indexOf('[[');
+  while (a >= 0) {
+    newtext = `${newtext.substring(0, a)}{{${newtext.substring(
+      a + 2,
+      newtext.length,
+    )}`;
+    a = newtext.indexOf('[[', a + 2);
+  }
+  a = newtext.indexOf(']]');
+  while (a >= 0) {
+    newtext = `${newtext.substring(0, a)}}}${newtext.substring(
+      a + 2,
+      newtext.length,
+    )}`;
+    a = newtext.indexOf(']]', a + 2);
+  }
+  return newtext;
+}
+
+function reverseBracketsCurlyBraces(text: string) {
+  let newtext = text;
+  let a = newtext.indexOf('{{');
+  let b = newtext.indexOf('[[');
+  while (a >= 0 || b >= 0) {
+    if (a >= 0) {
+      newtext = `${newtext.substring(0, a)}||${newtext.substring(
+        a + 2,
+        newtext.length,
+      )}`;
+      a = newtext.indexOf('{{', a + 2);
+    }
+    if (b >= 0) {
+      newtext = `${newtext.substring(0, b)}~~${newtext.substring(
+        b + 2,
+        newtext.length,
+      )}`;
+      b = newtext.indexOf('[[', b + 2);
+    }
+  }
+  newtext = newtext.replace(/\|\|/g, '[[');
+  newtext = newtext.replace(/\~\~/g, '{{');
+  a = newtext.indexOf('}}');
+  b = newtext.indexOf(']]');
+  while (a >= 0 || b >= 0) {
+    if (a >= 0) {
+      newtext = `${newtext.substring(0, a)}||${newtext.substring(
+        a + 2,
+        newtext.length,
+      )}`;
+      a = newtext.indexOf('}}', a + 2);
+    }
+    if (b >= 0) {
+      newtext = `${newtext.substring(0, b)}~~${newtext.substring(
+        b + 2,
+        newtext.length,
+      )}`;
+      b = newtext.indexOf(']]', b + 2);
+    }
+  }
+  newtext = newtext.replace(/\|\|/g, ']]');
+  newtext = newtext.replace(/\~\~/g, '}}');
+  return newtext;
 }

@@ -1,6 +1,7 @@
 {% extends "./layout.twig" %}
 
 {% block head %}
+  <title>{{ type | capitalize }} {{ filename | capitalize }} - {{ cat | capitalize }}</title>
   <link rel='stylesheet' href='/CSS/file.css' />
   <!-- YAML -->
   <script src="/JS/yaml.min.js"></script>
@@ -76,56 +77,226 @@
   <div class="infos" id="infos" onclick="closeinfos()" style='display: none'>
     <span>
       <div onclick="event.stopPropagation()">
-        <pre>intent: "default.greeting"
-type: "default"
-responses:
-  - desc: "oups"
+        <h2>Gimme some help</h2>
+        <div>
+          <button class="accordion">Desc</button>
+          <div class="panel">
+            <p>The 'desc' attribute in 'responses' let you put a little description of the response. For example when it is used, what comes next etc...</p>
+<pre>
+- responses:
+  - desc: "Response used when the user ask the bot his mood"
+</pre>
+          </div>
+          <button class="accordion">Text</button>
+          <div class="panel">
+            <p>The 'text' attribute in 'responses' let you add a text response. This attribute is a little bit complicated to understand but really simple to use because you can make all kind of combinations with it's attributes.</p>
+            The first attribute you have to choose is the language:
+            <ul>
+              <li>'fr' if you don't want different style of language</li>
+              <li>'fr-tu' for a relax language</li>
+              <li>'fr-vous' for a strict language</li>
+            </ul>
+            <p>
+              Note that if you use 'fr-tu' you have to put a 'fr-vous'.
+              <br>
+              If you want to add a condition for the different language just add '-cond' after the attribute like 'fr-cond'
+            </p>
+            <p>
+              Now that you have choosen the language, if you didn't specified a 'cond', you can just add a list of sentences. One of them will be picked randomly to send the response.
+            </p>
+<pre>
+- responses:
+  - text:
+      fr:
+        - "How are you ?"
+        - "Are you good ?"
+        - "I'm fine and you ?"
   - text:
       fr-tu:
-        - "Ca va super toto"
-        - "Ca va bien et toto"
-        - "Cool"
+        - "You good ?"
+        - "What's up ?"
       fr-vous:
-        - "je vais bien"
-        - "je me porte bien"
-  - media: "hello"
-  - link: "hi"
+        - "How are you ?"
+        - "Are you fine today ?"
+</pre>
+            <p>
+              If you specified a cond, you can then add a 'cond' attribute which contains the condition used to choose between the possibilities.
+              <br>
+              You can now choose to put the condition on 'sing' / 'plur' or on 'masc' / 'fem'.
+            </p>
+            <ul>
+              <li>'masc'</li>
+              <li>'fem'</li>
+              <li>'sing'</li>
+              <li>'plur'</li>
+            </ul>
+            <p>
+              Note that you cannot choose 'sing' / 'plur' and 'masc' / 'fem' and that you have to put both of the pair.
+            </p>
+            <p>
+              If you really want to put 'sing' / 'plur' and 'masc' / 'fem', you can specify the '-cond' like before.
+              <br>
+              If you don't, your code should be like that :
+            </p>
+<pre>
+- responses:
+  - text:
+    fr-cond:
+      cond: "secretary.nb"
+      sing:
+        - The secretary will help you with that
+        - Our secretary can help you
+      plur:
+        - The secretaries will help you with that
+        - Our secretaries can help you
+</pre>
+            <p>
+              Then if you want both conds you will have this :
+            </p>
+<pre>
+- responses:
+  - text:
+      fr-cond:
+        cond: "concierges.nb"
+        sing-cond:
+          cond: "concierges.genre"
+          fem:
+            - "La concierge vous accueille"
+          masc:
+            - "Le concierge vous accueille"
+        plur:
+          - "Les concierges vous accueillent"
+</pre>
+          </div>
+          <button class="accordion">Media</button>
+          <div class="panel">
+            <p>
+              The 'media' attribute in 'responses' let you add an image in the response.
+              <br>
+              This attribute is really easy to use, you just have to put an attribute 'value' with the url of your image.
+            </p>
+<pre>
+- responses:
+  - media:
+      value: "https://my-site.com/my-wonderful-image"
+</pre>
+            <p>
+              If you want to add some text instead of the picture if the platform doesn't support the images, you can just put an attribute 'alt' which acts just like 'text'.
+            </p>
+          </div>
+          <button class="accordion">Link</button>
+          <div class="panel">
+            <p>
+              The 'link' attribute in 'responses' let you add a link to a website in the response.
+              <br>
+              This attribute is really easy to use, you just have to put an attribute 'value' with the url of your website.
+            </p>
+<pre>
+- responses:
+  - link:
+      value: "https://my-site.com/my-cool-page"
+</pre>
+            <p>
+              If you want to add some text instead of the link if the platform doesn't support the url, you can just put an attribute 'alt' which acts just like 'text'.
+            </p>
+          </div>
+          <button class="accordion">Btn</button>
+          <div class="panel">
+            <p>
+              The 'btn' attribute in 'responses' let you add buttons in the response to let the user a choice.
+            </p>
+            <p>
+              Like in 'text', you have to choose a language :
+              <ul>
+                <li>'fr' if you don't want different style of language</li>
+                <li>'fr-tu' for a relax language</li>
+                <li>'fr-vous' for a strict language</li>
+              </ul>
+            </p>
+            <p>
+              Then you add an array with all of your buttons:
+              <br>
+              every butttons should have the attribute 'text' which is the text of the button, 'followupintent' which is the intent to trigger when we press the button and 'value' which is the value to sent (as an entity) to the intent.
+            </p>
+<pre>
+- responses:
+  - text:
+      fr:
+        - "What's your favorite color"
   - btn:
-      nextaction: "titi"
-      fr-tu:
-        - text: "toto"
-          value: 2
-        - text: "greg"
-          value: 3
-      fr-vous:
-        - text: "gerr"
-          value: 2
-        - text: "gregre"
-          value: 3
-  - dropdown:
-      nextaction: "tata"
-      fr-tu:
-        - text: "gre"
-          value: 5
-        - text: "ge"
-          value: 6
-        - text: "htehet"
-          value: 7
-      fr-vous:
-        - text: "ethte"
-          value: 5
-        - text: "ethte"
-          value: 6
-        - text: "hehte"
-          value: 7
+      fr:
+        - text: "red"
+          value: "red"
+          followupintent: "choosecolor"
+        - text: "blue"
+          value: "blue"
+          followupintent: "choosecolor"
+        - text: "next"
+          value: ""
+          followupintent: "next"
+</pre>
+            <p>
+              If you want to add some text instead of the buttons if the platform doesn't support them, you can just put an attribute 'alt' which acts just like 'text'.
+            </p>
+          </div>
+          <button class="accordion">Dropdown</button>
+          <div class="panel">
+            <p>
+              The 'dropdown' attribute in 'responses' let you add a dropdown in the response to let the user a choice between different options.
+              This attribute is similar to 'btn'.
+            </p>
+            <p>
+              Like in 'text', you have to choose a language :
+              <ul>
+                <li>'fr' if you don't want different style of language</li>
+                <li>'fr-tu' for a relax language</li>
+                <li>'fr-vous' for a strict language</li>
+              </ul>
+            </p>
+            <p>
+              Then you add an array with all of your options:
+              <br>
+              every option should have the attribute 'text' which is the text of the option, 'followupintent' which is the intent to trigger when we choose the option and 'value' which is the value to sent (as an entity) to the intent.
+            </p>
+<pre>
+- responses:
   - text:
-      fr-tu:
-        - "Ca va super"
-        - "Ca va bien et toi"
-      fr-vous:
-        - "je vais bien"
-        - "je me porte bien"
-        </pre>
+      fr:
+        - "What's your favorite color"
+  - dropdown:
+      fr:
+        - text: "red"
+          value: "red"
+          followupintent: "choosecolor"
+        - text: "blue"
+          value: "blue"
+          followupintent: "choosecolor"
+        - text: "next"
+          value: ""
+          followupintent: "next"
+</pre>
+            <p>
+              If you want to add some text instead of the dropdown if the platform doesn't support it, you can just put an attribute 'alt' which acts just like 'text'.
+            </p>
+          </div>
+          <button class="accordion">Clone</button>
+          <div class="panel">
+            <p>
+              The 'clone' attribute let you clone the content of another response. It is very easy to use, you just put the name of the other intent as it's value.
+            </p>
+<pre>
+intent: "test.clone"
+type: "test"
+clone: "test.text"
+responses:
+  - desc: "Test of the clone attribute"
+</pre>
+            <p>
+              You can access to the response you cloned by selecting the 'clone' attribute whithout the value. And by clicking with 'control' key pressed.
+              It will load you the good reponse.
+            </p>
+          </div>
+        </div>
       </div>
     </span>
   </div>

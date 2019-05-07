@@ -2,6 +2,7 @@ import { ServiceRequest, ServiceResult } from '../types.util';
 import config from '../../config';
 import { execrequest } from '../async.util';
 import uuid from 'uuid';
+import logger from '../../config/logger';
 
 /**
  * Get intents and entities from SAP relative to a message
@@ -53,6 +54,7 @@ export default async function(request: ServiceRequest) {
     }
     return result;
   } catch (e) {
+    logger.error(e);
     return result;
   }
 }
