@@ -52,7 +52,6 @@ getFiles = () => {
   req.onload = function() {
     if (req.status === 200) {
       let types = JSON.parse(req.responseText);
-      console.log(types);
       container.innerHTML = "<h2>Training</h2>";
       types.training.forEach(files => {
         files.files.forEach(f => {
@@ -99,6 +98,28 @@ getEntities = () => {
   req.send(JSON.stringify({token: 'MmFJYmkWa1Qfg730c5gORJaEOTsBmXfw'}));
 }
 
+escapeNewLine = (text) => {
+  let a = text.indexOf('"');
+  while(a > -1) {
+    if (a == 0 || text.charAt(a-1) != "\\") {
+      let b = text.indexOf('"', a+1);
+      while(b > -1 && text.charAt(b-1) == "\\") {
+        b = text.indexOf('"', b+1);
+      }
+      if (b > -1) {
+        let t = text.substring(a+1, b);
+        t = t.replace(/\n/g, '\\n');
+        text = text.substring(0, a+1) + t + text.substring(b);
+      }
+      a = text.indexOf('"', b+1);
+    } else {
+      a = text.indexOf('"', a+1);
+    }
+
+  }
+  return text;
+}
+
 window.addEventListener("load", () => {
   source = CodeMirror.fromTextArea(document.getElementById('editor'), {
     mode: 'yaml',
@@ -113,7 +134,7 @@ window.addEventListener("load", () => {
     lineWrapping: true,
     autocorrect: true,
   });
-  source.setValue(file.replace(/  /g, "\t"));
+  source.setValue(escapeNewLine(file.replace(/  /g, "\t")));
   getFiles();
   document.getElementsByTagName('main')[0].addEventListener('click', function (e) {
     if (e.ctrlKey) {

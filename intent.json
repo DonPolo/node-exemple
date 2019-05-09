@@ -20,30 +20,5 @@
         ]
       }
     ],
-    "responses": [
-      {
-       "tu": [
-         {
-          "platforms": [""],
-          "responses": [
-            {
-              "type": "text|photos|buttons|dropdown|link",
-              "value": {"value depends on type": ""}
-            }
-          ]
-         }
-       ],
-       "vs": [
-        {
-          "platforms": [""],
-          "responses": [
-            {
-              "type": "text|photos|buttons|dropdown|link",
-              "value": {"value depends on type": ""}
-            }
-          ]
-         }
-       ]
-      }
-    ]
+    "responses": []
 }

@@ -188,7 +188,7 @@ async function file(
     params,
     user,
     paramsstr: JSON.stringify(params),
-    file: json2pyaml.stringify(fileres),
+    file: json2pyaml.stringify(fileres).replace(/\"/g, '\\"'),
     type: typeparam,
     filename: nameparam,
     cat: catparam,

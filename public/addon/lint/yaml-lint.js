@@ -5,6 +5,9 @@ function checkJson (json) {
   let found = [];
   if(!json) return [];
 
+  let line = -1;
+
+
   let check = (obj, must, mustnot, txt) => {
     must.forEach(m => {
       if (!obj[m]) {
@@ -18,6 +21,47 @@ function checkJson (json) {
     });
   }
 
+  let checkVars = (l, vars) => {
+    let a = l.indexOf('[[');
+    let b = l.indexOf(']]', a);
+    while (a !== -1 && b !== -1) {
+      const txt = l.substring(a+2, b).trim();
+      if (!vars.includes(txt.split('.')[0]) && !vars.includes(txt.split('+')[0].trim()) && !vars.includes(txt.split('-')[0].trim()) && !vars.includes(txt.split('*')[0].trim()) && !vars.includes(txt.split('/')[0].trim())) {
+        found.push({ message: "Parameter '" + txt.split('.')[0] + "' is not valid", from: {ch: 0, line: 0}, to: {ch: 0, line: 0} });
+      }
+      a = l.indexOf('[[', b);
+      b = l.indexOf(']]', a);
+    }
+  }
+
+  let checkTextForeach = (obj) => {
+    if (obj instanceof Array) {
+      obj.forEach(e => {
+        let pos = e.indexOf("::foreach");
+        if (pos > -1) {
+          let txt = e.substring(0, pos).trim();
+          let loop = e.substring(pos+9).trim();
+          let parts = loop.split(' in ');
+          if (parts.length !== 2) {
+            found.push({message: "Malformed 'foreach' in text", from: {line:0,ch:0}, to: {line:0, ch:0}});
+          } else {
+            if (!params.includes(parts[1].trim())) {
+              found.push({message: "Unknown parameter '" + parts[1].trim() + "' in 'foreach' in text", from: {line:0,ch:0}, to: {line:0, ch:0}});
+            } else {
+              if (parts[0].trim().split(',').length > 2) {
+                found.push({message: "Malformed 'foreach' in text", from: {line:0,ch:0}, to: {line:0, ch:0}});
+              } else {
+                let vars = parts[0].trim().split(',');
+                vars = vars.map(Function.prototype.call, String.prototype.trim);
+                checkVars(txt, vars);
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
   let checkCond = (obj, txt) => {
     let a;
     let good = false;
@@ -27,6 +71,7 @@ function checkJson (json) {
     // Default situation
     if (obj['sing']) {
       good = true;
+      checkTextForeach(obj['sing']);
       if (!obj['plur'] && !obj['plur-cond']) {
         found.push({message: "Missing attribute '" + "plur' or 'plur-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
@@ -34,6 +79,7 @@ function checkJson (json) {
     }
     if (obj['plur']) {
       good = true;
+      checkTextForeach(obj['plur']);
       if (!obj['sing'] && !obj['sing-cond']) {
         found.push({message: "Missing attribute '" + "sing' or 'sing-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
@@ -41,6 +87,7 @@ function checkJson (json) {
     }
     if (obj['fem']) {
       good = true;
+      checkTextForeach(obj['fem']);
       if (!obj['masc'] && !obj['masc-cond']) {
         found.push({message: "Missing attribute '" + "masc' or 'masc-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
@@ -48,6 +95,7 @@ function checkJson (json) {
     }
     if (obj['masc']) {
       good = true;
+      checkTextForeach(obj['masc']);
       if (!obj['fem'] && !obj['fem-cond']) {
         found.push({message: "Missing attribute '" + "fem' or 'fem-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
@@ -65,6 +113,12 @@ function checkJson (json) {
         found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'sing-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
       check(a, ['fem', 'masc'], ['sing', 'plur', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'sing-cond');
+      if (a['masc']) {
+        checkTextForeach(a['masc']);
+      }
+      if (a['fem']) {
+        checkTextForeach(a['fem']);
+      }
     }
     if (obj['plur-cond']) {
       good = true;
@@ -77,6 +131,12 @@ function checkJson (json) {
         found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'plur-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
       check(a, ['fem', 'masc'], ['sing', 'plur', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'plur-cond');
+      if (a['masc']) {
+        checkTextForeach(a['masc']);
+      }
+      if (a['fem']) {
+        checkTextForeach(a['fem']);
+      }
     }
     if (obj['fem-cond']) {
       good = true;
@@ -89,6 +149,12 @@ function checkJson (json) {
         found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'fem-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
       check(a, ['sing', 'plur'], ['masc', 'fem', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'fem-cond');
+      if (a['sing']) {
+        checkTextForeach(a['sing']);
+      }
+      if (a['plur']) {
+        checkTextForeach(a['plur']);
+      }
     }
     if (obj['masc-cond']) {
       good = true;
@@ -101,49 +167,55 @@ function checkJson (json) {
         found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'masc-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
       }
       check(a, ['sing', 'plur'], ['masc', 'fem', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'masc-cond');
+      if (a['sing']) {
+        checkTextForeach(a['sing']);
+      }
+      if (a['plur']) {
+        checkTextForeach(a['plur']);
+      }
     }
     if(!good) {
       found.push({message: "Missing attributes in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
     }
   }
 
-  let texts = json.responses.filter(u => u.text);
-  texts.forEach(te => {
-    let t = te.text
+  let checkTextAttr = (t, allowCond = true) => {
     if (t['fr']) {
       check(t, [], ['fr-tu', 'fr-vous', 'fr-cond', 'fr-vous-cond', 'fr-tu-cond'], 'text');
+      checkTextForeach(t['fr']);
     }
     if (t['fr-tu']) {
       check(t, ['fr-vous'], ['fr', 'fr-cond', 'fr-vous-cond', 'fr-tu-cond'], 'text');
+      checkTextForeach(t['fr-tu']);
     }
     if (t['fr-vous']) {
       check(t, ['fr-tu'], ['fr', 'fr-cond', 'fr-vous-cond', 'fr-tu-cond'], 'text');
+      checkTextForeach(t['fr-vous']);
     }
+    if (allowCond) {
+      if (t['fr-cond']) {
+        checkCond(t['fr-cond'], 'fr-cond');
+      }
+      if (t['fr-tu-cond']) {
+        checkCond(t['fr-tu-cond'], 'fr-tu-cond');
+      }
+      if (t['fr-vous-cond']) {
+        checkCond(t['fr-vous-cond'], 'fr-vous-cond');
+      }
+    }
+  }
 
-    if (t['fr-cond']) {
-      checkCond(t['fr-cond'], 'fr-cond');
-    }
-    if (t['fr-tu-cond']) {
-      checkCond(t['fr-tu-cond'], 'fr-tu-cond');
-    }
-    if (t['fr-vous-cond']) {
-      checkCond(t['fr-vous-cond'], 'fr-vous-cond');
-    }
-  });
-
-  let btndd = json.responses.filter(u => u.btn || u.dropdown);
-  btndd.forEach(b => {
-    if (b.btn) {
-      b = b.btn;
-    } else {
-      b = b.dropdown;
-    }
+  let checkBtnOrDD = (b) => {
+    let used = [];
     if (b['fr']) {
+      used.push('fr');
       check(b, [], ['fr-tu', 'fr-vous', 'fr-cond', 'fr-vous-cond', 'fr-tu-cond'], b.btn ? 'btn' : 'dropdown');
       if (b['fr'] instanceof Array) {
         b['fr'].forEach(e => {
           if (!e.text) {
             found.push({message: "Missing 'text' in 'fr'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
+          } else {
+            checkTextForeach([e.text]);
           }
           if (!e.value) {
             found.push({message: "Missing 'value' in 'fr'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
@@ -155,11 +227,14 @@ function checkJson (json) {
       }
     }
     if (b['fr-tu']) {
+      used.push('fr-tu');
       check(b, ['fr-vous'], ['fr', 'fr-cond', 'fr-vous-cond', 'fr-tu-cond'], b.btn ? 'btn' : 'dropdown');
       if (b['fr-tu'] instanceof Array) {
         b['fr-tu'].forEach(e => {
           if (!e.text) {
             found.push({message: "Missing 'text' in 'fr-tu'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
+          } else {
+            checkTextForeach([e.text]);
           }
           if (!e.value) {
             found.push({message: "Missing 'value' in 'fr-tu'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
@@ -171,11 +246,14 @@ function checkJson (json) {
       }
     }
     if (b['fr-vous']) {
+      used.push('fr-vous');
       check(b, ['fr-tu'], ['fr', 'fr-cond', 'fr-vous-cond', 'fr-tu-cond'], b.btn ? 'btn' : 'dropdown');
       if (b['fr-vous'] instanceof Array) {
         b['fr-vous'].forEach(e => {
           if (!e.text) {
             found.push({message: "Missing 'text' in 'fr-vous'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
+          } else {
+            checkTextForeach([e.text]);
           }
           if (!e.value) {
             found.push({message: "Missing 'value' in 'fr-vous'", from: {line: 0, ch:0}, to: {line: 0, ch: 0}, severity: 'warning'});
@@ -186,7 +264,91 @@ function checkJson (json) {
         });
       }
     }
-  });
+    if (b['alt']) {
+      checkTextAttr(b['alt'], false);
+    }
+
+    if (b['foreach']) {
+      // Check foreach cond
+      let parts = b['foreach'].split(' in ');
+      if (parts.length !== 2) {
+        found.push({message: "Malformed 'foreach'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+      } else {
+        if (!params.includes(parts[1].trim())) {
+          found.push({message: "Unknown parameter '" + parts[1].trim() + "' in 'foreach'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        } else {
+          if (parts[0].trim().split(',').length > 2) {
+            found.push({message: "Malformed 'foreach'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+          } else {
+            let vars = parts[0].trim().split(',');
+            vars = vars.map(Function.prototype.call, String.prototype.trim);
+            used.forEach(u => {
+              if (b[u] instanceof Array) {
+                if(b[u].length > 0) {
+                  let elem = b[u][0];
+                  if(elem.text) {
+                    checkVars(elem.text, vars);
+                  }
+                  if (elem.value) {
+                    checkVars(elem.value, vars);
+                  }
+                  if (elem.followupintent) {
+                    checkVars(elem.followupintent, vars);
+                  }
+                }
+              }
+            });
+          }
+        }
+      }
+    }
+  }
+
+  let browseObject = (obj, parent) => {
+    line++;
+    console.log(parent);
+    console.log(obj);
+    console.log(line);
+    if (parent === 'responses' && obj.text) {
+      checkTextAttr(obj.text);
+    }
+    if (parent === 'responses' && obj.dropdown) {
+      checkBtnOrDD(obj.dropdown);
+    }
+    if (parent === 'responses' && obj.btn) {
+      checkBtnOrDD(obj.btn);
+    }
+    if (obj instanceof Array) {
+      obj.forEach(e => {
+        if(typeof e === 'object') {
+          line--;
+        }
+        browseObject(e, parent);
+      });
+    } else if (typeof obj === 'object' && obj !== null) {
+      for(let key in obj) {
+        browseObject(obj[key], key);
+      }
+    }
+  }
+  browseObject(json, 'all');
+
+  /*let texts = json.responses.filter(u => u.text);
+  texts.forEach(te => {
+    let t = te.text
+    checkTextAttr(t);
+  });*/
+
+  /*let btndd = json.responses.filter(u => u.btn || u.dropdown);
+  btndd.forEach(b => {
+    if (b.btn) {
+      b = b.btn;
+    } else {
+      b = b.dropdown;
+    }
+    checkBtnOrDD(b);
+
+  });*/
   return found;
 }
 
@@ -773,16 +935,60 @@ function lintResponse (text, found, json) {
     found.push({message, from, to, severity: 'warning'});
   }
 
+  let lookForColumn = (text) => {
+    let parts = [];
+    let a = text.indexOf('"');
+    let oldb = 0;
+    while (a > -1) {
+      if (a == 0 || text.charAt(a - 1) != '\\') {
+        if (a != oldb) {
+          parts.push(text.substring(oldb, a));
+        }
+        let b = text.indexOf('"', a+1);
+        while(b > -1 && text.charAt(b-1) == '\\') {
+          b = text.indexOf('"', b+1);
+        }
+        if (b > -1) {
+          parts.push(text.substring(a, b+1));
+          oldb = b + 1;
+          a = text.indexOf('"', b+1);
+        } else {
+          a = -1;
+        }
+      } else {
+        a = text.indexOf('"', a+1);
+      }
+    }
+    if (parts.length > 1) {
+      return false;
+    }
+    return true;
+  }
+
   let checkName = (pos, l) => {
-    let name = l.split(':')[0];
-    let val = l.split(':')[1];
+    let split = l.split(':');
+    let name = '';
+    let val = '';
+    if (split.length === 1) {
+      val = split[0];
+    } else {
+      name = split[0];
+      split.shift();
+      val = split.join('');
+    }
+    name = name.trim();
+    val = val.trim();
+    if (val.length > 0 && val.charAt(0) == "'") {
+      addWarning("The character ' is forbidden as a delimiter use \" instead", {ch: 0, line: i}, {ch: l.length, line: i});
+    }
+
     if (pos === 0) {
       // Attribute
       if (!attrs.names.includes(name) && name !== 'clone') {
-        addWarning("Attribute '" + name + "' doesn't exist in the current context", {ch: 0, line: i}, {ch: attr.length, line: i});
+        addWarning("Attribute '" + name + "' doesn't exist in the current context", {ch: 0, line: i}, {ch: name.length, line: i});
         return false;
       } else if (attrs.found.includes(name)) {
-        addWarning("Attribute '" + attr + "' already exists", {ch: 0, line: i}, {ch: attr.length, line: i});
+        addWarning("Attribute '" + name + "' already exists", {ch: 0, line: i}, {ch: name.length, line: i});
         return false;
       } else {
         attrs.curattr = name;
@@ -801,7 +1007,7 @@ function lintResponse (text, found, json) {
       }
       if (a instanceof Array) {
         if (a.length === 0){
-          if (l.split(":").length > 1 && l.split(':')[1].length !== 0) {
+          if (!lookForColumn(l)) {
             addWarning("Property of '" + attrs.actualpos[pos-1].name + "' must be an array", {ch: 0, line: i}, {ch: l.length, line: i});
           }
           attrs.actualpos[pos-1].found.push(name);
@@ -853,7 +1059,7 @@ function lintResponse (text, found, json) {
       }
       if (pos > 1) {
         if (!attrs.curattrgood && attrs.array.includes(attrs.curattr)) {
-          addWarning("Attribute '" + attrs.curattr + "' must be an array", {ch: 0, line: i}, {ch: l.length, line: i});
+          addWarning("Attribute '" + attrs.curattr + "' must be an array and cannot be null", {ch: 0, line: i}, {ch: l.length, line: i});
           return false;
         }
       } else {

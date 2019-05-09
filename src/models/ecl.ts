@@ -5,14 +5,10 @@ import moment from 'moment';
 import uuid from 'uuid';
 
 import config from '../config';
-import t from '../utils/translate.util';
 import format from '../utils/format.util';
 
 const isDev = process.env.NODE_ENV === 'development';
 
-/*const ecl = new Sequelize(
-  'mysql://clt1329-dev:Easylife2010@195.200.78.252/clt1329_dev',
-);*/
 const ecl = new Sequelize(
   config.DB.database,
   config.DB.username,
@@ -82,14 +78,14 @@ export default class Ecl {
     forUser: boolean = true,
   ) {
     if (!concierges || !concierges.length) {
-      return forUser ? t('infos.concierge') : '';
+      return 'Pas de concierges';
     }
     if (concierges.length === 1) {
       return concierges[0].prenom;
     }
     if (concierges.length === 2)
       return `${concierges[0].prenom} et ${concierges[1].prenom}`;
-    return forUser ? t('infos.concierges') : '';
+    return 'Pas de concierges';
   }
 
   static isMultipleConcierges(concierges: Concierge[] | null | undefined) {
