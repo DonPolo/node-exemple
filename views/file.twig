@@ -8,13 +8,23 @@
   <!-- Code Mirror -->
   <link rel="stylesheet" href="/lib/codemirror.css">
   <link rel="stylesheet" href="/addon/lint/lint.css">
+  <link rel="stylesheet" href="/addon/fold/foldgutter.css">
+  <link rel="stylesheet" href="/addon/hint/show-hint.css">
   <link rel="stylesheet" href="/theme/yeti.css">
   <script src="/lib/codemirror.js"></script>
   <script src="/JS/js-yaml/js-yaml.js"></script>
   <script src="/mode/yaml/yaml.js"></script>
   <script src="/addon/lint/lint.js"></script>
   <script src="/addon/lint/yaml-lint.js"></script>
+  <script src="/addon/edit/closebrackets.js"></script>
+  <script src="/addon/fold/foldcode.js"></script>
+  <script src="/addon/fold/foldgutter.js"></script>
+  <script src="/addon/fold/indent-fold.js"></script>
+  <script src="/addon/selection/active-line.js"></script>
+  <script src="/addon/hint/show-hint.js"></script>
+  <script src="/addon/hint/yaml-hint.js"></script>
   <script src="/JS/search.js"></script>
+  <script src="/JS/bubble.js"></script>
   <script>
     var file = `{{ file }}`;
     var source;
@@ -50,6 +60,20 @@
     </div>
   </nav>
   <main>
+    <div class="topbar">
+      <div>
+        <h2>{{ cat | capitalize }}</h2>
+        <h2>{{ type | capitalize }}</h2>
+        <h2>{{ filename | capitalize }}</h2>
+      </div>
+      <div>
+        <strong>Auto save</strong>
+        <label class="switch">
+          <input type="checkbox" id="i-autosave">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
     <textarea id="editor"></textarea>
     <span class="info-but" onclick="openinfos()">
       <i class="fas fa-info"></i>

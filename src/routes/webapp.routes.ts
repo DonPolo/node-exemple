@@ -9,6 +9,10 @@ const urlencodedParser = bodyparser.urlencoded({ extended: false });
 routes.all('/', WebappControllers.home);
 
 // Ajax call
+routes.post('/delete', urlencodedParser, WebappControllers.delete);
+// Ajax call
+routes.post('/modif', urlencodedParser, WebappControllers.modif);
+// Ajax call
 routes.post('/save', urlencodedParser, WebappControllers.save);
 // Ajax call
 routes.post('/getfiles', urlencodedParser, WebappControllers.getfiles);

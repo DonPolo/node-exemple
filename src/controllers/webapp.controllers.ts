@@ -204,10 +204,17 @@ async function addresponse(
 ) {
   const user = requireConnection(req, res);
   if (!user) return;
-  if (req.body.name && req.body.type) {
+  if (req.body.name && req.body.type && req.body.beauty) {
     const intent = req.body.name;
     const type = req.body.type;
-    await responsemanager.addResponse({ intent, type, responses: {} });
+    const beautyname = req.body.beauty;
+    await responsemanager.addResponse({
+      intent,
+      type,
+      beautyname,
+      desc: '',
+      responses: {},
+    });
   }
   res.render('addresponse.twig', { user, nav: '3' });
 }
@@ -366,6 +373,46 @@ async function save(
   res.end(JSON.stringify({ error }));
 }
 
+async function deleteelem(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  try {
+    if (req.body.cat === 'response') {
+      await responsemanager.delete(`${req.body.type}.${req.body.name}`);
+    }
+  } catch (err) {
+    res.writeHead(500);
+    res.end();
+    return;
+  }
+  res.writeHead(200);
+  res.end();
+}
+
+async function modif(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  try {
+    if (req.body.cat === 'response') {
+      await responsemanager.modif(
+        `${req.body.type}.${req.body.name}`,
+        req.body.newtype,
+        req.body.newname,
+      );
+    }
+  } catch (err) {
+    res.writeHead(500);
+    res.end();
+    return;
+  }
+  res.writeHead(200);
+  res.end();
+}
+
 /**
  * Get all the types and there files
  * @param req
@@ -451,4 +498,6 @@ export default {
   save,
   getfiles,
   getentities,
+  modif,
+  delete: deleteelem,
 };

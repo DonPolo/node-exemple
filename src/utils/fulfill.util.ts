@@ -45,7 +45,8 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
           response: {
             intent: '',
             type: '',
-            displayname: '',
+            beautyname: '',
+            desc: '',
             responses: [
               {
                 text: {

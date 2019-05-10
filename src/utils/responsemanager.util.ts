@@ -4,6 +4,18 @@ import { Response } from './types.util';
 // Connect to a DB stored in DB/responses
 const db = new Datastore({ filename: 'DB/responses', autoload: true });
 
+const remove: any = async (query: any) => {
+  return new Promise((resolve, reject) => {
+    db.remove(query, (err, numRemoved) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(numRemoved);
+      }
+    });
+  });
+};
+
 /**
  * Insert datas in the database with promise
  * @param query a NoSQL query like with MongoDB
@@ -103,9 +115,14 @@ async function load(intent: string): Promise<Response> {
 async function loadtype(type: string): Promise<any> {
   const files = await find({ type });
   if (files) {
-    const realfiles: string[] = [];
+    const realfiles: any[] = [];
     files.forEach((f: any) => {
-      realfiles.push(f.intent.split('.')[1]);
+      realfiles.push({
+        realname: f.intent,
+        name: f.intent.split('.')[1],
+        beauty: f.beautyname.split('.')[1],
+        desc: f.desc,
+      });
     });
     return realfiles;
   }
@@ -146,6 +163,17 @@ async function addResponse(obj: any) {
   await insert(obj);
 }
 
+async function removefile(file: string) {
+  await remove({ intent: file });
+}
+
+async function modif(file: string, newtype: string, newname: string) {
+  await update({
+    intent: file,
+    all: { $set: { type: newtype, intent: newname } },
+  });
+}
+
 export default {
   save,
   load,
@@ -153,4 +181,6 @@ export default {
   gettypes,
   loadfile,
   addResponse,
+  modif,
+  delete: removefile,
 };

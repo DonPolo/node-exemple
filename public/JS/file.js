@@ -1,18 +1,23 @@
 let cansave = true;
 let errors = false;
+let autosave = false;
+let hasReturn = true;
 save = () => {
   if(!cansave || errors) return;
   cansave = false;
+  hasReturn = false;
   document.getElementById('savebut').classList.add('disabled');
   var req = new XMLHttpRequest();
   req.open("POST", "/webapp/save");
   req.setRequestHeader("Content-Type", "application/json");
   req.onerror = function() {
     console.log("Échec de chargement ");
+    hasReturn = true;
     cansave = true;
   };
   req.onload = function() {
     cansave = true;
+    hasReturn = true;
     if (req.status === 200) {
       document.getElementById('savebut').classList.remove('disabled');
       console.log("Saved !");
@@ -55,15 +60,24 @@ getFiles = () => {
       container.innerHTML = "<h2>Training</h2>";
       types.training.forEach(files => {
         files.files.forEach(f => {
-          container.innerHTML += '<a href="/webapp/' + files.type + '/training/' + f + '" s-val="' + files.type + '.' + f + '">' + capitalize(files.type) + '.' + capitalize(f) + '</a>';
+          let cur = false;
+          if ((files.type + '.' + f) === filename) {
+            cur = true;
+          }
+          container.innerHTML += '<a ' + (cur ? 'class="selected"' : '') + ' href="/webapp/' + files.type + '/training/' + f + '" s-val="' + files.type + '.' + f + '">' + capitalize(files.type) + '.' + capitalize(f) + '</a>';
         });
       });
       container.innerHTML += "<h2>Responses</h2>";
       types.response.forEach(files => {
         files.files.forEach(f => {
-          container.innerHTML += '<a href="/webapp/' + files.type + '/response/' + f + '" s-val="' + files.type + '.' + f + '">' + capitalize(files.type) + '.' + capitalize(f) + '</a>';
+          let cur = false;
+          if ((files.type + '.' + f.name) === filename) {
+            cur = true;
+          }
+          container.innerHTML += '<a ' + (cur ? 'class="selected"' : '') + ' bubble-name="' + capitalize(files.type) + '.' + capitalize(f.beauty) + '" bubble="' + f.desc + '" href="/webapp/' + files.type + '/response/' + f.name + '" s-val="' + files.type + '.' + f.name + '">' + capitalize(files.type) + '.' + capitalize(f.beauty) + '</a>';
         });
       });
+      Bubble.bind("*[bubble]");
     } else {
       console.log("Erreur " + req.status);
       container.getElementsByTagName('div')[0].innerHTML = '<strong>Erreur de chargement</strong>';
@@ -126,13 +140,17 @@ window.addEventListener("load", () => {
     lineNumbers: true,
     value: file,
     theme: 'default',
-    gutters: ["CodeMirror-lint-markers"],
+    gutters: ["CodeMirror-lint-markers", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
     lint: true,
     smartIndent: true,
     indentUnit: 2,
     tabSize: 2,
     lineWrapping: true,
     autocorrect: true,
+    autoCloseBrackets: true,
+    extraKeys: {"Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); }, "Ctrl-Space": "autocomplete"},
+    foldGutter: true,
+    styleActiveLine: true,
   });
   source.setValue(escapeNewLine(file.replace(/  /g, "\t")));
   getFiles();
@@ -149,9 +167,23 @@ window.addEventListener("load", () => {
       }
     }
   });
+
+  document.addEventListener('keydown', function(e) {
+    if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)  && e.keyCode == 83) {
+      e.preventDefault();
+      save();
+    }
+  }, false);
+
+  document.getElementById('i-autosave').addEventListener('change', function () {
+    autosave = document.getElementById('i-autosave').checked;
+  });
+  source.on('change', function() {
+    if (!autosave || !hasReturn) return;
+    save();
+  });
   var acc = document.getElementsByClassName("accordion");
   var i;
-
   for (i = 0; i < acc.length; i++) {
     acc[i].addEventListener("click", function() {
       this.classList.toggle("active");

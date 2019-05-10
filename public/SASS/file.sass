@@ -1,5 +1,14 @@
 @import 'var'
 @import 'global'
+@import 'bubble'
+@import 'header'
+@import 'slider'
+
+
+.bubble
+  @extend %bubble
+  background: $thirdcolor
+  max-width: 350px
 
 // Editor
 main
@@ -11,10 +20,12 @@ main
   overflow-x: hidden
   overflow-y: auto
   z-index: -10
+  display: flex
+  flex-direction: column
 
   .info-but
     position: absolute
-    top: 15px
+    top: 55px
     right: 25px
     background: white
     box-shadow: 0 0 5px 0 black
@@ -30,7 +41,7 @@ main
 
   .back-but
     position: absolute
-    top: 15px
+    top: 55px
     right: 70px
     background: white
     box-shadow: 0 0 5px 0 black
@@ -44,9 +55,34 @@ main
   .back-but:hover
     background: $secondcolor
 
+  .topbar
+    max-width: 100%
+    height: $topbarheight
+    background: $secondcolor
+    box-shadow: 0 0 5px 0 black
+    flex-shrink: 0
+    display: flex
+    align-items: center
+    justify-content: space-between
+    padding: 0 20px
+    div
+      display: flex
+      align-items: center
+    h2
+      font-size: 20px
+      margin: 0 5px
+    h2::before
+      content: '- '
+      margin: 0 5px
+    h2:first-child::before
+      content: ''
+    strong
+      margin-right: 10px
   .CodeMirror
     width: 100%
     height: 100%
+    flex-shrink: 1
+    z-index: -1
 
 // Console
 .console
@@ -106,6 +142,13 @@ nav
       display: block
       width: 70%
       margin-left: 20%
+      overflow: hidden
+      text-overflow: ellipsis
+    a:hover
+      font-size: 17px
+      font-weight: bold
+    a.selected
+      font-weight: bold
 
   .but
     position: absolute
@@ -166,6 +209,10 @@ nav
       margin: 10px 10%
       font-weight: normal
       font-size: 16px
+    strong:hover
+      font-size: 17px
+      font-weight: bold
+      cursor: pointer
 
 // Doc
 .infos

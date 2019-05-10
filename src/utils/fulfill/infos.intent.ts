@@ -126,8 +126,8 @@ async function compopanier(request: IntentRequest): Promise<IntentResult> {
     );
     if (resu) {
       const paniertxt = striptags(resu.desc);
+      if (!request.contexts.other) request.contexts.other = {};
       request.contexts.other.compopanier = paniertxt;
-      console.log(resu);
       txt = await responsemanager.load('infos.compopanier');
     } else {
       txt = await responsemanager.load('infos.paniernotexist');

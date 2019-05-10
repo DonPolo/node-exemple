@@ -4,6 +4,8 @@
     "start": "nps dev",
     "start:debug": "nps dev.debug",
     "lint": "nps lint",
+    "sass": "nps sass",
+    "sass-debug": "nps sass_debug",
     "dts": "dts-gen"
   },
   "devDependencies": {

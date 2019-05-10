@@ -4,25 +4,122 @@
   <title>Training & Responses</title>
   <link rel='stylesheet' href='/CSS/home.css' />
   <script src="/JS/search.js"></script>
+  <script src="/JS/bubble.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      Bubble.bind('*[bubble]');
+      document.getElementById('i-mode').addEventListener('change', function () {
+        let newclass = "mode-default";
+        if (document.getElementById('i-mode').checked) {
+          newclass = "mode-modify";
+        }
+        document.querySelectorAll('span[s-val]').forEach(e => {
+          e.className = newclass;
+        }, false);
+      });
+    });
+    function deleteElem (event, cat, type, name) {
+      let loading = document.createElement('img');
+      loading.setAttribute('src', '/PIC/load.gif');
+      event.target.appendChild(loading);
+      event.target.classList.remove('fa-trash');
+      var req = new XMLHttpRequest();
+      req.open("POST", "/webapp/delete");
+      req.setRequestHeader("Content-Type", "application/json");
+      req.onerror = function() {
+        event.target.removeChild(loading);
+        event.target.classList.add('fa-trash');
+      };
+      req.onload = function() {
+        if (req.status === 200) {
+          let elem = event.target;
+          while(elem.getAttribute('s-val') === null) {
+            elem = elem.parentNode;
+          }
+          elem.parentNode.removeChild(elem);
+        } else {
+          event.target.removeChild(loading);
+          event.target.classList.add('fa-trash');
+        }
+      };
+      req.send(JSON.stringify({cat, type, name}));
+    }
+
+    function modifElem (event, cat, type, name) {
+      let loading = document.createElement('img');
+      loading.setAttribute('src', '/PIC/load.gif');
+      event.target.appendChild(loading);
+      event.target.classList.remove('fa-save');
+      let elem = event.target;
+      while (elem.getAttribute('s-val') === null) {
+        elem = elem.parentNode;
+      }
+      let newname = elem.querySelector('input[name="name"]').value;
+      let newtype = elem.querySelector('input[name="type"]').value;
+      var req = new XMLHttpRequest();
+      req.open("POST", "/webapp/modif");
+      req.setRequestHeader("Content-Type", "application/json");
+      req.onerror = function() {
+        event.target.removeChild(loading);
+        event.target.classList.add('fa-save');
+      };
+      req.onload = function() {
+        if (req.status === 200) {
+          event.target.removeChild(loading);
+          event.target.classList.add('fa-save');
+        } else {
+          event.target.removeChild(loading);
+          event.target.classList.add('fa-save');
+        }
+      };
+      req.send(JSON.stringify({ cat, type, name, newtype, newname }));
+    }
+  </script>
 {% endblock %}
 
 {% block body %}
   <div class="search" id="search" search="simple" s-con="container">
     <input type="text" placeholder="Search..."/>
+    <div>
+        <strong>Mode</strong>
+        <label class="switch">
+          <input type="checkbox" id="i-mode">
+          <span class="slider round"></span>
+        </label>
+      </div>
   </div>
   <main id="container">
     <h2>Train : </h2>
+    <div>
     {% for file in files.training %}
       {% for f in file.files %}
-        <a class="b" href="/webapp/{{ file.type }}/training/{{ f }}" s-val="{{ file.type }}.{{ f }}">{{ file.type | capitalize }}.{{ f | capitalize }}</a>
+        <span s-val="{{ file.type }}.{{ f }}" class="mode-default">
+          <a href="/webapp/{{ file.type }}/training/{{ f }}">{{ file.type | capitalize }}.{{ f | capitalize }}</a>
+          <input type="text" name="name" value="{{ file.type }}-{{ f }}" disabled/>
+          <div>
+            {#<i class="fas fa-save"></i>
+            <i class="fas fa-trash" onclick="deleteElem(event, 'training', '{{ file.type }}', '{{ f }}')"></i>#}
+          </div>
+        </span>
       {% endfor %}
     {% endfor %}
+    </div>
 
     <h2>Response : </h2>
+    <div>
     {% for file in files.response %}
       {% for f in file.files %}
-        <a class="b" href="/webapp/{{ file.type }}/response/{{ f }}" s-val="{{ file.type }}.{{ f }}">{{ file.type | capitalize }}.{{ f | capitalize }}</a>
+        <span s-val="{{ file.type }}.{{ f.name }}" class="mode-default">
+          <a bubble-name="{{ file.type | capitalize }}.{{ f.beauty }}" bubble="{{ f.desc }}" href="/webapp/{{ file.type }}/response/{{ f.name }}">{{ file.type | capitalize }}.{{ f.beauty }}</a>
+          <input type="text" name="name" value="{{ f.realname }}"/>
+          <input type="text" name="type" value="{{ file.type }}"/>
+          <div>
+            <i class="fas fa-save" onclick="modifElem(event, 'response', '{{ file.type }}', '{{ f.name }}')"></i>
+            <i class="fas fa-trash" onclick="deleteElem(event, 'response', '{{ file.type }}', '{{ f.name }}')"></i>
+          </div>
+        </span>
       {% endfor %}
     {% endfor %}
+    </div>
   </main>
 {% endblock %}

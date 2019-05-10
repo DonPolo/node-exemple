@@ -120,10 +120,10 @@ export interface IntentResult {
 export interface Response {
   intent: string;
   type: string;
-  displayname: string;
+  beautyname: string;
+  desc: string;
   // tslint:disable-next-line: prefer-array-literal
   responses: Array<
-    | UnparsedResponseDesc
     | UnparsedResponseText
     | UnparsedResponseBtn
     | UnparsedResponseDropdown
@@ -157,9 +157,6 @@ export interface Intent {
 }
 
 /* Unparsed Response Attributes */
-export interface UnparsedResponseDesc {
-  desc: string;
-}
 export interface UnparsedResponseText {
   text: UnparsedText;
 }

@@ -11,12 +11,12 @@ function checkJson (json) {
   let check = (obj, must, mustnot, txt) => {
     must.forEach(m => {
       if (!obj[m]) {
-        found.push({message: "Missing attribute '" + m + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + m + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
     });
     mustnot.forEach(m => {
       if (obj[m]) {
-        found.push({message: "Unknown attribute '" + m + "' for '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Unknown attribute '" + m + "' for '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
     });
   }
@@ -43,13 +43,13 @@ function checkJson (json) {
           let loop = e.substring(pos+9).trim();
           let parts = loop.split(' in ');
           if (parts.length !== 2) {
-            found.push({message: "Malformed 'foreach' in text", from: {line:0,ch:0}, to: {line:0, ch:0}});
+            found.push({message: "Malformed 'foreach' in text", from: {line: line,ch:0}, to: {line: line, ch:0}});
           } else {
             if (!params.includes(parts[1].trim())) {
-              found.push({message: "Unknown parameter '" + parts[1].trim() + "' in 'foreach' in text", from: {line:0,ch:0}, to: {line:0, ch:0}});
+              found.push({message: "Unknown parameter '" + parts[1].trim() + "' in 'foreach' in text", from: {line: line,ch:0}, to: {line: line, ch:0}});
             } else {
               if (parts[0].trim().split(',').length > 2) {
-                found.push({message: "Malformed 'foreach' in text", from: {line:0,ch:0}, to: {line:0, ch:0}});
+                found.push({message: "Malformed 'foreach' in text", from: {line: line,ch:0}, to: {line: line, ch:0}});
               } else {
                 let vars = parts[0].trim().split(',');
                 vars = vars.map(Function.prototype.call, String.prototype.trim);
@@ -66,14 +66,14 @@ function checkJson (json) {
     let a;
     let good = false;
     if (!obj['cond']) {
-      found.push({message: "Missing attribute '" + 'cond' + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+      found.push({message: "Missing attribute '" + 'cond' + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
     }
     // Default situation
     if (obj['sing']) {
       good = true;
       checkTextForeach(obj['sing']);
       if (!obj['plur'] && !obj['plur-cond']) {
-        found.push({message: "Missing attribute '" + "plur' or 'plur-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "plur' or 'plur-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['fem', 'masc', 'fem-cond', 'masc-cond', 'sing-cond'], txt);
     }
@@ -81,7 +81,7 @@ function checkJson (json) {
       good = true;
       checkTextForeach(obj['plur']);
       if (!obj['sing'] && !obj['sing-cond']) {
-        found.push({message: "Missing attribute '" + "sing' or 'sing-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "sing' or 'sing-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['fem', 'masc', 'fem-cond', 'masc-cond', 'plur-cond'], txt);
     }
@@ -89,7 +89,7 @@ function checkJson (json) {
       good = true;
       checkTextForeach(obj['fem']);
       if (!obj['masc'] && !obj['masc-cond']) {
-        found.push({message: "Missing attribute '" + "masc' or 'masc-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "masc' or 'masc-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['sing', 'plur', 'sing-cond', 'plur-cond', 'fem-cond'], txt);
     }
@@ -97,7 +97,7 @@ function checkJson (json) {
       good = true;
       checkTextForeach(obj['masc']);
       if (!obj['fem'] && !obj['fem-cond']) {
-        found.push({message: "Missing attribute '" + "fem' or 'fem-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "fem' or 'fem-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['sing', 'plur', 'sing-cond', 'plur-cond', 'masc-cond'], txt);
     }
@@ -105,12 +105,12 @@ function checkJson (json) {
     if (obj['sing-cond']) {
       good = true;
       if (!obj['plur'] && !obj['plur-cond']) {
-        found.push({message: "Missing attribute '" + "plur' or 'plur-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "plur' or 'plur-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['fem', 'masc', 'fem-cond', 'masc-cond', 'sing'], txt);
       a = obj['sing-cond'];
       if (!a['cond']) {
-        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'sing-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'sing-cond' + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(a, ['fem', 'masc'], ['sing', 'plur', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'sing-cond');
       if (a['masc']) {
@@ -123,12 +123,12 @@ function checkJson (json) {
     if (obj['plur-cond']) {
       good = true;
       if (!obj['sing'] && !obj['sing-cond']) {
-        found.push({message: "Missing attribute '" + "sing' or 'sing-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "sing' or 'sing-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['fem', 'masc', 'fem-cond', 'masc-cond', 'plur'], txt);
       a = obj['plur-cond'];
       if (!a['cond']) {
-        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'plur-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'plur-cond' + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(a, ['fem', 'masc'], ['sing', 'plur', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'plur-cond');
       if (a['masc']) {
@@ -141,12 +141,12 @@ function checkJson (json) {
     if (obj['fem-cond']) {
       good = true;
       if (!obj['masc'] && !obj['masc-cond']) {
-        found.push({message: "Missing attribute '" + "masc' or 'masc-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "masc' or 'masc-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['sing', 'plur', 'sing-cond', 'plur-cond', 'fem'], txt);
       a = obj['fem-cond'];
       if (!a['cond']) {
-        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'fem-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'fem-cond' + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(a, ['sing', 'plur'], ['masc', 'fem', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'fem-cond');
       if (a['sing']) {
@@ -159,12 +159,12 @@ function checkJson (json) {
     if (obj['masc-cond']) {
       good = true;
       if (!obj['fem'] && !obj['fem-cond']) {
-        found.push({message: "Missing attribute '" + "fem' or 'fem-cond" + "' in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + "fem' or 'fem-cond" + "' in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(obj, [], ['sing', 'plur', 'sing-cond', 'plur-cond', 'masc'], txt);
       a = obj['masc-cond'];
       if (!a['cond']) {
-        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'masc-cond' + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Missing attribute '" + 'cond' + "' in '" + 'masc-cond' + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       }
       check(a, ['sing', 'plur'], ['masc', 'fem', 'sing-cond', 'plur-cond', 'fem-cond', 'masc-cond'], 'masc-cond');
       if (a['sing']) {
@@ -175,7 +175,7 @@ function checkJson (json) {
       }
     }
     if(!good) {
-      found.push({message: "Missing attributes in '" + txt + "'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+      found.push({message: "Missing attributes in '" + txt + "'", from: {line: line,ch:0}, to: {line: line, ch:0}});
     }
   }
 
@@ -272,13 +272,13 @@ function checkJson (json) {
       // Check foreach cond
       let parts = b['foreach'].split(' in ');
       if (parts.length !== 2) {
-        found.push({message: "Malformed 'foreach'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+        found.push({message: "Malformed 'foreach'", from: {line: line,ch:0}, to: {line: line, ch:0}});
       } else {
         if (!params.includes(parts[1].trim())) {
-          found.push({message: "Unknown parameter '" + parts[1].trim() + "' in 'foreach'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+          found.push({message: "Unknown parameter '" + parts[1].trim() + "' in 'foreach'", from: {line: line,ch:0}, to: {line: line, ch:0}});
         } else {
           if (parts[0].trim().split(',').length > 2) {
-            found.push({message: "Malformed 'foreach'", from: {line:0,ch:0}, to: {line:0, ch:0}});
+            found.push({message: "Malformed 'foreach'", from: {line: line,ch:0}, to: {line: line, ch:0}});
           } else {
             let vars = parts[0].trim().split(',');
             vars = vars.map(Function.prototype.call, String.prototype.trim);
@@ -306,9 +306,6 @@ function checkJson (json) {
 
   let browseObject = (obj, parent) => {
     line++;
-    console.log(parent);
-    console.log(obj);
-    console.log(line);
     if (parent === 'responses' && obj.text) {
       checkTextAttr(obj.text);
     }
@@ -358,8 +355,8 @@ function lintResponse (text, found, json) {
     found = checkJson(json);
   }
   let attrs = {
-    names: ["intent", "type", "responses"],
-    string: ["intent", "type"],
+    names: ["intent", "type", "responses", "beautyname", "desc"],
+    string: ["intent", "type", "beautyname", "desc"],
     array: ["responses"],
     found: [],
     curattr: null,
@@ -367,7 +364,6 @@ function lintResponse (text, found, json) {
     curattrgood: false,
     actualpos: [],
     responses: {
-      desc: "string",
       text: {
         '?fr-tu': [],
         '?fr-vous': [],
@@ -876,6 +872,7 @@ function lintResponse (text, found, json) {
         if (o instanceof Array && o.length === 0) {
           // String array
           if (attrs.actualpos[attrs.actualpos.length-1].found.length === 0) {
+            console.log('3')
             found.push({message: "Attribute '" + attrs.actualpos[attrs.actualpos.length-1].name + "' must be an array and cannot be null", from: {ch: 0, line: attrs.actualpos[attrs.actualpos.length-1].pos}, to: {ch: 0, line: attrs.actualpos[attrs.actualpos.length-1].pos}, severity: "warning"});
           }
         } else if (o instanceof Array) {
@@ -1131,7 +1128,6 @@ function lintResponse (text, found, json) {
       } else {
         checkName(4, txt);
       }
-      lastwasarray = true;
     } else if (l.match(/^        [a-zA-Z"]/g) && checkAttribute(3, l)) { // Element in element in element in element in attribute
       lastwasarray = false;
       let txt = l.substring(8, l.length);
@@ -1141,7 +1137,6 @@ function lintResponse (text, found, json) {
       let txt = l.substring(12, l.length);
       checkName(4, txt);
     } else if (l.match(/^            - /g) && checkAttribute(5, l)) { // Element in element in element in element in attribute
-      lastwasarray = true;
       let txt = l.substring(14, l.length);
       checkName(5, txt);
     } else {

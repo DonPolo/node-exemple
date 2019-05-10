@@ -9,6 +9,8 @@ const NODEMON_CMD =
 
 module.exports = {
   scripts: {
+    sass: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=compressed',
+    sass_debug: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=expanded',
     build: {
       prod: {
         description: 'Building in production environment.',
