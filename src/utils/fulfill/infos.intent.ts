@@ -1,7 +1,11 @@
 import responsemanager from '../responsemanager.util';
-import { IntentRequest, IntentResult, ResultEntity } from '../types.util';
+import { IntentRequest, IntentResult } from '../types.util';
 import format from '../format.util';
 import { isEmpty } from '../func.util';
+import EasyWhere from '../../models/easywhere';
+import striptags from 'striptags';
+
+const easywhere = new EasyWhere();
 
 async function opentime(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.schedule');
@@ -108,6 +112,39 @@ async function relaiscolis(request: IntentRequest): Promise<IntentResult> {
   return res;
 }
 
+async function compopanier(request: IntentRequest): Promise<IntentResult> {
+  let confidence = request.confidence;
+  let txt;
+  const paniers = request.entities.filter(e => e.name === 'service-panier');
+  if (paniers.length > 0) {
+    const panier = paniers[0].value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    const resu = await easywhere.getInfosPanier(
+      panier,
+      request.contexts.site.id,
+    );
+    if (resu) {
+      const paniertxt = striptags(resu.desc);
+      request.contexts.other.compopanier = paniertxt;
+      console.log(resu);
+      txt = await responsemanager.load('infos.compopanier');
+    } else {
+      txt = await responsemanager.load('infos.paniernotexist');
+    }
+  } else {
+    confidence = 0;
+    txt = await responsemanager.load('default.fallback');
+  }
+
+  const res: IntentResult = {
+    confidence,
+    contexts: request.contexts,
+    response: txt,
+  };
+  return res;
+}
+
 async function infos(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.infosnotfound');
   if (request.contexts.site) {
@@ -126,5 +163,6 @@ export default {
   contact,
   services,
   relaiscolis,
+  compopanier,
   infos,
 };

@@ -180,6 +180,7 @@ async function file(
       'site.groups',
       'site.groups.length',
       'other.numLocker',
+      'other.compopanier',
     ];
   } else if (catparam === 'training') {
     fileres = await trainingmanager.loadfile(`${typeparam}-${nameparam}`);

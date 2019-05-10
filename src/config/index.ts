@@ -17,6 +17,14 @@ const defaultConfig = {
   API_ACCESS_USERNAME: process.env.API_ACCESS_USERNAME || null,
   API_ACCESS_PASSWORD: process.env.API_ACCESS_PASSWORD || null,
   DB: {
+    easywhere: {
+      username: process.env.DB_EASYWHERE_USERNAME || 'admin',
+      password: process.env.DB_EASYWHERE_PASSWORD || 'password',
+      database: process.env.DB_EASYWHERE_DATABASE || 'database',
+      host: process.env.DB_EASYWHERE_HOST || 'localhost',
+      options: { encrypt: true },
+      operatorsAliases: false,
+    },
     username: process.env.DB_USERNAME || 'admin',
     password: process.env.DB_PASSWORD || 'password',
     database: process.env.DB_DATABASE || 'database',
@@ -25,18 +33,27 @@ const defaultConfig = {
     operatorsAliases: false,
   },
   INTENTS: {
-    register: process.env.INTENT_REGISTER || '',
-    registermail: process.env.INTENT_REGISTERMAIL || '',
-    registername: process.env.INTENT_REGISTERNAME || '',
-    registercode: process.env.INTENT_REGISTERCODE || '',
-    openingtime: process.env.INTENT_OPENTIME || '',
-    contact: process.env.INTENT_CONTACT || '',
-    services: process.env.INTENT_SERVICES || '',
-    relaiscolis: process.env.INTENT_RELAISCOLIS || '',
-    fallback: process.env.INTENT_FALLBACK || '',
-    infos: process.env.INTENT_INFOS || '',
-    requestglobal: process.env.INTENT_REQUESTGLOBAL || '',
-    requestupdate: process.env.INTENT_REQUESTUPDATE || '',
+    register: {
+      default: process.env.INTENT_REGISTER_DEFAULT || '',
+      mail: process.env.INTENT_REGISTER_MAIL || '',
+      name: process.env.INTENT_REGISTER_NAME || '',
+      code: process.env.INTENT_REGISTER_CODE || '',
+    },
+    infos: {
+      openingtime: process.env.INTENT_INFOS_OPENTIME || '',
+      contact: process.env.INTENT_INFOS_CONTACT || '',
+      services: process.env.INTENT_INFOS_SERVICES || '',
+      relaiscolis: process.env.INTENT_INFOS_RELAISCOLIS || '',
+      compopanier: process.env.INTENT_INFOS_COMPOPANIER || '',
+      infos: process.env.INTENT_INFOS_INFOS || '',
+    },
+    request: {
+      global: process.env.INTENT_REQUEST_GLOBAL || '',
+      update: process.env.INTENT_REQUEST_UPDATE || '',
+    },
+    default: {
+      fallback: process.env.INTENT_DEFAULT_FALLBACK || '',
+    },
   },
   CONTEXTS: {
     FULFILL: {

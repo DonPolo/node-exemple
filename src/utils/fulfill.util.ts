@@ -120,51 +120,55 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
 function getConfig(): Intent[] {
   return [
     {
-      name: config.INTENTS.register,
+      name: config.INTENTS.register.default,
       func: intentRegister.register,
     },
     {
-      name: config.INTENTS.registermail,
+      name: config.INTENTS.register.mail,
       func: intentRegister.registerMail,
     },
     {
-      name: config.INTENTS.registername,
+      name: config.INTENTS.register.name,
       func: intentRegister.registerName,
     },
     {
-      name: config.INTENTS.registercode,
+      name: config.INTENTS.register.code,
       func: intentRegister.registerCode,
     },
     {
-      name: config.INTENTS.openingtime,
+      name: config.INTENTS.infos.openingtime,
       func: intentInfos.opentime,
     },
     {
-      name: config.INTENTS.contact,
+      name: config.INTENTS.infos.contact,
       func: intentInfos.contact,
     },
     {
-      name: config.INTENTS.services,
+      name: config.INTENTS.infos.services,
       func: intentInfos.services,
     },
     {
-      name: config.INTENTS.relaiscolis,
+      name: config.INTENTS.infos.relaiscolis,
       func: intentInfos.relaiscolis,
     },
     {
-      name: config.INTENTS.infos,
+      name: config.INTENTS.infos.compopanier,
+      func: intentInfos.compopanier,
+    },
+    {
+      name: config.INTENTS.infos.infos,
       func: intentInfos.infos,
     },
     {
-      name: config.INTENTS.requestglobal,
+      name: config.INTENTS.request.global,
       func: intentRequest.global,
     },
     {
-      name: config.INTENTS.requestupdate,
+      name: config.INTENTS.request.update,
       func: intentRequest.details,
     },
     {
-      name: config.INTENTS.fallback,
+      name: config.INTENTS.default.fallback,
       func: intentDefault.fallback,
     },
     {
