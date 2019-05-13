@@ -102,11 +102,17 @@ async function loadfile(file: string): Promise<string[]> {
   const final: any = [];
   expressions.forEach((e: any) => {
     let sentence = e.source;
+    let a = 0;
     e.tokens.forEach((t: any) => {
       if (t.entity !== null) {
-        sentence = sentence
-          .split(t.word.name)
-          .join(`{{ ${t.word.name} | ${t.entity.slug} }}`);
+        a = sentence.indexOf(t.word.name, a);
+        if (a !== -1) {
+          const rep = `{{ ${t.word.name} | ${t.entity.slug} }}`;
+          sentence = `${sentence.substring(0, a)}${rep}${sentence.substring(
+            a + t.word.name.length,
+          )}`;
+          a += rep.length;
+        }
       }
     });
     final.push(sentence);
@@ -117,9 +123,22 @@ async function loadfile(file: string): Promise<string[]> {
 async function updatefile(file: string, news: string[], todelete: string[]) {
   // Delete all expressions
   const resdel = await loadexpressions(file);
+  const realdelete: string[] = [];
+  todelete.forEach((e: string) => {
+    let src = e;
+    while (src.indexOf('{{') !== -1) {
+      const a = src.indexOf('{{') + 2;
+      const b = src.indexOf('}}');
+      const txt = src.substring(a, b);
+      const type = txt.split('|')[1].trim();
+      const val = txt.split('|')[0].trim();
+      src = src.substring(0, a - 2) + val + src.substring(b + 2, src.length);
+    }
+    realdelete.push(src);
+  });
   await resdel.reduce(async (previous: any, e: any) => {
     await previous;
-    if (todelete.includes(e.source)) {
+    if (realdelete.includes(e.source)) {
       await execrequest({
         url: `https://api.cai.tools.sap/train/v2/users/${
           config.SAP.userslug

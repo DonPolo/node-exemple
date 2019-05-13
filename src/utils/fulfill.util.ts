@@ -6,6 +6,7 @@ import {
   ParseResponseRequest,
   ParsedResponse,
   Contexts,
+  AnalyticsData,
 } from './types.util';
 import config from '../config';
 
@@ -14,6 +15,8 @@ import intentDefault from './fulfill/default.intent';
 import intentInfos from './fulfill/infos.intent';
 import intentRequest from './fulfill/request.intent';
 import intentTests from './fulfill/tests.intent';
+
+import analyticsmanager from './analytics.util';
 
 import { clone } from './func.util';
 import twig, { Template } from 'twig';
@@ -112,6 +115,21 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
     response,
     contexts: intentResult.contexts,
   };
+
+  // Save analytics data
+  const analytics: AnalyticsData = {
+    request,
+    date: new Date().getTime(),
+    parsedResponse: response,
+    result: intentResult,
+    results: intentsRes
+      .sort((a: IntentResult, b: IntentResult) => {
+        return a.confidence - b.confidence;
+      })
+      .slice(0, 3),
+  };
+  analyticsmanager.addEntry(analytics);
+
   return result;
 }
 

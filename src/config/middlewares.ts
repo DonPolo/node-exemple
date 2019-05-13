@@ -6,11 +6,23 @@ import expressWinston from 'express-winston';
 import methodOverride from 'method-override';
 import helmet from 'helmet';
 import session from 'express-session';
+import twig from 'twig';
 
 const isDev = process.env.NODE_ENV === 'development';
 const isTest = process.env.NODE_ENV === 'test';
-
+function pad(n: number) {
+  return n < 10 ? `0${n}` : n;
+}
 export default (app: express.Application) => {
+  twig.extendFilter('prettyjson', value => {
+    return JSON.stringify(value, null, 4);
+  });
+  twig.extendFilter('prettydate', value => {
+    const date = new Date(value);
+    return `${pad(date.getDate())}/${pad(
+      date.getMonth() + 1,
+    )}/${date.getFullYear()} ${pad(date.getHours())}h${pad(date.getMinutes())}`;
+  });
   app.use(express.static('public'));
   app.use(compression());
   app.use(bodyParser.json());

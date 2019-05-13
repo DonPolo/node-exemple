@@ -220,7 +220,6 @@ export interface UnparsedResponseDropdown {
     alt?: UnparsedResponseText;
   };
 }
-
 export interface UnparsedText {
   fr?: string[];
   'fr-tu'?: string[];
@@ -229,7 +228,6 @@ export interface UnparsedText {
   'fr-tu-cond'?: UnparsedLang;
   'fr-vous-cond'?: UnparsedLang;
 }
-
 export interface UnparsedLang {
   cond: string;
   'sing-cond'?: {
@@ -287,4 +285,13 @@ export interface ParsedResponseDropdown {
       followupintent: string;
     }>;
   };
+}
+
+/* Analytics */
+export interface AnalyticsData {
+  date: number;
+  parsedResponse: ParsedResponse;
+  result: IntentResult;
+  results: IntentResult[];
+  request: FulfillRequest;
 }

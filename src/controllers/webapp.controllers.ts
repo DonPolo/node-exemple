@@ -1,6 +1,7 @@
 import express from 'express';
 import responsemanager from '../utils/responsemanager.util';
 import trainingmanager from '../utils/trainingmanager.util';
+import analyticsmanager from '../utils/analytics.util';
 import config from '../config';
 import json2pyaml from 'json-to-pretty-yaml';
 import yaml from 'yamljs';
@@ -12,6 +13,7 @@ import {
   ParsedResponse,
   getEmptyUserContexts,
   getEmptySiteContexts,
+  AnalyticsData,
 } from '../utils/types.util';
 import handlemessage from '../utils/handlemessage.util';
 import logger from '../config/logger';
@@ -115,6 +117,7 @@ async function home(
       types.push(t);
     }
   });
+  types.sort();
   const result: {
     response: any[];
     training: any[];
@@ -127,11 +130,13 @@ async function home(
     const responsefiles = await responsemanager.loadtype(e);
     const trainfiles = await trainingmanager.loadtype(e);
     result.response.push({
-      files: responsefiles,
+      files: responsefiles.sort((a: any, b: any) => {
+        return a.beauty.localeCompare(b.beauty);
+      }),
       type: e,
     });
     result.training.push({
-      files: trainfiles,
+      files: trainfiles.sort(),
       type: e,
     });
   }, Promise.resolve());
@@ -217,6 +222,19 @@ async function addresponse(
     });
   }
   res.render('addresponse.twig', { user, nav: '3' });
+}
+
+async function analytics(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  let page = 1;
+  if (req.query.page) {
+    page = req.query.page;
+  }
+  const datas: AnalyticsData[] = await analyticsmanager.getAll(page);
+  res.render('analytics.twig', { datas, nav: '4' });
 }
 
 /**
@@ -436,6 +454,7 @@ async function getfiles(
           types.push(t);
         }
       });
+      types.sort();
       const result: {
         response: any[];
         training: any[];
@@ -448,11 +467,13 @@ async function getfiles(
         const responsefiles = await responsemanager.loadtype(e);
         const trainfiles = await trainingmanager.loadtype(e);
         result.response.push({
-          files: responsefiles,
+          files: responsefiles.sort((a: any, b: any) => {
+            return a.beauty.localeCompare(b.beauty);
+          }),
           type: e,
         });
         result.training.push({
-          files: trainfiles,
+          files: trainfiles.sort(),
           type: e,
         });
       }, Promise.resolve());
@@ -493,6 +514,7 @@ export default {
   home,
   file,
   addresponse,
+  analytics,
   sendmessage,
   sendevent,
   save,

@@ -27,6 +27,7 @@ routes.all('/login', WebappControllers.login);
 routes.get('/disconnect', WebappControllers.disconnect);
 routes.get('/chat', WebappControllers.chat);
 routes.all('/addresponse', WebappControllers.addresponse);
+routes.all('/analytics', WebappControllers.analytics);
 routes.all('/:type/:cat/:name', WebappControllers.file);
 
 export default routes;

@@ -5,3 +5,4 @@ import '../../views/chat.twig';
 import '../../views/header.twig';
 import '../../views/home.twig';
 import '../../views/login.twig';
+import '../../views/analytics.twig';
