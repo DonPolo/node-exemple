@@ -1,41 +1,29 @@
 {% extends "./layout.twig" %}
 
 {% block head %}
+
 <title>Analytics</title>
-<link rel="stylesheet" href="/CSS/analytics.css"/>
-<script>
-  window.addEventListener('load', function (e) {
-    var acc = document.getElementsByClassName("accordion");
-    var i;
+<script src="/js/analytics.js"></script>
 
-    for (i = 0; i < acc.length; i++) {
-      acc[i].addEventListener("click", function() {
-        /* Toggle between adding and removing the "active" class,
-        to highlight the button that controls the panel */
-        this.classList.toggle("active");
-
-        /* Toggle between hiding and showing the active panel */
-        var panel = this.nextElementSibling;
-        if (panel.style.display === 'none') {
-          panel.style.display = null;
-        } else {
-          panel.style.display = "none";
-        }
-      });
-    }
-  });
-</script>
 {% endblock %}
 
 {% block body %}
+  <div class="top-bar">
+
+  </div>
 <main>
 
   {% for data in datas %}
-    <div class="accordion">
+    <div class="accordion" id="{{ data._id }}">
       <span>Query: <i>"{{ data.request.result.query }}"</i></span>
       <span>Intent: {{ data.result.response.intent }}</span>
       <span>Confidence: {{ data.result.confidence }}</span>
       <span>Date: {{ data.date|prettydate }}</span>
+      {% if not data.archived %}
+        <span><i class="fas fa-trash" archive='{{ data._id }}'></i></span>
+      {% else %}
+        <span><i class="fas fa-trash-restore" recover='{{ data._id }}'></i></span>
+      {% endif %}
     </div>
     <div class="panel" style="display: none">
       <div class="accordion">
@@ -132,4 +120,36 @@
   {% endfor %}
 
 </main>
+
+<div class="bottom-bar">
+  <span>
+    <form method="get">
+      Page:
+      <input type="text" name="page" value="{{ curpage }}"/>
+      {% if archived %}
+        <input type="hidden" name="archived" value="true"/>
+      {% endif %}
+    </form>
+  </span>
+  <span class="pages">
+    {% if curpage > 1 %}
+      <a href="/webapp/analytics?page={{ curpage-1 }}{% if archived %}&archived=true{% endif %}"><i class="fas fa-angle-left"></i></a>
+    {% endif %}
+    {% if nbpage > 0 %}
+      {% for i in 1..nbpage %}
+        <a href="/webapp/analytics?page={{ i }}{% if archived %}&archived=true{% endif %}" {% if i == curpage %}class="enable"{% endif %}>{{ i }}</a>
+      {% endfor %}
+    {% endif %}
+    {% if curpage < nbpage %}
+      <a href="/webapp/analytics?page={{ curpage+1 }}{% if archived %}&archived=true{% endif %}"><i class="fas fa-angle-right"></i></a>
+    {% endif %}
+  </span>
+  <span>
+    <strong>Show archived elements</strong>
+    <label class="switch">
+      <input type="checkbox" name="archived" id="toggle-archive" {% if archived %}checked{% endif %}>
+      <span class="slider round"></span>
+    </label>
+  </span>
+</div>
 {% endblock %}

@@ -290,6 +290,7 @@ export interface ParsedResponseDropdown {
 /* Analytics */
 export interface AnalyticsData {
   date: number;
+  archived: boolean;
   parsedResponse: ParsedResponse;
   result: IntentResult;
   results: IntentResult[];

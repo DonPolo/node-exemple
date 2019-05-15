@@ -23,7 +23,7 @@ export default (app: express.Application) => {
       date.getMonth() + 1,
     )}/${date.getFullYear()} ${pad(date.getHours())}h${pad(date.getMinutes())}`;
   });
-  app.use(express.static('public'));
+  app.use(express.static('assets/dist'));
   app.use(compression());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));

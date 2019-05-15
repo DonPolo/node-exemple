@@ -3,6 +3,7 @@
 node_modules/
 flow-typed/
 dist/
+!assets/dist/
 dev/
 .env*
 coverage

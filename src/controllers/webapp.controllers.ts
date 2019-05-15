@@ -229,12 +229,71 @@ async function analytics(
   res: express.Response,
   next: express.NextFunction,
 ) {
-  let page = 1;
-  if (req.query.page) {
-    page = req.query.page;
+  // Deal with archived
+  let isarchived = false;
+  if (req.query.archived) {
+    isarchived = true;
   }
-  const datas: AnalyticsData[] = await analyticsmanager.getAll(page);
-  res.render('analytics.twig', { datas, nav: '4' });
+  // Deal with the page
+  let ppage = '1';
+  if (req.query.page) {
+    ppage = req.query.page;
+  }
+  let page = parseInt(ppage, 10);
+  if (page < 1) {
+    page = 0;
+  }
+  const nb: number = await analyticsmanager.getNb(isarchived);
+  let nbpage: number = Math.trunc(nb / 20);
+  if (20 * nbpage < nb) nbpage += 1;
+  if (page > nbpage) {
+    page = nbpage;
+  }
+
+  const datas: AnalyticsData[] = await analyticsmanager.getAll(
+    page,
+    isarchived,
+  );
+
+  res.render('analytics.twig', {
+    nbpage,
+    datas,
+    archived: isarchived,
+    curpage: page,
+    nav: '4',
+  });
+}
+
+async function archived(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  const user = requireConnection(req, res);
+  if (!user) return;
+  if (req.body.id) {
+    await analyticsmanager.archived(req.body.id);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({}));
+  }
+  res.writeHead(404);
+  return res.end('Missing "msg" or "from" or "types"');
+}
+
+async function recover(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  const user = requireConnection(req, res);
+  if (!user) return;
+  if (req.body.id) {
+    await analyticsmanager.recover(req.body.id);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({}));
+  }
+  res.writeHead(404);
+  return res.end('Missing "msg" or "from" or "types"');
 }
 
 /**
@@ -521,5 +580,7 @@ export default {
   getfiles,
   getentities,
   modif,
+  archived,
+  recover,
   delete: deleteelem,
 };

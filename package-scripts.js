@@ -11,6 +11,7 @@ module.exports = {
   scripts: {
     sass: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=compressed',
     sass_debug: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=expanded',
+    startfront: 'webpack --config ./assets/webpack.config.js',
     build: {
       prod: {
         description: 'Building in production environment.',

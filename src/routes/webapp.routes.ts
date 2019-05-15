@@ -8,20 +8,25 @@ const urlencodedParser = bodyparser.urlencoded({ extended: false });
 
 routes.all('/', WebappControllers.home);
 
-// Ajax call
+// Ajax call home
 routes.post('/delete', urlencodedParser, WebappControllers.delete);
-// Ajax call
+// Ajax call home
 routes.post('/modif', urlencodedParser, WebappControllers.modif);
-// Ajax call
+// Ajax call file
 routes.post('/save', urlencodedParser, WebappControllers.save);
-// Ajax call
+// Ajax call file
 routes.post('/getfiles', urlencodedParser, WebappControllers.getfiles);
-// Ajax call
+// Ajax call file
 routes.post('/getentities', urlencodedParser, WebappControllers.getentities);
-// Ajax call
+// Ajax call chat
 routes.post('/sendmessage', urlencodedParser, WebappControllers.sendmessage);
-// Ajax call
+// Ajax call chat
 routes.post('/sendevent', urlencodedParser, WebappControllers.sendevent);
+// Ajax call analytics
+routes.post('/archived', urlencodedParser, WebappControllers.archived);
+// Ajax call analytics
+routes.post('/recover', urlencodedParser, WebappControllers.recover);
+
 
 routes.all('/login', WebappControllers.login);
 routes.get('/disconnect', WebappControllers.disconnect);

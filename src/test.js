@@ -47,8 +47,9 @@ let fallback = {
 };
 
 const Datastore = require('nedb');
-const db = new Datastore({ filename: 'DB/responses', autoload: true });
-db.insert(fallback, (err, newDoc) => {
+const db = new Datastore({ filename: 'DB/analytics', autoload: true });
+/*db.insert(fallback, (err, newDoc) => {
   console.log(newDoc);
   console.log(' a bien été inséré');
-});
+});*/
+db.update({}, {$set: {archived: false}}, {multi: true});

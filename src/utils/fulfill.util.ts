@@ -119,6 +119,7 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
   // Save analytics data
   const analytics: AnalyticsData = {
     request,
+    archived: false,
     date: new Date().getTime(),
     parsedResponse: response,
     result: intentResult,

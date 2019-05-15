@@ -31,6 +31,7 @@ module.exports = {
       },
       {
         test: /\.twig$/,
+        exclude: /public/,
         loader: "twig-loader",
         options: {},
       }

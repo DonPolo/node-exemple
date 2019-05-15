@@ -1,45 +1,18 @@
 {% extends "./layout.twig" %}
 
 {% block head %}
-  <title>{{ type | capitalize }} {{ filename | capitalize }} - {{ cat | capitalize }}</title>
-  <link rel='stylesheet' href='/CSS/file.css' />
-  <!-- YAML -->
-  <script src="/JS/yaml.min.js"></script>
-  <!-- Code Mirror -->
-  <link rel="stylesheet" href="/lib/codemirror.css">
-  <link rel="stylesheet" href="/addon/lint/lint.css">
-  <link rel="stylesheet" href="/addon/fold/foldgutter.css">
-  <link rel="stylesheet" href="/addon/hint/show-hint.css">
-  <link rel="stylesheet" href="/theme/yeti.css">
-  <script src="/lib/codemirror.js"></script>
-  <script src="/JS/js-yaml/js-yaml.js"></script>
-  <script src="/mode/yaml/yaml.js"></script>
-  <script src="/addon/lint/lint.js"></script>
-  <script src="/addon/lint/yaml-lint.js"></script>
-  <script src="/addon/edit/closebrackets.js"></script>
-  <script src="/addon/fold/foldcode.js"></script>
-  <script src="/addon/fold/foldgutter.js"></script>
-  <script src="/addon/fold/indent-fold.js"></script>
-  <script src="/addon/selection/active-line.js"></script>
-  <script src="/addon/hint/show-hint.js"></script>
-  <script src="/addon/hint/yaml-hint.js"></script>
-  <script src="/JS/search.js"></script>
-  <script src="/JS/bubble.js"></script>
-  <script>
-    var file = `{{ file }}`;
-    var source;
-    var filename = "{{ type }}.{{ filename }}";
-    var cat = "{{ cat }}";
-    var errsyntax = false;
-    var params = {{ paramsstr }};
 
-    window.addEventListener('load', function () {
-      {% if cat == 'training' %}
-        getEntities();
-      {% endif %}
-    });
+  <title>{{ type | capitalize }} {{ filename | capitalize }} - {{ cat | capitalize }}</title>
+
+  <script>
+    const file = `{{ file }}`;
+    const filename = "{{ type }}.{{ filename }}";
+    const cat = "{{ cat }}";
+    const params = {{ paramsstr }};
   </script>
-  <script src="/JS/file.js"></script>
+
+  <script src="/js/file.js"></script>
+
 {% endblock %}
 
 {% block body %}
@@ -49,13 +22,13 @@
     </div>
     <div class="container" id="filecontainer">
       <div class="loader">
-        <img src='/PIC/load.gif' />
+        <img src='/dist/pic/load.gif' />
       </div>
     </div>
     <div class="but">
-      <a onclick="save()" id="savebut">
+      <a id="savebut">
         Save
-        <img src='/PIC/load.gif' />
+        <img src='/dist/pic/load.gif' />
       </a>
     </div>
   </nav>
@@ -75,7 +48,7 @@
       </div>
     </div>
     <textarea id="editor"></textarea>
-    <span class="info-but" onclick="openinfos()">
+    <span class="info-but" id="info-but">
       <i class="fas fa-info"></i>
     </span>
     <span class="back-but">
@@ -90,15 +63,15 @@
     <div class="paramcontainer" id="paramcontainer">
       <h2>Parameters</h2>
       {% for param in params %}
-        <strong onclick="addparameter('{{ param }}')" s-val='{{ param }}'>{{ param }}</strong>
+        <strong param='{{ param }}' s-val='{{ param }}'>{{ param }}</strong>
       {% else %}
       <div class="loader">
-        <img src='/PIC/load.gif' />
+        <img src='/dist/pic/load.gif' />
       </div>
       {% endfor %}
     </div>
   </div>
-  <div class="infos" id="infos" onclick="closeinfos()" style='display: none'>
+  <div class="infos" id="infos" style='display: none'>
     <span>
       <div onclick="event.stopPropagation()">
         <h2>Gimme some help</h2>
