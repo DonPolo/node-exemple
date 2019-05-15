@@ -18,7 +18,6 @@ const ecl = new Sequelize(
     dialect: 'mysql',
     dialectOptions: {
       charset: 'latin1',
-      encrypt: false,
     },
     logging: isDev,
   },
@@ -62,6 +61,7 @@ export interface User {
   prenom: string;
   email: string;
   telephone: string;
+  group: string;
 }
 
 export type RequestType = 'SMS' | 'casier';
@@ -183,7 +183,7 @@ export default class Ecl {
 
     const users: User[] = await this.ecl.query(
       'SELECT `id_re_01_u` AS `email` , `id_re_06_u` AS `nom` , `id_re_07_u` AS `prenom` , ' +
-        '`id_co_06_u` AS `telephone`, `id_re_04` AS `id` ' +
+        '`id_co_06_u` AS `telephone`, `id_re_04` AS `id` , `id_in_02` AS `group` ' +
         'FROM `utilisateur` ' +
         'JOIN `client` ON `utilisateur`.`id_re_03` = `client`.`id_re_03` ' +
         'WHERE `client`.`corresp_04`=:siteCode ' +

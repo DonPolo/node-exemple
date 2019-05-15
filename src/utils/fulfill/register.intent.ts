@@ -1,7 +1,7 @@
-import { Contexts, IntentRequest, IntentResult } from '../types.util';
+import { Contexts, IntentRequest, IntentResult, Response } from '../types.util';
 import responsemanager from '../responsemanager.util';
 import config from '../../config';
-import Ecl, { SiteGroup } from '../../models/ecl';
+import Ecl, { SiteGroup, User } from '../../models/ecl';
 import { sendMessage } from '../message.util';
 import logger from '../../config/logger';
 
@@ -9,7 +9,7 @@ const ecl = new Ecl();
 
 async function registration(c: Contexts, siteGroup: SiteGroup | null) {
   if (!c.site || !c.fulfill || !siteGroup || !c.user || !c.site.concierges)
-    return null;
+    return false;
   try {
     // Store registration request in database
     const token = await ecl.saveRegistration(
@@ -68,36 +68,70 @@ async function registration(c: Contexts, siteGroup: SiteGroup | null) {
       },
       true,
     );
-    return null;
+    return false;
   }
 }
 
+function checkAlreadyRegistered(request: IntentRequest): boolean {
+  return request.contexts.user.registered;
+}
+
 async function register(request: IntentRequest): Promise<IntentResult> {
-  request.contexts.fulfill = [config.CONTEXTS.FULFILL.register];
+  let txt: Response;
+  if (!checkAlreadyRegistered(request)) {
+    request.contexts.fulfill = [config.CONTEXTS.FULFILL.register];
+    txt = await responsemanager.load('register.askmail');
+  } else {
+    txt = await responsemanager.load('register.already');
+  }
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
-    response: await responsemanager.load('register.askmail'),
+    response: txt,
   };
   return res;
 }
 
 async function registerMail(request: IntentRequest): Promise<IntentResult> {
   let conf = request.confidence;
+  let txt: Response;
   if (
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.register) &&
-    request.entities.filter(e => e.name === 'email').length > 0
+    request.entities.filter(e => e.name === 'email').length > 0 &&
+    !checkAlreadyRegistered(request)
   ) {
-    request.contexts.user.email = request.entities.filter(
-      e => e.name === 'email',
-    )[0].value;
-    request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
+    const mail: string = request.entities.filter(e => e.name === 'email')[0]
+      .value;
+    const user: User | null = await ecl.getUser(
+      'email',
+      mail,
+      request.contexts.site,
+    );
+    if (user) {
+      request.contexts.fulfill = [];
+      request.contexts.user = {
+        lastname: user.nom,
+        firstname: user.prenom,
+        email: user.email,
+        siteGroup: parseInt(user.group, 10),
+        userId: request.contexts.user.userId,
+        registered: true,
+        type: request.contexts.user.type,
+        request: null,
+      };
+      txt = await responsemanager.load('register.already');
+    } else {
+      request.contexts.user.email = mail;
+      request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
+      txt = await responsemanager.load('register.askfirstname');
+    }
   } else {
     conf = 0;
+    txt = await responsemanager.load('register.askfirstname');
   }
   const res: IntentResult = {
     contexts: request.contexts,
-    response: await responsemanager.load('register.askfirstname'),
+    response: txt,
     confidence: conf,
   };
   return res;
@@ -116,7 +150,8 @@ async function registerName(request: IntentRequest): Promise<IntentResult> {
   if (
     request.contexts.fulfill &&
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.registermail) &&
-    name
+    name &&
+    !checkAlreadyRegistered(request)
   ) {
     request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
     if (request.contexts.user.firstname) {
@@ -164,7 +199,8 @@ async function registerCode(request: IntentRequest): Promise<IntentResult> {
   if (
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.registercode) &&
     request.entities.filter(e => e.name === 'number').length > 0 &&
-    request.contexts.site
+    request.contexts.site &&
+    !checkAlreadyRegistered(request)
   ) {
     const siteGroupNumber = parseInt(
       request.entities.filter(e => e.name === 'number')[0].value,

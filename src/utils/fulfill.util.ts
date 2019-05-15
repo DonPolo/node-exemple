@@ -156,29 +156,36 @@ function getConfig(): Intent[] {
       func: intentRegister.registerCode,
     },
     {
+      // Tested
       name: config.INTENTS.infos.openingtime,
       func: intentInfos.opentime,
     },
     {
+      // Tested
       name: config.INTENTS.infos.contact,
       func: intentInfos.contact,
     },
     {
+      // Tested
       name: config.INTENTS.infos.services,
       func: intentInfos.services,
     },
     {
+      // Tested
       name: config.INTENTS.infos.relaiscolis,
       func: intentInfos.relaiscolis,
     },
     {
-      name: config.INTENTS.infos.compopanier,
-      func: intentInfos.compopanier,
-    },
-    {
+      // Tested
       name: config.INTENTS.infos.infos,
       func: intentInfos.infos,
     },
+    /*
+    {
+      name: config.INTENTS.infos.compopanier,
+      func: intentInfos.compopanier,
+    },
+    */
     {
       name: config.INTENTS.request.global,
       func: intentRequest.global,
@@ -188,9 +195,11 @@ function getConfig(): Intent[] {
       func: intentRequest.details,
     },
     {
+      // Tested
       name: config.INTENTS.default.fallback,
       func: intentDefault.fallback,
     },
+    /*
     {
       name: 'test-buttons',
       func: intentTests.buttons,
@@ -219,6 +228,7 @@ function getConfig(): Intent[] {
       name: 'test-clone',
       func: intentTests.clone,
     },
+    */
   ];
 }
 

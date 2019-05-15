@@ -40,12 +40,12 @@ async function opentime(request: IntentRequest): Promise<IntentResult> {
             // It's open
             if (close) {
               txt = await responsemanager.load('infos.schedule_no_open');
-              request.contexts.site.horaires = `le ${format.horaires.writeHoraires(
+              request.contexts.site.horaires = `${format.horaires.writeHoraires(
                 format.horaires.groupByHoraires(daysinfos)[0],
               )}`;
             } else {
               txt = await responsemanager.load('infos.schedule_yes_open');
-              request.contexts.site.horaires = `le ${format.horaires.writeHoraires(
+              request.contexts.site.horaires = `${format.horaires.writeHoraires(
                 format.horaires.groupByHoraires(daysinfos)[0],
               )}`;
             }

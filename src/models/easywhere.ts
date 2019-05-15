@@ -13,7 +13,6 @@ const easywhere = new Sequelize(
     dialect: 'mysql',
     dialectOptions: {
       charset: 'latin1',
-      encrypt: false,
     },
     logging: isDev,
   },
