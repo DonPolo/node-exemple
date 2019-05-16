@@ -1,5 +1,5 @@
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const dev = process.env.NODE_ENV === 'dev';
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = {
 	entry: {
@@ -31,13 +31,11 @@ const config = {
 		]
 	},
 	plugins: [
-  ],
-	watch: true,
-	mode: 'development'
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      title: 'Production'
+    })
+  ]
 };
-
-if (!dev) {
-	config.plugins.push(new UglifyJsPlugin());
-}
 
 module.exports = config;

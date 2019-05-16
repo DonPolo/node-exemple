@@ -76,16 +76,69 @@ function checkAlreadyRegistered(request: IntentRequest): boolean {
   return request.contexts.user.registered;
 }
 
+async function checkUserByMail(request: IntentRequest) {
+  const mail: string = request.entities.filter(e => e.name === 'email')[0]
+    .value;
+  const user: User | null = await ecl.getUser(
+    'email',
+    mail,
+    request.contexts.site,
+  );
+  if (user) {
+    request.contexts.user = {
+      lastname: user.nom,
+      firstname: user.prenom,
+      email: user.email,
+      siteGroup: parseInt(user.group, 10),
+      userId: request.contexts.user.userId,
+      registered: true,
+      type: request.contexts.user.type,
+      request: null,
+    };
+  }
+  return user;
+}
+
 async function register(request: IntentRequest): Promise<IntentResult> {
   let txt: Response;
+  let confidence = request.confidence;
   if (!checkAlreadyRegistered(request)) {
-    request.contexts.fulfill = [config.CONTEXTS.FULFILL.register];
-    txt = await responsemanager.load('register.askmail');
+    if (
+      !request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.register) &&
+      !request.contexts.fulfill.includes(
+        config.CONTEXTS.FULFILL.registercode,
+      ) &&
+      !request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.registermail)
+    ) {
+      if (request.entities.filter(e => e.name === 'email').length > 0) {
+        // Mail given skip this part
+        const user = await checkUserByMail(request);
+        if (user) {
+          // User already exists
+          request.contexts.fulfill = [];
+          txt = await responsemanager.load('register.already');
+        } else {
+          // Ask his name
+          request.contexts.user.email = request.entities.filter(
+            e => e.name === 'email',
+          )[0].value;
+          request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
+          txt = await responsemanager.load('register.askfirstname');
+        }
+      } else {
+        // Normal registration
+        request.contexts.fulfill = [config.CONTEXTS.FULFILL.register];
+        txt = await responsemanager.load('register.askmail');
+      }
+    } else {
+      confidence = 0.2;
+      txt = await responsemanager.load('register.registering');
+    }
   } else {
     txt = await responsemanager.load('register.already');
   }
   const res: IntentResult = {
-    confidence: request.confidence,
+    confidence,
     contexts: request.contexts,
     response: txt,
   };
@@ -100,28 +153,14 @@ async function registerMail(request: IntentRequest): Promise<IntentResult> {
     request.entities.filter(e => e.name === 'email').length > 0 &&
     !checkAlreadyRegistered(request)
   ) {
-    const mail: string = request.entities.filter(e => e.name === 'email')[0]
-      .value;
-    const user: User | null = await ecl.getUser(
-      'email',
-      mail,
-      request.contexts.site,
-    );
+    const user = await checkUserByMail(request);
     if (user) {
       request.contexts.fulfill = [];
-      request.contexts.user = {
-        lastname: user.nom,
-        firstname: user.prenom,
-        email: user.email,
-        siteGroup: parseInt(user.group, 10),
-        userId: request.contexts.user.userId,
-        registered: true,
-        type: request.contexts.user.type,
-        request: null,
-      };
       txt = await responsemanager.load('register.already');
     } else {
-      request.contexts.user.email = mail;
+      request.contexts.user.email = request.entities.filter(
+        e => e.name === 'email',
+      )[0].value;
       request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
       txt = await responsemanager.load('register.askfirstname');
     }
@@ -198,12 +237,15 @@ async function registerCode(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('default.fallback');
   if (
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.registercode) &&
-    request.entities.filter(e => e.name === 'number').length > 0 &&
+    request.entities.filter(e => e.name === 'number' || e.name === '##all##')
+      .length > 0 &&
     request.contexts.site &&
     !checkAlreadyRegistered(request)
   ) {
     const siteGroupNumber = parseInt(
-      request.entities.filter(e => e.name === 'number')[0].value,
+      request.entities.filter(
+        e => e.name === 'number' || e.name === '##all##',
+      )[0].value,
       10,
     );
     // Check given number exists in ECL

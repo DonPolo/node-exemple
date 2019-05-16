@@ -360,7 +360,7 @@ async function sendevent(
           name: a.action.split('|')[1],
         });
         entities.push({
-          name: 'all',
+          name: '##all##',
           value: a.action.split('|')[0],
         });
       });

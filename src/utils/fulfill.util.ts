@@ -140,14 +140,17 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
 function getConfig(): Intent[] {
   return [
     {
+      // Tested
       name: config.INTENTS.register.default,
       func: intentRegister.register,
     },
     {
+      // Tested
       name: config.INTENTS.register.mail,
       func: intentRegister.registerMail,
     },
     {
+      // Tested
       name: config.INTENTS.register.name,
       func: intentRegister.registerName,
     },
@@ -187,13 +190,16 @@ function getConfig(): Intent[] {
     },
     */
     {
+      // Tested
       name: config.INTENTS.request.global,
       func: intentRequest.global,
     },
+    /*
     {
       name: config.INTENTS.request.update,
       func: intentRequest.details,
     },
+    */
     {
       // Tested
       name: config.INTENTS.default.fallback,

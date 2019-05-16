@@ -92,6 +92,7 @@ export interface ResultIntent {
 export interface ResultEntity {
   name: string;
   value: string;
+  type?: string;
 }
 
 /* Response from fulfill engine */

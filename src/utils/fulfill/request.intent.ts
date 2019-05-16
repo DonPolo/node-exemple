@@ -14,19 +14,13 @@ async function recordGlobalRequest(
   const loc = request.entities.filter(e => e.name === 'place');
   const num = request.entities.filter(e => e.name === 'builtin.number');
   let respo = '';
-  if (
-    loc.length > 0 &&
-    loc[0].value.toLowerCase() === 'casier' &&
-    num.length > 0
-  ) {
+  if (loc.length > 0 && loc[0].type === 'casier' && num.length > 0) {
     numLocker = parseInt(num[0].value, 10);
   }
   if (!request.contexts.other) request.contexts.other = {};
   request.contexts.other.numLocker = numLocker;
   const type: RequestType =
-    loc.length > 0 && loc[0].value.toLowerCase() === 'casier'
-      ? 'casier'
-      : 'SMS';
+    loc.length > 0 && loc[0].type === 'casier' ? 'casier' : 'SMS';
   const newRequest = {
     type,
     numLocker,
@@ -102,7 +96,7 @@ async function recordGlobalRequest(
       if (numLocker) {
         respo = 'request.recordwithlocker';
         request.contexts.fulfill.push(config.CONTEXTS.FULFILL.requestdetails);
-      } else if (loc.length > 0 && loc[0].value.toLowerCase() === 'casier') {
+      } else if (loc.length > 0 && loc[0].type === 'casier') {
         respo = 'request.recordwithlockernonumber';
         request.contexts.fulfill.push(config.CONTEXTS.FULFILL.requestdetails);
       } else {

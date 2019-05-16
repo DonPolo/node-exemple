@@ -1,4 +1,4 @@
-import { ServiceRequest, ServiceResult } from '../types.util';
+import { ServiceRequest, ServiceResult, ResultEntity } from '../types.util';
 import config from '../../config';
 import { execrequest } from '../async.util';
 import uuid from 'uuid';
@@ -46,10 +46,14 @@ export default async function(request: ServiceRequest) {
     // tslint:disable-next-line: forin
     for (key in res.entities) {
       res.entities[key].forEach((e: any) => {
-        result.entities.push({
+        const ent: ResultEntity = {
           name: key,
           value: e.raw,
-        });
+        };
+        if (e.type) {
+          ent.type = e.type;
+        }
+        result.entities.push(ent);
       });
     }
     return result;

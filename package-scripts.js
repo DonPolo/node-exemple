@@ -12,17 +12,41 @@ module.exports = {
     sass: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=compressed',
     sass_debug: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=expanded',
     startfront: 'webpack --config ./assets/webpack.config.js',
+    start: {
+      front: 'webpack --open --config ./assets/webpack.dev.js',
+      back: {
+        start: {
+          description: 'Running on dev environment.',
+          script: `${crossEnv(
+            'NODE_ENV=development'
+          )} nodemon --delay 3 dev/index.bundle.js`
+        },
+        default: {
+          script: concurrent.nps('start.back.watch', 'start.back.start')
+        },
+        watch: {
+          description: 'Webpack watch for change and compile.',
+          script: `${crossEnv('NODE_ENV=development')} webpack -w`
+        },
+        withDebug: {
+          script: `${crossEnv(
+            'NODE_ENV=development'
+          )} DEBUG=express:* nodemon --delay 3 --inspect dev/index.bundle.js`
+        },
+        debug: {
+          description: 'Running on dev environment with debug on.',
+          script: concurrent.nps('start.back.watch', 'start.back.withDebug')
+        }
+      },
+      all: concurrent.nps('start.front', 'start.back')
+    },
     build: {
-      prod: {
-        description: 'Building in production environment.',
-        default: series.nps('clean.prod', 'build.prod.pack'),
+      front: 'webpack --config ./assets/webpack.prod.js',
+      back: {
+        default: series.nps('clean.prod', 'build.back.pack'),
         pack: `${crossEnv('NODE_ENV=production')} webpack-cli`
       },
-      dev: {
-        description: 'Building in development environment.',
-        default: series.nps('clean.dev', 'build.dev.pack'),
-        pack: `${crossEnv('NODE_ENV=development')} webpack-cli`
-      }
+      all: concurrent.nps('build.front', 'build.back')
     },
     clean: {
       description: 'Clean dist folder.',
@@ -50,30 +74,6 @@ module.exports = {
     doc: {
       description: 'Documenting the api.',
       default: 'apidoc -i src'
-    },
-    dev: {
-      start: {
-        description: 'Running on dev environment.',
-        script: `${crossEnv(
-          'NODE_ENV=development'
-        )} nodemon --delay 3 dev/index.bundle.js`
-      },
-      default: {
-        script: concurrent.nps('dev.watch', 'dev.start')
-      },
-      watch: {
-        description: 'Webpack watch for change and compile.',
-        script: `${crossEnv('NODE_ENV=development')} webpack -w`
-      },
-      withDebug: {
-        script: `${crossEnv(
-          'NODE_ENV=development'
-        )} DEBUG=express:* nodemon --delay 3 --inspect dev/index.bundle.js`
-      },
-      debug: {
-        description: 'Running on dev environment with debug on.',
-        script: concurrent.nps('dev.watch', 'dev.withDebug')
-      }
     },
     lint: {
       default: 'eslint src',
@@ -105,29 +105,6 @@ module.exports = {
     lint : {
       default : "tslint -t stylish --project tsconfig.json src/**/*.ts",
       fix : "tslint -t stylish --project tsconfig.json --fix 'src/**/*.ts'",
-    },
-    start: {
-      default: {
-        description: 'Running on dev environment with debug off.',
-        script: concurrent.nps('start.watch', 'start.run')
-      },
-      debug: {
-        description: 'Running on dev environment with debug on.',
-        script: concurrent.nps('start.watch', 'start.run.debug')
-      },
-      run: {
-        default: `${crossEnv(
-          'NODE_ENV=development'
-        )} ${NODEMON_CMD}`,
-        debug: `${crossEnv(
-          'NODE_ENV=development'
-        )} ${NODEMON_CMD} --inspect dev/index.bundle.js`
-      },
-      watch: {
-        description: 'Webpack watch for change and compile.',
-        script: `${crossEnv('NODE_ENV=development')} webpack-cli -w --progress`
-      }
-
     },
   }
 };
