@@ -6,8 +6,6 @@ import WebappControllers from '../controllers/webapp.controllers';
 const routes = express.Router();
 const urlencodedParser = bodyparser.urlencoded({ extended: false });
 
-routes.all('/', WebappControllers.home);
-
 // Ajax call home
 routes.post('/delete', urlencodedParser, WebappControllers.delete);
 // Ajax call home
@@ -27,12 +25,13 @@ routes.post('/archived', urlencodedParser, WebappControllers.archived);
 // Ajax call analytics
 routes.post('/recover', urlencodedParser, WebappControllers.recover);
 
+// routes.post('/addresponse', urlencodedParser, WebappControllers.addresponse);
+// routes.post('/login', urlencodedParser, WebappControllers.login);
 
-routes.all('/login', WebappControllers.login);
+// Query
+routes.all('/api', urlencodedParser, WebappControllers.api);
+
 routes.get('/disconnect', WebappControllers.disconnect);
-routes.get('/chat', WebappControllers.chat);
-routes.all('/addresponse', WebappControllers.addresponse);
-routes.all('/analytics', WebappControllers.analytics);
-routes.all('/:type/:cat/:name', WebappControllers.file);
+routes.all('*', WebappControllers.all);
 
 export default routes;

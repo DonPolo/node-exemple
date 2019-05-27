@@ -151,6 +151,7 @@ async function updateGlobalRequest(
   let respo: string;
   const num = request.entities.filter(e => e.name === 'builtin.number');
   if (num.length > 0) numLocker = parseInt(num[0].value, 10);
+  if (!request.contexts.other) request.contexts.other = {};
   request.contexts.other.numLocker = numLocker;
   if (request.contexts.user.request) {
     const requestRef = request.contexts.user.request.ref;
@@ -186,7 +187,7 @@ async function updateGlobalRequest(
                 ? user.telephone
                 : request.contexts.user.userId || '?'
             }
-            \n  Son message: ${request}
+            \n  Son message: ${request.query}
             \n\nLa demande est mise à jour dans l'ECL
             \n\nBonne journée !`,
         },
@@ -212,7 +213,7 @@ async function updateGlobalRequest(
                 ? user.telephone
                 : request.contexts.user.userId || '?'
             }
-            \n  Son message: ${request}
+            \n  Son message: ${request.query}
             \n\nLa demande est mise à jour dans l'ECL
             \n\nBonne journée !`,
         },
@@ -247,7 +248,7 @@ async function updateGlobalRequest(
           Ne réponds pas à ce mail (ça part dans l'espace), contacte directement l'utilisateur si besoin.
           \n\n  Son Email: ${request.contexts.user.email}
           \n  Son N°: ${request.contexts.user.userId || '?'}
-          \n  Son message: ${request}
+          \n  Son message: ${request.query}
           \n\nBonne journée !`,
       },
       true,

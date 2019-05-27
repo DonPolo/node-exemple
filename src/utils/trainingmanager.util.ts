@@ -45,10 +45,13 @@ async function getTypes(): Promise<string[]> {
  */
 async function loadtype(type: string): Promise<string[]> {
   const intents = await getIntents();
-  const files: string[] = [];
+  const files: any[] = [];
   intents.forEach((i: string) => {
     if (i.split('-')[0] === type) {
-      files.push(i.split('-')[1]);
+      files.push({
+        type,
+        name: i.split('-')[1],
+      });
     }
   });
   return files;

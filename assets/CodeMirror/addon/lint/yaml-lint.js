@@ -1,14 +1,15 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: https://codemirror.net/LICENSE
-import FileLib from '../../../JS/lib/filelib';
+import FileController from '../../../JS/controllers/file.controller';
 import CodeMirror from '../../lib/codemirror';
+import { cat } from '../../../JS/controllers/file.controller';
 
 function checkJson (json) {
   let found = [];
   if(!json) return [];
 
   let line = -1;
-
+  let params = FileController.parameters;
 
   let check = (obj, must, mustnot, txt) => {
     must.forEach(m => {
@@ -352,7 +353,8 @@ function checkJson (json) {
 }
 
 function lintResponse (text, found, json) {
-  if (params.length === 0) return found;
+  if (!FileController.parameters) return found;
+  let params = FileController.parameters;
   if (found.length === 0) {
     found = checkJson(json);
   }
@@ -874,7 +876,6 @@ function lintResponse (text, found, json) {
         if (o instanceof Array && o.length === 0) {
           // String array
           if (attrs.actualpos[attrs.actualpos.length-1].found.length === 0) {
-            console.log('3')
             found.push({message: "Attribute '" + attrs.actualpos[attrs.actualpos.length-1].name + "' must be an array and cannot be null", from: {ch: 0, line: attrs.actualpos[attrs.actualpos.length-1].pos}, to: {ch: 0, line: attrs.actualpos[attrs.actualpos.length-1].pos}, severity: "warning"});
           }
         } else if (o instanceof Array) {
@@ -929,7 +930,6 @@ function lintResponse (text, found, json) {
 
   let addWarning = (message, from, to) => {
     if(!from) {
-      console.log(message);
     }
     found.push({message, from, to, severity: 'warning'});
   }
@@ -1160,7 +1160,8 @@ function lintResponse (text, found, json) {
 }
 
 function lintTraining (text, found) {
-  if(params.length === 0) return found;
+  if(!FileController.entities) return found;
+  let params = FileController.entities;
   let lines = text.split('\n');
   let i = 0;
   lines.forEach(l => {
@@ -1227,24 +1228,18 @@ function lintTraining (text, found) {
 
       }
     } while(err && nb < 10);
-    if (found.length === 0) {
-      FileLib.errsyntax = false;
-    } else {
-      FileLib.errsyntax = true;
-    }
-
     /* Json errors */
-    if (cat === 'response') {
+    if (cat() === 'response') {
       found = lintResponse(text, found, json);
     } else {
       found = lintTraining(text, found);
     }
     if (found.length > 0) {
       document.getElementById('savebut').classList.add('errors');
-      FileLib.errors = true;
+      FileController.errors = true;
     } else {
       document.getElementById('savebut').classList.remove('errors');
-      FileLib.errors = false;
+      FileController.errors = false;
     }
     return found;
   });

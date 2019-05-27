@@ -3,11 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = {
 	entry: {
-		file: __dirname + '/JS/file.js',
-		chat: __dirname + '/JS/chat.js',
-		home: __dirname + '/JS/home.js',
-    analytics: __dirname + '/JS/analytics.js',
-    addresponse: __dirname + '/JS/addresponse.js',
+		main: __dirname + '/JS/main.js',
     login: __dirname + '/JS/login.js'
 	},
 	output: {

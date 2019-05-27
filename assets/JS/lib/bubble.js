@@ -1,16 +1,18 @@
+import $ from './jquery';
+
 export default class Bubble {
   static bind (selector) {
-    document.querySelectorAll(selector).forEach(e => new Bubble(e));
+    $(selector).each(e => new Bubble(e.get(0)));
   }
 
   constructor (element) {
-    this.element = element;
-    this.txt = element.getAttribute('bubble');
-    this.name = element.getAttribute('bubble-name');
+    this.element = $(element);
+    this.txt = this.element.attr('bubble');
+    this.name = this.element.attr('bubble-name');
     this.bubble = null;
-    element.addEventListener('mouseover', e => this.showBubble(e));
-    element.addEventListener('mouseout', e => this.unshowBubble(e));
-    element.addEventListener('mousemove', e => this.mouseMove(e));
+    this.element.on('mouseover', e => this.showBubble(e));
+    this.element.on('mouseout', e => this.unshowBubble(e));
+    this.element.on('mousemove', e => this.mouseMove(e));
   }
 
   mouseMove (event) {
@@ -18,27 +20,27 @@ export default class Bubble {
     event = event || window.event;
     let x = event.pageX;
     let y = event.pageY;
-    this.bubble.style.top = (y + 20)+ 'px';
-    this.bubble.style.left = (x + 10) + 'px';
+    this.bubble.css('top', (y + 20)+ 'px');
+    this.bubble.css('left', (x + 10) + 'px');
   }
 
   showBubble (event) {
-    let bubble = document.createElement('div');
-    bubble.classList.add('bubble');
-    let title = document.createElement('h2');
-    title.textContent = this.name;
-    bubble.appendChild(title);
-    let text = document.createElement('span');
-    text.textContent = this.txt;
-    bubble.appendChild(text);
-    document.body.appendChild(bubble);
+    let bubble = $(document.createElement('div'));
+    bubble.addClass('bubble');
+    let title = $(document.createElement('h2'));
+    title.html(this.name);
+    bubble.append(title);
+    let text = $(document.createElement('span'));
+    text.html(this.txt);
+    bubble.append(text);
+    $(document.body).append(bubble);
     this.bubble = bubble;
     this.mouseMove(event);
   }
 
   unshowBubble (event) {
     if (this.bubble !== null) {
-      document.body.removeChild(this.bubble);
+      this.bubble.remove();
       this.bubble = null;
     }
   }

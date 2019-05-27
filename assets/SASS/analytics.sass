@@ -4,7 +4,7 @@
 @import 'accordion'
 @import 'slider'
 
-main
+.analytics main
   z-index: -1
   display: flex
   flex-wrap: wrap
@@ -36,7 +36,7 @@ main
   .accordion::after
     text-align: right
   .panel
-    display: flex
+    display: none
     flex-wrap: wrap
     width: 100%
     max-height: inherit
@@ -59,7 +59,7 @@ main
         td, th
           border: solid 1px black
           width: 50%
-.bottom-bar
+.analytics .bottom-bar
   position: absolute
   bottom: 0
   left: 0

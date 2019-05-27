@@ -118,6 +118,7 @@ async function loadtype(type: string): Promise<any> {
     const realfiles: any[] = [];
     files.forEach((f: any) => {
       realfiles.push({
+        type,
         realname: f.intent,
         name: f.intent.split('.')[1],
         beauty: f.beautyname.split('.')[1],
@@ -161,6 +162,7 @@ async function loadfile(intent: string): Promise<any> {
 
 async function addResponse(obj: any) {
   await insert(obj);
+  return await loadfile(obj.intent);
 }
 
 async function removefile(file: string) {

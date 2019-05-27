@@ -35,17 +35,42 @@ function requireConnection(req: express.Request, res: express.Response) {
   return user;
 }
 
-async function login(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
+async function getFiles() {
+  const restypes = await responsemanager.gettypes();
+  const traintypes = await trainingmanager.getTypes();
+  const types = restypes;
+  traintypes.forEach((t: any) => {
+    if (!types.includes(t)) {
+      types.push(t);
+    }
+  });
+  types.sort();
+  const result: {
+    response: any[];
+    training: any[];
+  } = {
+    response: [],
+    training: [],
+  };
+  await types.reduce(async (previous: any, e: any) => {
+    await previous;
+    const responsefiles = await responsemanager.loadtype(e);
+    const trainfiles = await trainingmanager.loadtype(e);
+    result.response.push(
+      ...responsefiles.sort((a: any, b: any) => {
+        return a.beauty.localeCompare(b.beauty);
+      }),
+    );
+    result.training.push(...trainfiles.sort());
+  }, Promise.resolve());
+  return result;
+}
+
+async function login(req: express.Request) {
   const user = checkConnection(req);
   if (user) {
-    res.redirect('/webapp');
-    return;
+    return user;
   }
-  let error = null;
   if (req.body.pseudo && req.body.pwd) {
     if (
       req.body.pseudo === config.ACCESS.PSEUDO &&
@@ -56,15 +81,11 @@ async function login(
           pseudo: config.ACCESS.PSEUDO,
           pwd: config.ACCESS.PWD,
         };
-        req.session.save(() => {
-          res.redirect('/webapp');
-        });
-        return;
+        return req.session.user;
       }
     }
-    error = 'Invalid pseudo or password';
   }
-  res.render('login.twig', { error });
+  return null;
 }
 
 async function disconnect(
@@ -93,7 +114,7 @@ async function chat(
 ) {
   const user = requireConnection(req, res);
   if (!user) return;
-  res.render('chat.twig', { user, nav: '1' });
+  res.render('app.twig', { user, nav: '1', page: 'chat' });
 }
 
 /**
@@ -109,38 +130,8 @@ async function home(
 ) {
   const user = requireConnection(req, res);
   if (!user) return;
-  const restypes = await responsemanager.gettypes();
-  const traintypes = await trainingmanager.getTypes();
-  const types = restypes;
-  traintypes.forEach((t: any) => {
-    if (!types.includes(t)) {
-      types.push(t);
-    }
-  });
-  types.sort();
-  const result: {
-    response: any[];
-    training: any[];
-  } = {
-    response: [],
-    training: [],
-  };
-  await types.reduce(async (previous: any, e: any) => {
-    await previous;
-    const responsefiles = await responsemanager.loadtype(e);
-    const trainfiles = await trainingmanager.loadtype(e);
-    result.response.push({
-      files: responsefiles.sort((a: any, b: any) => {
-        return a.beauty.localeCompare(b.beauty);
-      }),
-      type: e,
-    });
-    result.training.push({
-      files: trainfiles.sort(),
-      type: e,
-    });
-  }, Promise.resolve());
-  res.render('home.twig', { user, files: result, nav: '2' });
+  const result = await getFiles();
+  res.render('app.twig', { user, files: result, nav: '2', page: 'home' });
 }
 
 /**
@@ -190,7 +181,7 @@ async function file(
   } else if (catparam === 'training') {
     fileres = await trainingmanager.loadfile(`${typeparam}-${nameparam}`);
   }
-  res.render('file.twig', {
+  res.render('app.twig', {
     params,
     user,
     paramsstr: JSON.stringify(params),
@@ -199,6 +190,7 @@ async function file(
     filename: nameparam,
     cat: catparam,
     nav: '2',
+    page: 'file',
   });
 }
 
@@ -221,7 +213,7 @@ async function addresponse(
       responses: {},
     });
   }
-  res.render('addresponse.twig', { user, nav: '3' });
+  res.render('app.twig', { user, nav: '3', page: 'addresponse' });
 }
 
 async function analytics(
@@ -229,6 +221,8 @@ async function analytics(
   res: express.Response,
   next: express.NextFunction,
 ) {
+  const user = requireConnection(req, res);
+  if (!user) return;
   // Deal with archived
   let isarchived = false;
   if (req.query.archived) {
@@ -250,17 +244,16 @@ async function analytics(
     page = nbpage;
   }
 
-  const datas: AnalyticsData[] = await analyticsmanager.getAll(
-    page,
-    isarchived,
-  );
+  const datas: AnalyticsData[] = await analyticsmanager.getAll();
 
-  res.render('analytics.twig', {
+  res.render('app.twig', {
     nbpage,
+    user,
     datas,
     archived: isarchived,
     curpage: page,
     nav: '4',
+    page: 'analytics',
   });
 }
 
@@ -465,7 +458,7 @@ async function deleteelem(
     return;
   }
   res.writeHead(200);
-  res.end();
+  res.end(JSON.stringify({}));
 }
 
 async function modif(
@@ -487,7 +480,7 @@ async function modif(
     return;
   }
   res.writeHead(200);
-  res.end();
+  res.end(JSON.stringify({}));
 }
 
 /**
@@ -566,6 +559,124 @@ async function getentities(
   res.end();
 }
 
+async function api(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  if (req.query.query) {
+    const query = req.query.query;
+    switch (query) {
+      case 'home':
+        const result = await getFiles();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+        break;
+      case 'login':
+        let log = await login(req);
+        if (!log) {
+          log = {
+            error: true,
+            msg: 'Invalid pseudo or password',
+          };
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(log));
+        break;
+      case 'addresponse':
+        const intent = req.body.name;
+        const type = req.body.type;
+        const beautyname = req.body.beauty;
+        const response = await responsemanager.addResponse({
+          intent,
+          type,
+          beautyname,
+          desc: '',
+          responses: {},
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(response));
+        break;
+      case 'analytics':
+        const nb: number = await analyticsmanager.getNb(true);
+        const datas: AnalyticsData[] = await analyticsmanager.getAll();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ nb, datas }));
+        break;
+      case 'file':
+        let fileres: any;
+        if (req.query.cat === 'response') {
+          fileres = await responsemanager.loadfile(
+            `${req.query.type}.${req.query.name}`,
+          );
+        } else {
+          fileres = await trainingmanager.loadfile(
+            `${req.query.type}-${req.query.name}`,
+          );
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            file: json2pyaml.stringify(fileres),
+          }),
+        );
+        break;
+      case 'entities':
+        const entities = await trainingmanager.getEntities();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(entities));
+        break;
+      case 'params':
+        const params = [
+          'user.lastname',
+          'user.firstname',
+          'user.email',
+          'user.siteGroup',
+          'user.userId',
+          'site.id',
+          'site.code',
+          'site.libelle',
+          'site.email',
+          'site.telephone',
+          'site.botNumber',
+          'site.horaires',
+          'site.infos',
+          'site.guideServices',
+          'site.relaisColis',
+          'site.concierges.prenomsconcierges',
+          'site.concierges.nb',
+          'site.concierges.genre',
+          'site.groups',
+          'site.groups.length',
+          'other.numLocker',
+          'other.compopanier',
+        ];
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(params));
+        break;
+      default:
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end();
+        break;
+    }
+    return;
+  }
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end();
+}
+
+async function all(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  const user = checkConnection(req);
+
+  res.render('app.twig', {
+    user,
+  });
+}
+
 export default {
   login,
   disconnect,
@@ -582,5 +693,7 @@ export default {
   modif,
   archived,
   recover,
+  api,
+  all,
   delete: deleteelem,
 };

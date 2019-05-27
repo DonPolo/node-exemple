@@ -26,7 +26,7 @@ const count = async (query: any): Promise<number> => {
       }
     });
   });
-}
+};
 
 /**
  * Insert datas in the database with promise
@@ -67,27 +67,37 @@ const update: any = async (query: any) => {
 
 const archive: any = async (query: any) => {
   return new Promise((resolve, reject) => {
-    db.update(query, {$set: {archived: true}}, {}, (err: any, numReplaced: any) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(numReplaced);
-      }
-    });
+    db.update(
+      query,
+      { $set: { archived: true } },
+      {},
+      (err: any, numReplaced: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(numReplaced);
+        }
+      },
+    );
   });
-}
+};
 
 const recovery: any = async (query: any) => {
   return new Promise((resolve, reject) => {
-    db.update(query, {$set: {archived: false}}, {}, (err: any, numReplaced: any) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(numReplaced);
-      }
-    });
+    db.update(
+      query,
+      { $set: { archived: false } },
+      {},
+      (err: any, numReplaced: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(numReplaced);
+        }
+      },
+    );
   });
-}
+};
 
 /**
  * Find one row in the database with promise
@@ -109,12 +119,10 @@ const findone: any = async (query: any) => {
  * Find datas in the database with promise
  * @param query a NoSQL query like with MongoDB
  */
-const find: any = async (page: number, query: any) => {
+const find: any = async (query: any) => {
   return new Promise((resolve, reject) => {
     db.find(query)
       .sort({ date: -1 })
-      .skip((page - 1) * 20)
-      .limit(20)
       .exec((err: any, docs: any) => {
         if (err) {
           reject(err);
@@ -129,23 +137,18 @@ async function addEntry(doc: AnalyticsData) {
   await insert(doc);
 }
 
-async function getAll(page: number, archived: boolean): Promise<AnalyticsData[]> {
-  let query = {};
-  if (archived) {
-    query = {}
-  } else {
-    query = {archived: false};
-  }
-  const res = await find(page, query);
+async function getAll(): Promise<AnalyticsData[]> {
+  const query = {};
+  const res = await find(query);
   return res;
 }
 
-async function getNb(archived: boolean): Promise<number> {
+async function getNb(isarchived: boolean): Promise<number> {
   let query = {};
-  if (archived) {
-    query = {}
+  if (isarchived) {
+    query = {};
   } else {
-    query = {archived: false};
+    query = { archived: false };
   }
   return await count(query);
 }

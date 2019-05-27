@@ -15,7 +15,7 @@ function formatHoraires(horaires: any[]) {
   for (let i = 1; i < groups.length - 1; i += 1) {
     res += `, ${this.writeHoraires(groups[i])}`;
   }
-  if (res.length > 1) {
+  if (groups.length > 1) {
     res += ` et ${this.writeHoraires(groups[groups.length - 1])}`;
   }
   return res;

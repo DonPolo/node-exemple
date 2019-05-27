@@ -1,21 +1,25 @@
-function simplesearch (search) {
-  let input = search.getElementsByTagName("input")[0];
-  let container = document.getElementById(search.getAttribute('s-con'));
+import $ from './jquery';
 
-  actualize = () => {
-    let val = input.value.toLowerCase();
-    container.querySelectorAll("*[s-val]").forEach(e => {
+export function simplesearch (search) {
+  let input = $(search.find("input").get(0));
+  let container = $('#' + search.attr('s-con'));
+
+  let actualize = () => {
+    let val = input.val().toLowerCase();
+    let li = container.find("*[s-val]");
+    li.each(e => {
+      e = $(li.get(e));
       if (val === '') {
-        e.style.display = null;
+        e.css('display', '');
       } else {
-        let elemval = e.getAttribute("s-val").toLowerCase();
+        let elemval = e.attr("s-val").toLowerCase();
         if (elemval.startsWith(val)) {
-          e.style.display = null;
+          e.css('display', '');
         } else {
           if (elemval.includes('.') && elemval.split('.')[1].startsWith(val)) {
-            e.style.display = null;
+            e.css('display', '');
           } else {
-            e.style.display = 'none';
+            e.css('display', 'none');
           }
         }
       }
@@ -23,14 +27,15 @@ function simplesearch (search) {
   }
 
   // Event
-  input.addEventListener("input", actualize);
+  input.on("input", actualize);
 }
 
-function complexsearch (search) {
+/*
+export function complexsearch (search) {
   let input = search.getElementsByTagName('input')[0];
   let container = document.getElementById(search.getAttribute('s-con'));
 
-  actualize = () => {
+  let actualize = () => {
     let val = input.value.toLowerCase();
     container.querySelectorAll('*[s-cat]').forEach(e => {
       e.style.display = null;
@@ -88,14 +93,4 @@ function complexsearch (search) {
 
   input.addEventListener('input', actualize);
 }
-
-window.addEventListener("load", () => {
-  document.querySelectorAll("*[search='simple']").forEach(search => {
-    simplesearch(search);
-  });
-
-  document.querySelectorAll("*[search='complex']").forEach(search => {
-    complexsearch(search);
-  });
-
-});
+*/

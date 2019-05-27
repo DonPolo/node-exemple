@@ -20,7 +20,7 @@ module.exports = {
     devtoolModuleFilenameTemplate: '[absolute-resource-path]'
   },
   resolve : {
-    extensions : ['.ts', '.js', '.json', '.twig']
+    extensions : ['.ts', '.json', '.twig']
   },
   module: {
     rules: [
