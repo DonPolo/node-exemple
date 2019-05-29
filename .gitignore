@@ -13,6 +13,5 @@ doc/
 *.js.sample
 NewAgent*.json
 DB/
-Templates/
 types.ts
 bfg.jar

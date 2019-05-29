@@ -11,7 +11,11 @@
     "strictNullChecks": true,
     "experimentalDecorators": true, // For sequelize-typescript
     "emitDecoratorMetadata": true, // For sequelize-typescript
-    "typeRoots": ["src/types/**/*.d.ts"]
+    "typeRoots": ["src/types/**/*.d.ts"],
+    "lib": [
+      "dom",
+      "es2015"
+    ]
   },
   "include": ["src/**/*"]
 }

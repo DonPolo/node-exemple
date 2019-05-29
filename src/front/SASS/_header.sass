@@ -1,0 +1,53 @@
+@import 'var'
+
+header
+  background: $secondcolor
+  width: 100%
+  height: $headerheight
+  box-shadow: 0 0 5px 0 black
+  z-index: 10
+  display: flex
+
+  div
+    display: flex
+    align-items: center
+    flex-shrink: 0
+    img
+      height: 40px
+      margin: 0 20px
+    h1
+      font-size: 25px
+  ul
+    width: 100%
+    flex-shrink: 1
+    display: flex
+    justify-content: center
+    list-style: none
+    margin: 0
+    padding: 0
+    a
+      height: 100%
+      display: flex
+      align-items: center
+      justify-content: center
+      padding: 0 40px
+      text-decoration: none
+      color: inherit
+      font-size: 20px
+      margin: 0 10px
+    a:hover
+      background: rgba(255,255,255,0.4)
+    a.selected
+      border-bottom: solid 3px black
+      background: rgba(255,255,255,0.4)
+      height: 48px
+
+  span
+    display: flex
+    align-items: center
+    flex-shrink: 0
+    height: 100%
+    border-left: solid 2px black
+    padding: 0 40px
+    h2
+      font-size: 20px

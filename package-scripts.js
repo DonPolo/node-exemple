@@ -11,9 +11,8 @@ module.exports = {
   scripts: {
     sass: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=compressed',
     sass_debug: 'sass --watch public/SASS:public/CSS --no-source-map --charset --style=expanded',
-    startfront: 'webpack --config ./assets/webpack.config.js',
     start: {
-      front: 'webpack --open --config ./assets/webpack.dev.js',
+      front: 'webpack --open --config ./src/front/webpack.dev.js',
       back: {
         start: {
           description: 'Running on dev environment.',
@@ -26,7 +25,7 @@ module.exports = {
         },
         watch: {
           description: 'Webpack watch for change and compile.',
-          script: `${crossEnv('NODE_ENV=development')} webpack -w`
+          script: `${crossEnv('NODE_ENV=development')} webpack -w --config ./src/back/webpack.config.js`
         },
         withDebug: {
           script: `${crossEnv(
@@ -41,10 +40,10 @@ module.exports = {
       all: concurrent.nps('start.front', 'start.back')
     },
     build: {
-      front: 'webpack --config ./assets/webpack.prod.js',
+      front: 'webpack --config ./src/front/webpack.prod.js',
       back: {
         default: series.nps('clean.prod', 'build.back.pack'),
-        pack: `${crossEnv('NODE_ENV=production')} webpack-cli`
+        pack: `${crossEnv('NODE_ENV=production')} webpack-cli --config ./src/back/webpack.config.js`
       },
       all: concurrent.nps('build.front', 'build.back')
     },
