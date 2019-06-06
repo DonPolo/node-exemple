@@ -10,10 +10,14 @@ const easywhere = new EasyWhere();
 async function opentime(request: IntentRequest): Promise<IntentResult> {
   let txt = await responsemanager.load('infos.schedule');
   if (request.contexts.site) {
-    const precision = request.entities.filter(ex => ex.name === 'datetime');
+    const precision = request.entities.filter(
+      ex => ex.name === 'datetime' || ex.name === '##all##',
+    );
     if (precision.length > 0) {
       const close =
-        request.entities.filter(en => en.name === 'close').length > 0;
+        request.entities.filter(
+          en => en.name === 'close' || en.name === '##all##',
+        ).length > 0;
       const e = precision[0];
       const possibilities = e.value.split(' ');
       await possibilities.reduce(async (previous: any, p: string) => {
@@ -115,7 +119,9 @@ async function relaiscolis(request: IntentRequest): Promise<IntentResult> {
 async function compopanier(request: IntentRequest): Promise<IntentResult> {
   let confidence = request.confidence;
   let txt;
-  const paniers = request.entities.filter(e => e.name === 'service-panier');
+  const paniers = request.entities.filter(
+    e => e.name === 'service-panier' || e.name === '##all##',
+  );
   if (paniers.length > 0) {
     const panier = paniers[0].value
       .normalize('NFD')

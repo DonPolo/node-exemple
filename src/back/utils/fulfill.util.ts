@@ -205,7 +205,7 @@ function getConfig(): Intent[] {
       name: config.INTENTS.default.fallback,
       func: intentDefault.fallback,
     },
-    /*
+
     {
       name: 'test-buttons',
       func: intentTests.buttons,
@@ -234,7 +234,6 @@ function getConfig(): Intent[] {
       name: 'test-clone',
       func: intentTests.clone,
     },
-    */
   ];
 }
 

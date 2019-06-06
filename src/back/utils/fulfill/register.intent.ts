@@ -77,8 +77,9 @@ function checkAlreadyRegistered(request: IntentRequest): boolean {
 }
 
 async function checkUserByMail(request: IntentRequest) {
-  const mail: string = request.entities.filter(e => e.name === 'email')[0]
-    .value;
+  const mail: string = request.entities.filter(
+    e => e.name === 'email' || e.name === '##all##',
+  )[0].value;
   const user: User | null = await ecl.getUser(
     'email',
     mail,
@@ -110,7 +111,10 @@ async function register(request: IntentRequest): Promise<IntentResult> {
       ) &&
       !request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.registermail)
     ) {
-      if (request.entities.filter(e => e.name === 'email').length > 0) {
+      if (
+        request.entities.filter(e => e.name === 'email' || e.name === '##all##')
+          .length > 0
+      ) {
         // Mail given skip this part
         const user = await checkUserByMail(request);
         if (user) {
@@ -150,7 +154,8 @@ async function registerMail(request: IntentRequest): Promise<IntentResult> {
   let txt: Response;
   if (
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.register) &&
-    request.entities.filter(e => e.name === 'email').length > 0 &&
+    request.entities.filter(e => e.name === 'email' || e.name === '##all##')
+      .length > 0 &&
     !checkAlreadyRegistered(request)
   ) {
     const user = await checkUserByMail(request);
@@ -178,7 +183,9 @@ async function registerMail(request: IntentRequest): Promise<IntentResult> {
 
 async function registerName(request: IntentRequest): Promise<IntentResult> {
   let conf = request.confidence;
-  const names = request.entities.filter(e => e.name === 'name');
+  const names = request.entities.filter(
+    e => e.name === 'name' || e.name === '##all##',
+  );
   let text = await responsemanager.load('default.fallback');
   let name = null;
   if (names.length > 0) {

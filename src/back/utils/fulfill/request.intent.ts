@@ -11,8 +11,10 @@ async function recordGlobalRequest(
   request: IntentRequest,
 ): Promise<IntentResult> {
   let numLocker = undefined;
-  const loc = request.entities.filter(e => e.name === 'place');
-  const num = request.entities.filter(e => e.name === 'builtin.number');
+  const loc = request.entities.filter(
+    e => e.name === 'place' || e.name === '##all##',
+  );
+  const num = request.entities.filter(e => e.name === 'number');
   let respo = '';
   if (loc.length > 0 && loc[0].type === 'casier' && num.length > 0) {
     numLocker = parseInt(num[0].value, 10);
@@ -149,7 +151,7 @@ async function updateGlobalRequest(
   let numLocker;
   let success = false;
   let respo: string;
-  const num = request.entities.filter(e => e.name === 'builtin.number');
+  const num = request.entities.filter(e => e.name === 'number');
   if (num.length > 0) numLocker = parseInt(num[0].value, 10);
   if (!request.contexts.other) request.contexts.other = {};
   request.contexts.other.numLocker = numLocker;
