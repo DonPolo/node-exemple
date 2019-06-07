@@ -42,6 +42,7 @@ export default class FileController extends ParentController {
   hasReturn: boolean;
   source: any;
   file: string | null;
+  unsave: boolean;
 
   constructor(render: FilePage, props: IPFile) {
     super('file', 2, render, props);
@@ -60,6 +61,7 @@ export default class FileController extends ParentController {
     this.autosave = false;
     this.hasReturn = true;
     this.source = null;
+    this.unsave = false;
     filecat = props.file.cat;
 
     FileController.entities = datas.file.entities;
@@ -174,11 +176,16 @@ export default class FileController extends ParentController {
   };
 
   changeFile = (name: string, type: string, cati: 'training' | 'response') => {
+    if (this.unsave) {
+      const r = confirm('You have unsaved change ! Continue ?');
+      if (!r) return;
+    }
     const inf: FileInfos = {
       type,
       filename: name,
       cat: cati,
     };
+    this.unsave = false;
     this.source.setValue('');
     filecat = cati;
     window.history.pushState('', '', `/webapp/${cati}/${type}/${name}`);
@@ -250,6 +257,7 @@ export default class FileController extends ParentController {
       this.editorChange();
     }
     this.source.on('change', () => {
+      this.unsave = true;
       if (!this.autosave || !this.hasReturn) return;
       this.save();
     });
@@ -274,6 +282,7 @@ export default class FileController extends ParentController {
       .done(() => {
         this.cansave = true;
         this.hasReturn = true;
+        this.unsave = false;
         $('#savebut').removeClass('disabled');
       })
       .fail(() => {
