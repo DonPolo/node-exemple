@@ -7,7 +7,7 @@ import {
   ParsedResponse,
   Contexts,
   AnalyticsData,
-} from './types.util';
+} from '../../types/types.util';
 import config from '../config';
 
 import intentRegister from './fulfill/register.intent';

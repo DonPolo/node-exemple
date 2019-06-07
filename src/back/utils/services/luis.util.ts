@@ -1,6 +1,6 @@
 import querystring from 'querystring';
 import config from '../../config';
-import { ServiceRequest, ServiceResult } from '../types.util';
+import { ServiceRequest, ServiceResult } from '../../../types/types.util';
 import { execrequest } from '../async.util';
 import logger from '../../config/logger';
 

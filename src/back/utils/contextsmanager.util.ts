@@ -3,7 +3,7 @@ import {
   Contexts,
   getEmptySiteContexts,
   getEmptyUserContexts,
-} from './types.util';
+} from '../../types/types.util';
 import config from '../config';
 
 // Connect to ad db stored in DB/contexts

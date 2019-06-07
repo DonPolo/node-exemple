@@ -1,4 +1,4 @@
-import { IntentRequest, IntentResult } from '../types.util';
+import { IntentRequest, IntentResult } from '../../../types/types.util';
 import responsemanager from '../responsemanager.util';
 
 async function buttons(request: IntentRequest): Promise<IntentResult> {

@@ -1,4 +1,8 @@
-import { IntentRequest, IntentResult, Response } from '../types.util';
+import {
+  IntentRequest,
+  IntentResult,
+  Response,
+} from '../../../types/types.util';
 import Ecl, { RequestType } from '../../models/ecl';
 import config from '../../config';
 import { sendMessage } from '../message.util';

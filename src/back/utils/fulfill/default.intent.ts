@@ -1,4 +1,4 @@
-import { IntentResult, IntentRequest } from '../types.util';
+import { IntentResult, IntentRequest } from '../../../types/types.util';
 import responsemanager from '../responsemanager.util';
 
 async function fallback(request: IntentRequest): Promise<IntentResult> {

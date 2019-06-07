@@ -1,4 +1,9 @@
-import { Contexts, IntentRequest, IntentResult, Response } from '../types.util';
+import {
+  Contexts,
+  IntentRequest,
+  IntentResult,
+  Response,
+} from '../../../types/types.util';
 import responsemanager from '../responsemanager.util';
 import config from '../../config';
 import Ecl, { SiteGroup, User } from '../../models/ecl';

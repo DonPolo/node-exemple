@@ -1,4 +1,8 @@
-import { ServiceRequest, ServiceResult, ResultEntity } from '../types.util';
+import {
+  ServiceRequest,
+  ServiceResult,
+  ResultEntity,
+} from '../../../types/types.util';
 import config from '../../config';
 import { execrequest } from '../async.util';
 import uuid from 'uuid';

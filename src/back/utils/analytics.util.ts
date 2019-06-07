@@ -1,5 +1,5 @@
 import Datastore from 'nedb';
-import { AnalyticsData } from './types.util';
+import { AnalyticsData } from '../../types/types.util';
 
 // Connect to a DB stored in DB/analytics
 const db = new Datastore({ filename: 'DB/analytics', autoload: true });

@@ -12,10 +12,9 @@
     "experimentalDecorators": true, // For sequelize-typescript
     "emitDecoratorMetadata": true, // For sequelize-typescript
     "typeRoots": ["src/types/**/*.d.ts"],
-    "lib": [
-      "dom",
-      "es2015"
-    ]
+    "lib": ["dom", "es2015"],
+    "jsx": "react",
+    "skipLibCheck": true
   },
   "include": ["src/**/*"]
 }

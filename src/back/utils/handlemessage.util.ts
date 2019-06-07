@@ -13,7 +13,7 @@ import {
   FulfillResult,
   FulfillRequest,
   ParsedResponse,
-} from './types.util';
+} from '../../types/types.util';
 
 /**
  * Get contexts relative to the user site

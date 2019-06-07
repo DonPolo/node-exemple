@@ -14,7 +14,7 @@ import {
   getEmptyUserContexts,
   getEmptySiteContexts,
   AnalyticsData,
-} from '../utils/types.util';
+} from '../../types/types.util';
 import handlemessage from '../utils/handlemessage.util';
 import logger from '../config/logger';
 import template from '../templates/app.html';
@@ -671,6 +671,9 @@ async function api(
       }
       return;
     }
+    res.writeHead(401, { 'Content-Type': 'text/plain' });
+    res.end();
+    return;
   }
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end();

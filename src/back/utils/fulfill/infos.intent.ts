@@ -1,5 +1,5 @@
 import responsemanager from '../responsemanager.util';
-import { IntentRequest, IntentResult } from '../types.util';
+import { IntentRequest, IntentResult } from '../../../types/types.util';
 import format from '../format.util';
 import { isEmpty } from '../func.util';
 import EasyWhere from '../../models/easywhere';

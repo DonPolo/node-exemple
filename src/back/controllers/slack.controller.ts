@@ -10,7 +10,7 @@ import {
   ServiceResult,
   getEmptySiteContexts,
   getEmptyUserContexts,
-} from '../utils/types.util';
+} from '../../types/types.util';
 import config from '../config';
 
 const getUserURL = 'https://slack.com/api/users.profile.get';

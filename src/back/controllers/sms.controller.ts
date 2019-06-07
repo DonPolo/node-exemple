@@ -1,5 +1,5 @@
 import express from 'express';
-import { Request, ParsedResponse } from '../utils/types.util';
+import { Request, ParsedResponse } from '../../types/types.util';
 import handlemessage from '../utils/handlemessage.util';
 import HTTPStatus from 'http-status';
 import APIError from '../utils/error/apierror.util';

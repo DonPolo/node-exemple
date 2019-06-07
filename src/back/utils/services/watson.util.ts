@@ -1,6 +1,6 @@
 import watson from 'watson-developer-cloud/assistant/v2';
 import config from '../../config';
-import { ServiceRequest, ServiceResult } from '../types.util';
+import { ServiceRequest, ServiceResult } from '../../../types/types.util';
 import logger from '../../config/logger';
 
 const createSession: any = async (assistant: any, obj: any) => {

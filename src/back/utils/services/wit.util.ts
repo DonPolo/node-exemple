@@ -1,6 +1,6 @@
 import { Wit } from 'node-wit';
 
-import { ServiceResult, ServiceRequest } from '../types.util';
+import { ServiceResult, ServiceRequest } from '../../../types/types.util';
 import config from '../../config';
 import logger from '../../config/logger';
 

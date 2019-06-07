@@ -1,5 +1,5 @@
 import Datastore from 'nedb';
-import { Response } from './types.util';
+import { Response } from '../../types/types.util';
 
 // Connect to a DB stored in DB/responses
 const db = new Datastore({ filename: 'DB/responses', autoload: true });
