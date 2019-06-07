@@ -208,6 +208,11 @@ class Editor extends ParentComponent<{
             className='fas fa-chevron-left'
           />
         </span>
+        {!this.props.isLoaded ? (
+          <span className='loader abs'>
+            <img src='/pic/load.gif' />
+          </span>
+        ) : null}
       </>
     );
   }

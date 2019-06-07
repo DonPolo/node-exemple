@@ -102,7 +102,7 @@ class BottomBar extends ParentComponent<IPBotBar, { selectedpage: number }> {
               this.props.controller.inputPageSubmit(event, this)
             }
           >
-            Page:
+            Page{' '}
             <input
               type='text'
               name='page'
@@ -305,11 +305,19 @@ class Analytics extends ParentComponent<{
   controller: AnalyticsController;
 }> {
   render() {
-    if (!this.props.datas) return null;
-    const datas = this.props.datas.map((data: AnalyticsData, index: number) => (
-      <Data key={index} data={data} controller={this.props.controller} />
-    ));
-    return <main>{datas}</main>;
+    let res = null;
+    if (!this.props.datas) {
+      res = (
+        <span className='loader'>
+          <img src='/pic/load.gif' />
+        </span>
+      );
+    } else {
+      res = this.props.datas.map((data: AnalyticsData, index: number) => (
+        <Data key={index} data={data} controller={this.props.controller} />
+      ));
+    }
+    return <main>{res}</main>;
   }
 }
 

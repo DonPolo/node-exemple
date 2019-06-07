@@ -155,16 +155,24 @@ class Container extends ParentComponent<{
 }> {
   render() {
     let com = null;
-    com = this.props.files.map((f, index) => (
-      <File
-        index={index}
-        key={index}
-        file={f}
-        type={this.props.type}
-        mode={this.props.mode}
-        controller={this.props.controller}
-      />
-    ));
+    if (this.props.files) {
+      com = this.props.files.map((f, index) => (
+        <File
+          index={index}
+          key={index}
+          file={f}
+          type={this.props.type}
+          mode={this.props.mode}
+          controller={this.props.controller}
+        />
+      ));
+    } else {
+      com = (
+        <span className='loader'>
+          <img src='/pic/load.gif' />
+        </span>
+      );
+    }
     return <div>{com}</div>;
   }
 }
@@ -190,14 +198,14 @@ class HomePage extends ParentComponent<{}, ISHome> {
           <Container
             type='training'
             mode={this.state.mode}
-            files={this.state.files ? this.state.files.training : []}
+            files={this.state.files ? this.state.files.training : null}
             controller={this.controller}
           />
           <h2>Response : </h2>
           <Container
             type='response'
             mode={this.state.mode}
-            files={this.state.files ? this.state.files.response : []}
+            files={this.state.files ? this.state.files.response : null}
             controller={this.controller}
           />
           {this.state.redirect ? (

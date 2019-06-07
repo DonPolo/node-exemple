@@ -15,4 +15,4 @@ NewAgent*.json
 DB/
 types.ts
 bfg.jar
-assets/js
+assets/js/

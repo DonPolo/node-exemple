@@ -179,6 +179,7 @@ export default class FileController extends ParentController {
       filename: name,
       cat: cati,
     };
+    this.source.setValue('');
     filecat = cati;
     window.history.pushState('', '', `/webapp/${cati}/${type}/${name}`);
     this.state.fileinfos = inf;
