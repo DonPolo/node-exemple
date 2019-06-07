@@ -826,7 +826,7 @@ class FilePage extends ParentComponent<IPFile, ISFile> {
           controller={this.controller}
         />
         {this.state.showDoc ? <Doc /> : null}
-        {this.state.redirect ? <Redirect to='/webapp/' push={true} /> : null}
+        {this.state.redirect ? <Redirect to='/' push={true} /> : null}
       </>
     );
   }
