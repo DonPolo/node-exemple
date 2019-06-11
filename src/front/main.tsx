@@ -2,7 +2,7 @@
 /* #### Imports #### */
 /* ################# */
 
-import './utils/style.util';
+import './sass/style.sass';
 
 import ReactDOM from 'react-dom';
 import React from 'react';

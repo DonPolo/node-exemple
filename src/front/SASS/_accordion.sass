@@ -12,11 +12,21 @@
     outline: none
     transition: 0.4s
     border-bottom: solid 1px black
-  .accordion:first-child
-    border-top: solid 1px black
+    &:first-child
+      border-top: solid 1px black
+    &:after
+      content: '\02795'
+      font-size: 13px
+      color: black
+      float: right
+      margin-left: 5px
+    &:hover
+      background: $thirdcolor
 
-  .active, .accordion:hover
+  .active
     background: $thirdcolor
+    &:after
+      content: "\2796"
 
   .panel
     padding: 0 18px
@@ -36,13 +46,3 @@
       white-space: -pre-wrap
       white-space: -o-pre-wrap
       word-wrap: break-word
-
-  .accordion:after
-    content: '\02795'
-    font-size: 13px
-    color: black
-    float: right
-    margin-left: 5px
-
-  .active:after
-    content: "\2796"

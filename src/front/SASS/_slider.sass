@@ -4,12 +4,22 @@
   display: inline-block
   width: 45px
   height: 25px
+  /* Hide default HTML checkbox */
+  input
+    opacity: 0
+    width: 0
+    height: 0
+    &:checked + .slider
+      background-color: $thirdcolor
 
-/* Hide default HTML checkbox */
-.switch input
-  opacity: 0
-  width: 0
-  height: 0
+    &:focus + .slider
+      border: none
+
+    &:checked + .slider::before
+      background-color: $secondcolor
+      -webkit-transform: translateX(19px)
+      -ms-transform: translateX(19px)
+      transform: translateX(19px)
 
 /* The slider */
 .slider
@@ -23,33 +33,21 @@
   -webkit-transition: .4s
   transition: .4s
 
-.slider::before
-  position: absolute
-  content: ""
-  height: 19px
-  width: 19px
-  left: 3px
-  bottom: 3px
-  background-color: $thirdcolor
-  -webkit-transition: .4s
-  transition: .4s
+  &::before
+    position: absolute
+    content: ""
+    height: 19px
+    width: 19px
+    left: 3px
+    bottom: 3px
+    background-color: $thirdcolor
+    -webkit-transition: .4s
+    transition: .4s
 
-input:checked + .slider
-  background-color: $thirdcolor
+  /* Rounded sliders */
+  &.round
+    border-radius: 25px
+    box-shadow: 0 0 2px 0 black
 
-input:focus + .slider
-  border: none
-
-input:checked + .slider::before
-  background-color: $secondcolor
-  -webkit-transform: translateX(19px)
-  -ms-transform: translateX(19px)
-  transform: translateX(19px)
-
-/* Rounded sliders */
-.slider.round
-  border-radius: 25px
-  box-shadow: 0 0 2px 0 black
-
-.slider.round:before
-  border-radius: 50%
+  &.round:before
+    border-radius: 50%

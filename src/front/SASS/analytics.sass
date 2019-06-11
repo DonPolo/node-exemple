@@ -1,90 +1,85 @@
-@import 'var'
-@import 'global'
-@import 'header'
-@import 'accordion'
-@import 'slider'
-
-.analytics main
-  z-index: -1
-  display: flex
-  flex-wrap: wrap
-  align-content: flex-start
-  position: absolute
-  top: $headerheight
-  left: 0
-  right: 0
-  bottom: 50px
-  overflow-x: hidden
-  overflow-y: auto
-  @extend %accordion
-  .accordion
-    max-width: 100%
+.analytics
+  main
+    z-index: -1
+    display: flex
+    flex-wrap: wrap
+    align-content: flex-start
+    position: absolute
+    top: $headerheight
+    left: 0
+    right: 0
+    bottom: 50px
+    overflow-x: hidden
+    overflow-y: auto
+    @extend %accordion
+    .accordion
+      max-width: 100%
+      display: flex
+      align-items: center
+      justify-content: space-between
+      span
+        width: 25%
+      span:last-child
+        text-align: right
+        font-size: 18px
+        margin: 0 10px
+        width: auto
+      &:first-child
+        border-top: none
+      &:last-child
+        border-bottom: none
+      &::after
+        text-align: right
+    .panel
+      display: none
+      flex-wrap: wrap
+      width: 100%
+      max-height: inherit
+      .accordion
+        display: flex
+        justify-content: space-between
+        border-top: none
+        border-bottom: solid 1px black
+        &.active, &:hover
+          background: $secondcolor
+      div div
+        margin: 10px
+        width: 100%
+        display: flex
+        justify-content: space-between
+        font-size: 18px
+        table
+          width: 100%
+          margin: auto
+          td, th
+            border: solid 1px black
+            width: 50%
+  .bottom-bar
+    position: absolute
+    bottom: 0
+    left: 0
+    right: 0
+    height: 50px
+    box-shadow: 0 0 5px 0 black
     display: flex
     align-items: center
     justify-content: space-between
-    span
-      width: 25%
-    span:last-child
-      text-align: right
-      font-size: 18px
+    padding: 0 20px
+    > span
+      width: 20%
+      display: flex
+      align-items: center
+    .pages
+      width: 60%
+      display: flex
+      justify-content: center
+      a
+        margin: 0 5px
+        &:hover
+          text-decoration: underline
+        &.enable
+          font-weight: bold
+    input
+      width: 30px
+    strong
       margin: 0 10px
-      width: auto
-  .accordion:first-child
-    border-top: none
-  .accordion:last-child
-    border-bottom: none
-  .accordion::after
-    text-align: right
-  .panel
-    display: none
-    flex-wrap: wrap
-    width: 100%
-    max-height: inherit
-    .accordion
-      display: flex
-      justify-content: space-between
-      border-top: none
-      border-bottom: solid 1px black
-    .accordion.active, .accordion:hover
-      background: $secondcolor
-    div div
-      margin: 10px
-      width: 100%
-      display: flex
-      justify-content: space-between
-      font-size: 18px
-      table
-        width: 100%
-        margin: auto
-        td, th
-          border: solid 1px black
-          width: 50%
-.analytics .bottom-bar
-  position: absolute
-  bottom: 0
-  left: 0
-  right: 0
-  height: 50px
-  box-shadow: 0 0 5px 0 black
-  display: flex
-  align-items: center
-  justify-content: space-between
-  padding: 0 20px
-  > span
-    width: 20%
-    display: flex
-    align-items: center
-  .pages
-    width: 60%
-    display: flex
-    justify-content: center
-    a
-      margin: 0 5px
-    a:hover
-      text-decoration: underline
-    a.enable
-      font-weight: bold
-  input
-    width: 30px
-  strong
-    margin: 0 10px
