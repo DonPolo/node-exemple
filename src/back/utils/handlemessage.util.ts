@@ -94,10 +94,11 @@ export default async function(
   } else if (request.result) {
     request.result.contexts = contexts;
   }
+
   /* Change language */
-  let lang = 'fr-tu';
-  if (request.to === '+33755536910') {
-    lang = 'fr-vous';
+  let lang = contexts.site.locale;
+  if (!lang || lang === '') {
+    lang = 'fr-tu';
   }
   /* Get fulfill Response */
   if (!request.result) return null;

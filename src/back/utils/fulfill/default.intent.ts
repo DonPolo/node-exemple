@@ -10,6 +10,16 @@ async function fallback(request: IntentRequest): Promise<IntentResult> {
   return res;
 }
 
+async function welcome(request: IntentRequest): Promise<IntentResult> {
+  const res: IntentResult = {
+    confidence: request.confidence,
+    contexts: request.contexts,
+    response: await responsemanager.load('default.welcome'),
+  };
+  return res;
+}
+
 export default {
   fallback,
+  welcome,
 };

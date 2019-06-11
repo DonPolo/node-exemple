@@ -53,6 +53,7 @@ const defaultConfig = {
     },
     default: {
       fallback: process.env.INTENT_DEFAULT_FALLBACK || '',
+      welcome: process.env.INTENT_DEFAULT_WELCOME || '',
     },
   },
   CONTEXTS: {

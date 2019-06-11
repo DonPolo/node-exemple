@@ -68,6 +68,7 @@ export function getEmptySiteContexts(): Site {
       genre: '',
     },
     groups: [],
+    locale: 'fr-tu',
   };
 }
 

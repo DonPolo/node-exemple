@@ -24,7 +24,6 @@ routes.use('/media', MediasRoutes);
 // Webapp routes to modified responses and training
 routes.use('/webapp', WebappRoutes);
 
-
 // Other
 routes.all(
   '*',

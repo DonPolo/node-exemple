@@ -12,7 +12,7 @@ class Message extends ParentComponent<{
   render() {
     let content = null;
     if (this.props.msg.res.text) {
-      content = <span>{this.props.msg.res.text.replace(/\n/, '<br>')}</span>;
+      content = <span>{this.props.msg.res.text}</span>;
     } else if (this.props.msg.res.btn) {
       content = this.props.msg.res.btn.btns.map((b: any) => (
         <button

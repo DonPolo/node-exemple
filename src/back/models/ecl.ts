@@ -42,6 +42,7 @@ export interface Site {
     genre: string;
   };
   groups: SiteGroup[];
+  locale: string;
 }
 
 export interface SiteGroup {
@@ -108,7 +109,7 @@ export default class Ecl {
     if (service === 'console') serviceColumn = 'corresp_04';
     else serviceColumn = service;
     const sites: any[] = await this.ecl.query(
-      'SELECT `id_re_03` AS `id` , `corresp_04` AS `code` , `cl_lb_01` AS `libelle` , `cl_re_01_u` AS `email`, `site_telephone` AS `telephone`, `site_horaires` AS `horaires`, `botInfo` AS `infos`, `botNumber` FROM `client` ' +
+      'SELECT `locale`, `id_re_03` AS `id` , `corresp_04` AS `code` , `cl_lb_01` AS `libelle` , `cl_re_01_u` AS `email`, `site_telephone` AS `telephone`, `site_horaires` AS `horaires`, `botInfo` AS `infos`, `botNumber` FROM `client` ' +
         `WHERE ${serviceColumn} = :serviceId LIMIT 1`,
       {
         type: Sequelize.QueryTypes.SELECT,

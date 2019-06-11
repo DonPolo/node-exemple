@@ -205,7 +205,10 @@ function getConfig(): Intent[] {
       name: config.INTENTS.default.fallback,
       func: intentDefault.fallback,
     },
-
+    {
+      name: config.INTENTS.default.welcome,
+      func: intentDefault.welcome,
+    },
     {
       name: 'test-buttons',
       func: intentTests.buttons,

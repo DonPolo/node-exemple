@@ -5,37 +5,36 @@ const isDev = process.env.NODE_ENV === 'development';
 console.log(__dirname);
 module.exports = {
   mode: process.env.NODE_ENV,
-  context : path.resolve(__dirname, '.'),
+  context: path.resolve(__dirname, '.'),
   target: 'node',
   externals: [nodeExternals()],
   entry: {
     index: './server.ts',
   },
-  devtool:
-    isDev ? 'inline-source-map' : undefined,
+  devtool: isDev ? 'inline-source-map' : undefined,
   output: {
     path: path.join(__dirname, isDev ? '../../dev' : '../../dist'),
     filename: '[name].bundle.js',
     libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '[absolute-resource-path]'
+    devtoolModuleFilenameTemplate: '[absolute-resource-path]',
   },
-  resolve : {
-    extensions : ['.ts', '.json', '.twig']
+  resolve: {
+    extensions: ['.ts', '.json', '.twig'],
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: 'ts-loader'
+        use: 'ts-loader',
       },
       {
         test: /\.(html)$/,
-        use: 'html-loader'
-      }
-    ]
+        use: 'html-loader',
+      },
+    ],
   },
   node: {
-    fs: "empty",
+    fs: 'empty',
   },
 };
