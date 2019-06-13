@@ -1,20 +1,19 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "./dist",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "commonjs",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "target": "es2017",
-    "allowJs": true,
     "strictNullChecks": true,
     "experimentalDecorators": true, // For sequelize-typescript
     "emitDecoratorMetadata": true, // For sequelize-typescript
-    "typeRoots": ["src/types/**/*.d.ts"],
-    "lib": ["dom", "es2015"],
+    "lib": ["dom", "es2015", "es2017"],
     "jsx": "react",
-    "skipLibCheck": true
+    "types": ["jest"]
   },
-  "include": ["src/**/*"]
+  "include": ["./src/**/*"]
 }

@@ -12,10 +12,6 @@ routes.post('/delete', urlencodedParser, WebappControllers.delete);
 routes.post('/modif', urlencodedParser, WebappControllers.modif);
 // Ajax call file
 routes.post('/save', urlencodedParser, WebappControllers.save);
-// Ajax call file
-routes.post('/getfiles', urlencodedParser, WebappControllers.getfiles);
-// Ajax call file
-routes.post('/getentities', urlencodedParser, WebappControllers.getentities);
 // Ajax call chat
 routes.post('/sendmessage', urlencodedParser, WebappControllers.sendmessage);
 // Ajax call chat

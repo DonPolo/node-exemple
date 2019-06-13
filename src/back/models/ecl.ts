@@ -1,5 +1,3 @@
-// @flow
-
 import { Sequelize } from 'sequelize';
 import moment from 'moment';
 import uuid from 'uuid';

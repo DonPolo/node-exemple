@@ -26,16 +26,10 @@ function checkConnection(req: express.Request) {
   return null;
 }
 
-function requireConnection(req: express.Request, res: express.Response) {
-  const user = checkConnection(req);
-  return {};
-  if (!user) {
-    res.redirect('/webapp/login');
-    return null;
-  }
-  return user;
-}
-
+/**
+ * Get all the response files
+ * @returns response files array
+ */
 async function getFiles() {
   const restypes = await responsemanager.gettypes();
   const traintypes = await trainingmanager.getTypes();
@@ -67,7 +61,12 @@ async function getFiles() {
   return result;
 }
 
-async function login(req: express.Request) {
+/**
+ * Try to log the user
+ * @param req the express request
+ * @returns the user or null
+ */
+function login(req: express.Request) {
   const user = checkConnection(req);
   if (user) {
     return user;
@@ -102,168 +101,12 @@ async function disconnect(
   }
 }
 
-/**
- * Chat to test Lifee
- * @param req
- * @param res
- * @param next
- */
-async function chat(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const user = requireConnection(req, res);
-  if (!user) return;
-  res.render('app.twig', { user, nav: '1', page: 'chat' });
-}
-
-/**
- * Show the different response and training types
- * @param req
- * @param res
- * @param next
- */
-async function home(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const user = requireConnection(req, res);
-  if (!user) return;
-  const result = await getFiles();
-  res.render('app.twig', { user, files: result, nav: '2', page: 'home' });
-}
-
-/**
- * Show an editor to edit the file
- * @param req
- * @param res
- * @param next
- */
-async function file(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const user = requireConnection(req, res);
-  if (!user) return;
-  const typeparam = req.params.type;
-  const catparam = req.params.cat;
-  const nameparam = req.params.name;
-  let fileres: any;
-  let params: string[] = [];
-  if (catparam === 'response') {
-    fileres = await responsemanager.loadfile(`${typeparam}.${nameparam}`);
-    params = [
-      'user.lastname',
-      'user.firstname',
-      'user.email',
-      'user.siteGroup',
-      'user.userId',
-      'site.id',
-      'site.code',
-      'site.libelle',
-      'site.email',
-      'site.telephone',
-      'site.botNumber',
-      'site.horaires',
-      'site.infos',
-      'site.guideServices',
-      'site.relaisColis',
-      'site.concierges.prenomsconcierges',
-      'site.concierges.nb',
-      'site.concierges.genre',
-      'site.groups',
-      'site.groups.length',
-      'other.numLocker',
-      'other.compopanier',
-    ];
-  } else if (catparam === 'training') {
-    fileres = await trainingmanager.loadfile(`${typeparam}-${nameparam}`);
-  }
-  res.render('app.twig', {
-    params,
-    user,
-    paramsstr: JSON.stringify(params),
-    file: json2pyaml.stringify(fileres).replace(/\"/g, '\\"'),
-    type: typeparam,
-    filename: nameparam,
-    cat: catparam,
-    nav: '2',
-    page: 'file',
-  });
-}
-
-async function addresponse(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const user = requireConnection(req, res);
-  if (!user) return;
-  if (req.body.name && req.body.type && req.body.beauty) {
-    const intent = req.body.name;
-    const type = req.body.type;
-    const beautyname = req.body.beauty;
-    await responsemanager.addResponse({
-      intent,
-      type,
-      beautyname,
-      desc: '',
-      responses: {},
-    });
-  }
-  res.render('app.twig', { user, nav: '3', page: 'addresponse' });
-}
-
-async function analytics(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const user = requireConnection(req, res);
-  if (!user) return;
-  // Deal with archived
-  let isarchived = false;
-  if (req.query.archived) {
-    isarchived = true;
-  }
-  // Deal with the page
-  let ppage = '1';
-  if (req.query.page) {
-    ppage = req.query.page;
-  }
-  let page = parseInt(ppage, 10);
-  if (page < 1) {
-    page = 0;
-  }
-  const nb: number = await analyticsmanager.getNb(isarchived);
-  let nbpage: number = Math.trunc(nb / 20);
-  if (20 * nbpage < nb) nbpage += 1;
-  if (page > nbpage) {
-    page = nbpage;
-  }
-
-  const datas: AnalyticsData[] = await analyticsmanager.getAll();
-
-  res.render('app.twig', {
-    nbpage,
-    user,
-    datas,
-    archived: isarchived,
-    curpage: page,
-    nav: '4',
-    page: 'analytics',
-  });
-}
-
 async function archived(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction,
 ) {
-  const user = requireConnection(req, res);
+  const user = checkConnection(req);
   if (!user) return;
   if (req.body.id) {
     await analyticsmanager.archived(req.body.id);
@@ -279,7 +122,7 @@ async function recover(
   res: express.Response,
   next: express.NextFunction,
 ) {
-  const user = requireConnection(req, res);
+  const user = checkConnection(req);
   if (!user) return;
   if (req.body.id) {
     await analyticsmanager.recover(req.body.id);
@@ -301,7 +144,7 @@ async function sendmessage(
   res: express.Response,
   next: express.NextFunction,
 ) {
-  const user = requireConnection(req, res);
+  const user = checkConnection(req);
   if (!user) return;
   try {
     if (req.body.msg && req.body.from && req.body.types) {
@@ -340,7 +183,7 @@ async function sendevent(
   res: express.Response,
   next: express.NextFunction,
 ) {
-  const user = requireConnection(req, res);
+  const user = checkConnection(req);
   if (!user) return;
   try {
     if (req.body.from && req.body.types && req.body.event) {
@@ -404,7 +247,7 @@ async function save(
   res: express.Response,
   next: express.NextFunction,
 ) {
-  const user = requireConnection(req, res);
+  const user = checkConnection(req);
   if (!user) return;
   let error = null;
   try {
@@ -449,6 +292,8 @@ async function deleteelem(
   res: express.Response,
   next: express.NextFunction,
 ) {
+  const user = checkConnection(req);
+  if (!user) return;
   try {
     if (req.body.cat === 'response') {
       await responsemanager.delete(`${req.body.type}.${req.body.name}`);
@@ -467,6 +312,8 @@ async function modif(
   res: express.Response,
   next: express.NextFunction,
 ) {
+  const user = checkConnection(req);
+  if (!user) return;
   try {
     if (req.body.cat === 'response') {
       await responsemanager.modif(
@@ -482,82 +329,6 @@ async function modif(
   }
   res.writeHead(200);
   res.end(JSON.stringify({}));
-}
-
-/**
- * Get all the types and there files
- * @param req
- * @param res
- * @param next
- */
-async function getfiles(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const user = requireConnection(req, res);
-  if (!user) return;
-  try {
-    if (req.body.token === 'MmFJYmkWa1Qfg730c5gORJaEOTsBmXfw') {
-      const restypes = await responsemanager.gettypes();
-      const traintypes = await trainingmanager.getTypes();
-      const types = restypes;
-      traintypes.forEach((t: any) => {
-        if (!types.includes(t)) {
-          types.push(t);
-        }
-      });
-      types.sort();
-      const result: {
-        response: any[];
-        training: any[];
-      } = {
-        response: [],
-        training: [],
-      };
-      await types.reduce(async (previous: any, e: any) => {
-        await previous;
-        const responsefiles = await responsemanager.loadtype(e);
-        const trainfiles = await trainingmanager.loadtype(e);
-        result.response.push({
-          files: responsefiles.sort((a: any, b: any) => {
-            return a.beauty.localeCompare(b.beauty);
-          }),
-          type: e,
-        });
-        result.training.push({
-          files: trainfiles.sort(),
-          type: e,
-        });
-      }, Promise.resolve());
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
-      return;
-    }
-  } catch (e) {
-    logger.error(e);
-  }
-  res.writeHead(404, { 'Content-Type': 'text/plain' });
-  res.end();
-}
-
-async function getentities(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) {
-  const user = requireConnection(req, res);
-  if (!user) return;
-  try {
-    const entities = await trainingmanager.getEntities();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(entities));
-    return;
-  } catch (e) {
-    logger.error(e);
-  }
-  res.writeHead(404, { 'Content-Type': 'text/plain' });
-  res.end();
 }
 
 async function api(
@@ -691,16 +462,9 @@ async function all(
 export default {
   login,
   disconnect,
-  chat,
-  home,
-  file,
-  addresponse,
-  analytics,
   sendmessage,
   sendevent,
   save,
-  getfiles,
-  getentities,
   modif,
   archived,
   recover,

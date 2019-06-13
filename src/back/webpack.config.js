@@ -19,7 +19,7 @@ module.exports = {
     devtoolModuleFilenameTemplate: '[absolute-resource-path]',
   },
   resolve: {
-    extensions: ['.ts', '.json', '.twig'],
+    extensions: ['.ts', '.js', '.json'],
   },
   module: {
     rules: [
@@ -31,6 +31,11 @@ module.exports = {
       {
         test: /\.(html)$/,
         use: 'html-loader',
+      },
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        loader: 'source-map-loader',
       },
     ],
   },
