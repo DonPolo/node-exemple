@@ -7,6 +7,8 @@ import {
   ParsedResponse,
   Contexts,
   AnalyticsData,
+  UnparsedText,
+  UnparsedBtnOrOpt,
 } from '../../types/types.util';
 import config from '../config';
 
@@ -20,6 +22,7 @@ import analyticsmanager from './analytics.util';
 
 import { clone } from './func.util';
 import twig, { Template } from 'twig';
+import { sendMessage } from './message.util';
 
 /**
  * Find and return the most probable response
@@ -88,7 +91,6 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
       query: request.result.query,
     }),
   );
-
   // Get the most probable one
   let intentResult: IntentResult = await intentDefault.fallback({
     entities: request.result.entities,
@@ -129,7 +131,37 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
       })
       .slice(0, 3),
   };
-  analyticsmanager.addEntry(analytics);
+  const id = await analyticsmanager.addEntry(analytics);
+
+  // Send a mail if it's fallback
+  if (
+    intentResult.response.intent === 'default.fallback' &&
+    config.FALLBACK_MAIL
+  ) {
+    await sendMessage({
+      from: config.FALLBACK_MAIL,
+      to: config.FALLBACK_MAIL,
+      subject: "Lifee n'a pas compris !!!!",
+      html:
+        '<html>' +
+        '<head>' +
+        ' <style type="text/css">' +
+        '   p {' +
+        '     text-align: justify;' +
+        '     font-family:Calibri, sans-serif;' +
+        '   }' +
+        ' </style>' +
+        '</head>' +
+        '<body>' +
+        ` <p>Hello,</p><br />` +
+        " <p>J'ai eu un petit problème, j'ai pas compris ce que me demandais un utilisateur</p><br/>" +
+        ` <p>L'utilisateur avait écrit : ${request.result.query}.</p><br/>` +
+        ` <p>Si tu veux plus d'informations, rends toi sur mon app de config, je t'ai laissé un log avec l'id : ${id}.</p><br/>` +
+        ' <p>Lifee</p>' +
+        '</body>' +
+        '</html>',
+    });
+  }
 
   return result;
 }
@@ -183,12 +215,10 @@ function getConfig(): Intent[] {
       name: config.INTENTS.infos.infos,
       func: intentInfos.infos,
     },
-    /*
     {
       name: config.INTENTS.infos.compopanier,
       func: intentInfos.compopanier,
     },
-    */
     {
       // Tested
       name: config.INTENTS.request.global,
@@ -208,6 +238,10 @@ function getConfig(): Intent[] {
     {
       name: config.INTENTS.default.welcome,
       func: intentDefault.welcome,
+    },
+    {
+      name: 'infos-listgroup',
+      func: intentTests.listgroup,
     },
     {
       name: 'test-buttons',
@@ -263,15 +297,16 @@ async function parseResponse(
     if (!r.desc) {
       if (types.includes(Object.keys(r)[0])) {
         if (typeof r.text !== 'undefined') {
-          const texts = getTexts(r.text, lang, request.intentResult.contexts);
-          const text = texts[Math.floor(Math.random() * texts.length)];
-          const realtxt = await getTextFormated(
-            text,
+          const text = await getTheText(
+            r.text,
+            lang,
             request.intentResult.contexts,
           );
-          newres.responses.push({
-            text: realtxt,
-          });
+          if (text) {
+            newres.responses.push({
+              text,
+            });
+          }
         } else if (typeof r.media !== 'undefined') {
           newres.responses.push({
             media: r.media.value,
@@ -281,126 +316,81 @@ async function parseResponse(
             link: r.link.value,
           });
         } else if (typeof r.btn !== 'undefined') {
-          let btns = getTexts(r.btn, lang, request.intentResult.contexts);
-          if (r.btn.foreach) {
-            const b = btns[0];
-            const foreach = r.btn.foreach.split(' in ');
-            const elem = foreach[0].trim().split(', ');
-            btns = [];
-            const newtext = reverseBracketsCurlyBraces(b.text);
-            const newval = reverseBracketsCurlyBraces(b.value);
-            await getProperty(
-              request.intentResult.contexts,
-              foreach[1].trim(),
-            ).reduce(async (prev: any, e: any, key: any) => {
+          let btns = [];
+          if (r.btn.group) {
+            await r.btn.group.reduce(async (prev: any, btn: any) => {
               await prev;
-              const obj: any = {};
-              if (elem.length > 1) {
-                obj[elem[0].trim()] = key;
-                obj[elem[1].trim()] = e;
-              } else {
-                obj[elem[0].trim()] = e;
-              }
-              const tpl1 = twig.twig({
-                data: newtext,
-              });
-              const txt = await tpl1.renderAsync(obj);
-              const tpl2 = twig.twig({
-                data: newval,
-              });
-              const val = await tpl2.renderAsync(obj);
-              btns.push({
-                followupintent: b.followupintent,
-                text: changeBrackets(txt),
-                value: changeBrackets(val),
-              });
-            }, Promise.resolve());
-          }
-          const realbtns: any[] = [];
-          await btns.reduce(async (prev: any, b: any) => {
-            await prev;
-            realbtns.push({
-              text: await getTextFormated(
-                b.text,
+              const text = await getTheText(
+                btn.text,
+                lang,
                 request.intentResult.contexts,
-              ),
-              value: b.value,
-              followupintent: b.followupintent,
+              );
+              if (text) {
+                btns.push({
+                  text,
+                  value: btn.value,
+                  followupintent: btn.followupintent,
+                });
+              }
+            }, Promise.resolve());
+          } else if (r.btn.list) {
+            btns = await formatBtnDDList(
+              r.btn.list[0],
+              lang,
+              request.intentResult.contexts,
+            );
+          }
+          if (btns && btns.length > 0) {
+            newres.responses.push({
+              btn: {
+                btns,
+              },
             });
-          }, Promise.resolve());
-          newres.responses.push({
-            btn: {
-              btns: realbtns,
-            },
-          });
+          }
         } else if (typeof r.dropdown !== 'undefined') {
-          let opts = getTexts(r.dropdown, lang, request.intentResult.contexts);
-          if (r.dropdown.foreach) {
-            const d = opts[0];
-            const foreach = r.dropdown.foreach.split(' in ');
-            const elem = foreach[0].trim().split(', ');
-            opts = [];
-            const newtext = reverseBracketsCurlyBraces(d.text);
-            const newval = reverseBracketsCurlyBraces(d.value);
-            await getProperty(
-              request.intentResult.contexts,
-              foreach[1].trim(),
-            ).reduce(async (prev: any, e: any, key: any) => {
+          let opts = [];
+          if (r.dropdown.options) {
+            await r.dropdown.options.reduce(async (prev: any, btn: any) => {
               await prev;
-              const obj: any = {};
-              if (elem.length > 1) {
-                obj[elem[0].trim()] = key;
-                obj[elem[1].trim()] = e;
-              } else {
-                obj[elem[0].trim()] = e;
-              }
-              const tpl1 = twig.twig({
-                data: newtext,
-              });
-              const txt = await tpl1.renderAsync(obj);
-              const tpl2 = twig.twig({
-                data: newval,
-              });
-              const val = await tpl2.renderAsync(obj);
-              opts.push({
-                followupintent: d.followupintent,
-                text: changeBrackets(txt),
-                value: changeBrackets(val),
-              });
-            }, Promise.resolve());
-          }
-          const realopts: any[] = [];
-          await opts.reduce(async (prev: any, b: any) => {
-            await prev;
-            realopts.push({
-              text: await getTextFormated(
-                b.text,
+              const text = await getTheText(
+                btn.text,
+                lang,
                 request.intentResult.contexts,
-              ),
-              value: b.value,
-              followupintent: b.followupintent,
+              );
+              if (text) {
+                opts.push({
+                  text,
+                  value: btn.value,
+                  followupintent: btn.followupintent,
+                });
+              }
+            }, Promise.resolve());
+          } else if (r.dropdown.list) {
+            opts = await formatBtnDDList(
+              r.dropdown.list[0],
+              lang,
+              request.intentResult.contexts,
+            );
+          }
+          if (opts && opts.length > 0) {
+            newres.responses.push({
+              dropdown: {
+                opts,
+              },
             });
-          }, Promise.resolve());
-          newres.responses.push({
-            dropdown: {
-              opts: realopts,
-            },
-          });
+          }
         }
       } else if (r[Object.keys(r)[0]].alt) {
-        const texts = getTexts(
+        const text = await getTheText(
           r[Object.keys(r)[0]].alt,
           lang,
           request.intentResult.contexts,
         );
-        const text = texts[Math.floor(Math.random() * texts.length)];
-        const realtxt = await getTextFormated(
-          text,
-          request.intentResult.contexts,
-        );
-        newres.responses.push({
-          text: realtxt,
-        });
+        if (text) {
+          newres.responses.push({
+            text,
+          });
+        }
       }
     }
   }, Promise.resolve());
@@ -413,17 +403,8 @@ async function parseResponse(
  * @param params the parameters for your text
  */
 async function getTextFormated(text: string, params: Contexts) {
-  let newtext = text;
-  if (text.indexOf('::foreach') !== -1) {
-    const foreach = text.substring(text.indexOf('::foreach') + 9, text.length);
-    newtext = `{% for ${foreach} %}${text.substring(
-      0,
-      text.indexOf('::foreach'),
-    )}{% endfor %}`;
-    newtext = changeBrackets(newtext);
-  }
   const template: Template = twig.twig({
-    data: newtext,
+    data: text,
   });
   return await template.renderAsync({
     site: params.site,
@@ -432,151 +413,233 @@ async function getTextFormated(text: string, params: Contexts) {
   });
 }
 
-function getTexts(texts: any, lang: string, contexts: Contexts) {
-  let res;
-  if (texts[lang]) {
-    res = texts[lang];
-  } else if (texts[`${lang}-cond`]) {
-    res = texts[`${lang}-cond`];
-  } else if (texts.fr) {
-    res = texts.fr;
+function evalCond(cond: string, contexts: any) {
+  let thecond = cond.trim();
+  if (thecond.indexOf('{{') === -1 || !thecond.endsWith('}}')) return false;
+  thecond = thecond.substring(thecond.indexOf('{{'));
+  const cont = thecond
+    .substring(2, thecond.length - 2)
+    .trim()
+    .split('.');
+  let obj = contexts;
+  cont.forEach(e => {
+    obj = obj[e];
+  });
+  if (obj instanceof Array) {
+    return obj.length > 1;
+  }
+  if (cond.indexOf('not ') !== -1) {
+    return obj === 0;
+  }
+  return obj === 1;
+}
+
+function getFromLang(text: any, lang: string) {
+  let texts: string[] | null = null;
+  if (text.fr) {
+    texts = text.fr;
+  }
+  if (text[lang]) {
+    texts = text[lang];
+  }
+  if (!texts) return null;
+  return texts[Math.floor(Math.random() * texts.length)];
+}
+
+function formatGenPlur(text: string, obj: any, contexts: any) {
+  if (obj.genplur) {
+    let plural = false;
+    let gender = false;
+    if (obj.genplur.plural) {
+      plural = evalCond(obj.genplur.plural, contexts);
+    }
+    if (obj.genplur.gender) {
+      gender = evalCond(obj.genplur.gender, contexts);
+    }
+    let txt = text;
+    let a = txt.indexOf('(.');
+    let b = txt.indexOf(')', a);
+    while (a !== -1 && b !== -1) {
+      const sp = txt.substring(0, a).split(' ');
+      const def = sp[sp.length - 1];
+      const vars = [
+        {
+          vari: def,
+          pos: a - def.length,
+          type: 'mascsing',
+        },
+      ];
+      const thevar = {
+        vari: txt.substring(a + 1, b),
+        pos: a,
+        type: '',
+      };
+      thevar.type = thevar.vari.startsWith('...')
+        ? 'femplur'
+        : thevar.vari.startsWith('..')
+        ? 'mascplur'
+        : 'femsing';
+      thevar.vari = thevar.vari.replace(/\./, '');
+      vars.push(thevar);
+      let lastpos = b + 1;
+      while (a !== -1 && b !== -1 && txt[b + 1] === '(' && txt[b + 2] === '.') {
+        a = txt.indexOf('(.', b);
+        b = txt.indexOf(')', a);
+        if (b !== -1) {
+          const myvar = { vari: txt.substring(a + 1, b), pos: a, type: '' };
+          myvar.type = myvar.vari.startsWith('...')
+            ? 'femplur'
+            : myvar.vari.startsWith('..')
+            ? 'mascplur'
+            : 'femsing';
+          vars.push(myvar);
+          lastpos = b + 1;
+        }
+      }
+      let word = null;
+      if (!plural && !gender) {
+        word = vars.filter(v => v.type === 'mascsing')[0];
+      } else if (!plural && gender) {
+        if (vars.filter(v => v.type === 'femsing').length > 0)
+          word = vars.filter(v => v.type === 'femsing')[0];
+        else word = vars.filter(v => v.type === 'mascsing')[0];
+      } else if (plural && !gender) {
+        if (vars.filter(v => v.type === 'mascplur').length > 0)
+          word = vars.filter(v => v.type === 'mascplur')[0];
+        else word = vars.filter(v => v.type === 'mascsing')[0];
+      } else {
+        if (vars.filter(v => v.type === 'femplur').length > 0)
+          word = vars.filter(v => v.type === 'femplur')[0];
+        else if (vars.filter(v => v.type === 'mascplur').length > 0)
+          word = vars.filter(v => v.type === 'mascplur')[0];
+        else word = vars.filter(v => v.type === 'mascsing')[0];
+      }
+      const first = vars.filter(v => v.type === 'mascsing')[0].pos;
+      txt = `${txt.substring(0, first)}${word.vari}${txt.substring(lastpos)}`;
+
+      a = txt.indexOf('(.');
+      b = txt.indexOf(')', a);
+    }
+    return txt;
+  }
+  return text;
+}
+
+function getTheText(text: any, lang: string, contexts: any) {
+  if (!text.cond || evalCond(text.cond, contexts)) {
+    let thetext = null;
+    if (text.list) {
+      const txt = getFromLang(text.list, lang);
+      if (!txt) return null;
+      const a = txt.indexOf('{{');
+      const b = txt.indexOf('}}', a);
+      if (a !== -1 && b !== -1) {
+        const vari = txt.substring(a + 2, b).trim();
+        const objs = vari.split('.');
+        let obj = contexts[objs[0]];
+        for (let i = 1; i < objs.length - 1; i += 1) {
+          if (!obj) break;
+          obj = obj[objs[i]];
+        }
+        let realtxt = '';
+        if (obj && obj instanceof Array) {
+          obj.forEach((elem: any) => {
+            const mytxt = insertDataInString(txt, elem);
+            realtxt += `${mytxt}\n`;
+          });
+        }
+        thetext = realtxt;
+      } else {
+        thetext = txt;
+      }
+    } else {
+      const t = getFromLang(text, lang);
+      if (!t) return null;
+      thetext = t;
+    }
+    if (!thetext) return null;
+    return getTextFormated(formatGenPlur(thetext, text, contexts), contexts);
+  }
+  return null;
+}
+
+function insertDataInString(txt: string, obj: any) {
+  let mytxt = txt;
+  let c = txt.indexOf('{{');
+  let d = txt.indexOf('}}', c);
+  while (c !== -1 && d !== -1) {
+    const thevar = mytxt
+      .substring(c + 2, d)
+      .trim()
+      .split('.');
+    mytxt = `${mytxt.substring(0, c)}${
+      obj[thevar[thevar.length - 1]]
+    }${mytxt.substring(d + 2)}`;
+    c = mytxt.indexOf('{{');
+    d = mytxt.indexOf('}}', c);
+  }
+  return mytxt;
+}
+
+async function formatBtnDDList(
+  list: UnparsedBtnOrOpt,
+  lang: string,
+  contexts: any,
+) {
+  let txt = getFromLang(list.text, lang);
+  if (!txt) return [];
+  txt = formatGenPlur(txt, list.text, contexts);
+  let a = txt.indexOf('{{');
+  let b = txt.indexOf('}}');
+  let thevar = null;
+  if (a === -1 || b === -1) {
+    a = list.value.indexOf('{{');
+    b = list.value.indexOf('}}');
+    if (a === -1 || b === -1) {
+      a = list.followupintent.indexOf('{{');
+      b = list.followupintent.indexOf('}}');
+      if (a === -1 || b === -1) {
+        return [
+          {
+            text: txt,
+            value: list.value,
+            followupintent: list.followupintent,
+          },
+        ];
+      }
+      thevar = list.followupintent
+        .substring(a + 2, b)
+        .trim()
+        .split('.');
+    } else {
+      thevar = list.value
+        .substring(a + 2, b)
+        .trim()
+        .split('.');
+    }
   } else {
-    res = texts['fr-cond'];
+    thevar = txt
+      .substring(a + 2, b)
+      .trim()
+      .split('.');
   }
-  // First branch
-  if (!(res instanceof Array)) {
-    const cond = res.cond;
-    if (res.masc || res['masc-cond']) {
-      // Masc / Fem
-      const prop = getProperty(contexts, cond);
-      if (prop === 1) {
-        // Fem
-        res = res.fem;
-      } else {
-        // Masc
-        res = res.masc;
-      }
-    } else {
-      // Sing / Plur
-      const prop = getProperty(contexts, cond);
-      if (prop > 1) {
-        // Use Plur
-        if (res.plur) {
-          res = res.plur;
-        } else {
-          res = res['plur-cond'];
-        }
-      } else {
-        // Use Sing
-        if (res.sing) {
-          res = res.sing;
-        } else {
-          res = res['sing-cond'];
-        }
-      }
-    }
+  let obj = contexts;
+  for (let i = 0; i < thevar.length - 1; i += 1) {
+    obj = obj[thevar[i]];
   }
-  // Second branch
-  if (!(res instanceof Array)) {
-    const cond = res.cond;
-    if (res.masc) {
-      // Masc / Fem
-      const prop = getProperty(contexts, cond);
-      if (prop === 1) {
-        // Fem
-        res = res.fem;
-      } else {
-        // Masc
-        res = res.masc;
-      }
-    } else {
-      // Sing / Plur
-      const prop = getProperty(contexts, cond);
-      if (prop > 1) {
-        // Use Plur
-        res = res.plur;
-      } else {
-        // Use Sing
-        res = res.sing;
-      }
-    }
-  }
+  if (!obj) return [];
+  if (!(obj instanceof Array)) return [];
+  const res: any[] = [];
+  await obj.reduce(async (previous: any, e: any) => {
+    await previous;
+    const text = insertDataInString(txt ? txt : '', e);
+    const value = insertDataInString(list.value, e);
+    const followupintent = insertDataInString(list.followupintent, e);
+    res.push({
+      text,
+      value,
+      followupintent,
+    });
+  }, Promise.resolve());
   return res;
-}
-
-function getProperty(obj: any, attr: string): any {
-  const tab = attr.split('.');
-  if (tab.length > 1) {
-    const a = tab.shift();
-    if (a) {
-      return getProperty(obj[a], tab.join('.'));
-    }
-  }
-  return obj[attr];
-}
-
-function changeBrackets(text: string) {
-  let newtext = text;
-  let a = newtext.indexOf('[[');
-  while (a >= 0) {
-    newtext = `${newtext.substring(0, a)}{{${newtext.substring(
-      a + 2,
-      newtext.length,
-    )}`;
-    a = newtext.indexOf('[[', a + 2);
-  }
-  a = newtext.indexOf(']]');
-  while (a >= 0) {
-    newtext = `${newtext.substring(0, a)}}}${newtext.substring(
-      a + 2,
-      newtext.length,
-    )}`;
-    a = newtext.indexOf(']]', a + 2);
-  }
-  return newtext;
-}
-
-function reverseBracketsCurlyBraces(text: string) {
-  let newtext = text;
-  let a = newtext.indexOf('{{');
-  let b = newtext.indexOf('[[');
-  while (a >= 0 || b >= 0) {
-    if (a >= 0) {
-      newtext = `${newtext.substring(0, a)}||${newtext.substring(
-        a + 2,
-        newtext.length,
-      )}`;
-      a = newtext.indexOf('{{', a + 2);
-    }
-    if (b >= 0) {
-      newtext = `${newtext.substring(0, b)}~~${newtext.substring(
-        b + 2,
-        newtext.length,
-      )}`;
-      b = newtext.indexOf('[[', b + 2);
-    }
-  }
-  newtext = newtext.replace(/\|\|/g, '[[');
-  newtext = newtext.replace(/\~\~/g, '{{');
-  a = newtext.indexOf('}}');
-  b = newtext.indexOf(']]');
-  while (a >= 0 || b >= 0) {
-    if (a >= 0) {
-      newtext = `${newtext.substring(0, a)}||${newtext.substring(
-        a + 2,
-        newtext.length,
-      )}`;
-      a = newtext.indexOf('}}', a + 2);
-    }
-    if (b >= 0) {
-      newtext = `${newtext.substring(0, b)}~~${newtext.substring(
-        b + 2,
-        newtext.length,
-      )}`;
-      b = newtext.indexOf(']]', b + 2);
-    }
-  }
-  newtext = newtext.replace(/\|\|/g, ']]');
-  newtext = newtext.replace(/\~\~/g, '}}');
-  return newtext;
 }

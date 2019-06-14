@@ -14,8 +14,9 @@ class Message extends ParentComponent<{
     if (this.props.msg.res.text) {
       content = <span>{this.props.msg.res.text}</span>;
     } else if (this.props.msg.res.btn) {
-      content = this.props.msg.res.btn.btns.map((b: any) => (
+      content = this.props.msg.res.btn.btns.map((b: any, index: number) => (
         <button
+          key={index}
           value={`${b.value}|${b.followupintent}`}
           onClick={this.props.controller.sendEvent}
         >
@@ -23,9 +24,13 @@ class Message extends ParentComponent<{
         </button>
       ));
     } else if (this.props.msg.res.dropdown) {
-      const opt = this.props.msg.res.dropdown.opts.map((op: any) => (
-        <option value={`${op.value}|${op.followupintent}`}>{op.text}</option>
-      ));
+      const opt = this.props.msg.res.dropdown.opts.map(
+        (op: any, index: number) => (
+          <option key={index} value={`${op.value}|${op.followupintent}`}>
+            {op.text}
+          </option>
+        ),
+      );
       content = (
         <select onChange={this.props.controller.sendEvent}>
           <option>Choose</option>

@@ -1,5 +1,3 @@
-// @flow
-
 import passport from 'passport';
 import { BasicStrategy } from 'passport-http';
 

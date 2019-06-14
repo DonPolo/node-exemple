@@ -134,7 +134,8 @@ const find: any = async (query: any) => {
 };
 
 async function addEntry(doc: AnalyticsData) {
-  await insert(doc);
+  const res = await insert(doc);
+  return res._id;
 }
 
 async function getAll(): Promise<AnalyticsData[]> {

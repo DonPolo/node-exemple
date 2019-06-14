@@ -36,7 +36,7 @@ async function getSiteContexts(to: string, platform: string): Promise<Site> {
     concierges,
     prenomsconcierges: ecl.getPrenomConcierge(concierges),
     nb: concierges.length,
-    genre: 'fem',
+    gender: 1,
   };
   const groups = await Ecl.getSiteGroups(site.id);
   site.groups = groups;

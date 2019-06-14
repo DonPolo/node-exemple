@@ -36,7 +36,7 @@ export default class EasyWhere {
     siteId: string,
   ): Promise<CompoPanier | null> {
     const panier: CompoPanier = await this.easywhere.query(
-      'SELECT p.title AS title, pc.price AS price, pc.description AS desc ' +
+      'SELECT p.title AS title, pc.price AS price, pc.description AS `desc` ' +
         'FROM `Conciergery` c ' +
         'JOIN `ProductConciergery` pc ON c.id = pc.conciergery_id ' +
         'JOIN Product p ON pc.product_id = p.id ' +

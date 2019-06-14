@@ -33,6 +33,7 @@ export interface UserContexts {
     text: string;
     ref: string;
   } | null;
+  gender: number;
 }
 
 export function getEmptyUserContexts(): UserContexts {
@@ -45,6 +46,7 @@ export function getEmptyUserContexts(): UserContexts {
     registered: false,
     type: '',
     request: null,
+    gender: 0,
   };
 }
 
@@ -65,10 +67,11 @@ export function getEmptySiteContexts(): Site {
       concierges: [],
       prenomsconcierges: '',
       nb: 0,
-      genre: '',
+      gender: 0,
     },
     groups: [],
     locale: 'fr-tu',
+    hasCasier: 0,
   };
 }
 
@@ -176,86 +179,37 @@ export interface UnparsedResponseLink {
 }
 export interface UnparsedResponseBtn {
   btn: {
-    foreach?: string;
-    // tslint:disable-next-line: prefer-array-literal
-    'fr-tu'?: Array<{
-      text: string;
-      value: string;
-      followupintent: string;
-    }>;
-    // tslint:disable-next-line: prefer-array-literal
-    'fr-vous'?: Array<{
-      text: string;
-      value: string;
-      followupintent: string;
-    }>;
-    // tslint:disable-next-line: prefer-array-literal
-    fr?: Array<{
-      text: string;
-      value: string;
-      followupintent: string;
-    }>;
-    alt?: UnparsedResponseText;
+    group?: UnparsedBtnOrOpt[];
+    list?: UnparsedBtnOrOpt[];
+    alt?: UnparsedText;
   };
 }
 export interface UnparsedResponseDropdown {
   dropdown: {
-    foreach?: string;
-    // tslint:disable-next-line: prefer-array-literal
-    'fr-tu'?: Array<{
-      text: string;
-      value: string;
-      followupintent: string;
-    }>;
-    // tslint:disable-next-line: prefer-array-literal
-    'fr-vous'?: Array<{
-      text: string;
-      value: string;
-      followupintent: string;
-    }>;
-    // tslint:disable-next-line: prefer-array-literal
-    fr?: Array<{
-      text: string;
-      value: string;
-      followupintent: string;
-    }>;
-    alt?: UnparsedResponseText;
+    options?: UnparsedBtnOrOpt[];
+    list?: UnparsedBtnOrOpt[];
+    alt?: UnparsedText;
   };
 }
 export interface UnparsedText {
+  cond?: string;
+  genplur?: {
+    plural?: string;
+    gender?: string;
+  };
   fr?: string[];
   'fr-tu'?: string[];
   'fr-vous'?: string[];
-  'fr-cond'?: UnparsedLang;
-  'fr-tu-cond'?: UnparsedLang;
-  'fr-vous-cond'?: UnparsedLang;
+  list?: {
+    fr?: string[];
+    'fr-tu'?: string[];
+    'fr-vous'?: string[];
+  };
 }
-export interface UnparsedLang {
-  cond: string;
-  'sing-cond'?: {
-    cond: string;
-    masc: string[];
-    fem: string[];
-  };
-  'plur-cond'?: {
-    cond: string;
-    masc: string[];
-    fem: string[];
-  };
-  'masc-cond'?: {
-    cond: string;
-    sing: string[];
-    plur: string[];
-  };
-  'fem-cond'?: {
-    cond: string;
-    sing: string[];
-    plur: string[];
-  };
-  sing: string[];
-  plur: string[];
-  masc: string[];
-  fem: string[];
+export interface UnparsedBtnOrOpt {
+  text: UnparsedText;
+  value: string;
+  followupintent: string;
 }
 
 /* Parsed Response Attributes */

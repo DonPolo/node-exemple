@@ -64,6 +64,15 @@ async function clone(request: IntentRequest): Promise<IntentResult> {
   return res;
 }
 
+async function listgroup(request: IntentRequest): Promise<IntentResult> {
+  const res: IntentResult = {
+    confidence: request.confidence,
+    contexts: request.contexts,
+    response: await responsemanager.load('test.list'),
+  };
+  return res;
+}
+
 export default {
   buttons,
   dropdown,
@@ -72,4 +81,5 @@ export default {
   media,
   mix,
   clone,
+  listgroup,
 };

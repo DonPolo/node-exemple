@@ -92,6 +92,7 @@ async function checkUserByMail(request: IntentRequest) {
   );
   if (user) {
     request.contexts.user = {
+      gender: 0,
       lastname: user.nom,
       firstname: user.prenom,
       email: user.email,

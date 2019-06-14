@@ -1578,8 +1578,10 @@ CodeMirror.registerHelper('lint', 'yaml', (t: string) => {
       }
     }
   } while (err && nb < 10);
+
+  // return found;
   /* Json errors */
-  if (cat() === 'response') {
+  /*if (cat() === 'response') {
     found = lintResponse(text, found, json);
   } else {
     found = lintTraining(text, found);
@@ -1591,6 +1593,6 @@ CodeMirror.registerHelper('lint', 'yaml', (t: string) => {
   } else if (but) {
     but.classList.remove('errors');
     FileController.errors = false;
-  }
+  }*/
   return found;
 });

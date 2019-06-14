@@ -186,7 +186,11 @@ class Data extends ParentComponent<{
         <td>{i.confidence}</td>
       </tr>
     ));
-    const responses = JSON.stringify(data.parsedResponse.responses, null, 4);
+    let responses = '';
+    if (data.parsedResponse && data.parsedResponse.responses) {
+      responses = JSON.stringify(data.parsedResponse.responses, null, 4);
+    }
+
     const befcontexts = JSON.stringify(data.request.result.contexts, null, 4);
     const aftcontexts = JSON.stringify(data.result.contexts, null, 4);
     return (

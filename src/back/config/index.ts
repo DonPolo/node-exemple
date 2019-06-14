@@ -32,6 +32,7 @@ const defaultConfig = {
     options: { encrypt: true },
     operatorsAliases: false,
   },
+  FALLBACK_MAIL: process.env.FALLBACK_MAIL || null,
   INTENTS: {
     register: {
       default: process.env.INTENT_REGISTER_DEFAULT || '',
