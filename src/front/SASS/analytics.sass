@@ -5,7 +5,7 @@
     flex-wrap: wrap
     align-content: flex-start
     position: absolute
-    top: $headerheight
+    top: 90px
     left: 0
     right: 0
     bottom: 50px
@@ -83,3 +83,25 @@
       width: 30px
     strong
       margin: 0 10px
+  .top-bar
+    position: absolute
+    top: $headerheight
+    left: 0
+    right: 0
+    height: $topbarheight
+    box-shadow: 0 0 5px 0 black
+    z-index: -1
+    display: flex
+    justify-content: space-between
+    div
+      height: 100%
+      display: flex
+      align-items: center
+      justify-content: center
+      margin: 0 20px
+      label
+        white-space: nowrap
+        margin: 0 5px
+      .little
+        width: 30px
+        margin-left: 10px

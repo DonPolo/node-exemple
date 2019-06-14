@@ -9,13 +9,19 @@
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="/pic/lifee.png" />
     <title>Lifee Admin</title>
+    <script>
+      window.addEventListener('load', function(e) {
+        var script = document.createElement('script');
+        script.setAttribute('src', '/js/main.js');
+        document.body.appendChild(script);
+      });
+    </script>
 
   </head>
 
   <body>
 
     <element id="app"></element>
-    <script src="/js/main.js"></script>
 
   </body>
 

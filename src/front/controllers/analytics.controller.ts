@@ -9,6 +9,8 @@ import ParentComponent from '../components/parent.component';
 export default class AnalyticsController extends ParentController {
   state: ISAnalytics;
   datas: AnalyticsData[] | null;
+  searchId: string;
+  maxConf: number;
   constructor(render: AnalyticsPage) {
     super('analytics', 4, render);
     this.state = {
@@ -18,6 +20,8 @@ export default class AnalyticsController extends ParentController {
       realdatas: [],
     };
     this.datas = datamanager.analytics.datas;
+    this.searchId = '';
+    this.maxConf = 1;
     if (!this.datas) {
       this.fetch();
     } else {
@@ -106,7 +110,14 @@ export default class AnalyticsController extends ParentController {
 
   changePageNoOption(page: number) {
     this.changePage(
-      this.datas ? this.datas : [],
+      datamanager.analytics.datas
+        ? datamanager.analytics.datas.filter(
+            d =>
+              d._id &&
+              d._id.startsWith(this.searchId) &&
+              d.result.confidence <= this.maxConf,
+          )
+        : [],
       page,
       20,
       this.state.archived,
@@ -115,7 +126,14 @@ export default class AnalyticsController extends ParentController {
 
   toggleArchive(event: FormEvent<HTMLInputElement>) {
     this.changePage(
-      this.datas ? this.datas : [],
+      datamanager.analytics.datas
+        ? datamanager.analytics.datas.filter(
+            d =>
+              d._id &&
+              d._id.startsWith(this.searchId) &&
+              d.result.confidence <= this.maxConf,
+          )
+        : [],
       this.state.curpage,
       20,
       event.currentTarget.checked,
@@ -131,4 +149,24 @@ export default class AnalyticsController extends ParentController {
     event.preventDefault();
     this.changePageNoOption(render.state.selectedpage);
   }
+
+  searchById = (
+    event: FormEvent<HTMLInputElement>,
+    render: ParentComponent,
+  ) => {
+    render.state.searchid = event.currentTarget.value;
+    render.setState(render.state);
+    this.searchId = event.currentTarget.value;
+    this.changePageNoOption(1);
+  };
+
+  restrictConf = (
+    event: FormEvent<HTMLInputElement>,
+    render: ParentComponent,
+  ) => {
+    render.state.conf = event.currentTarget.value.toString();
+    render.setState(render.state);
+    this.maxConf = parseFloat(event.currentTarget.value);
+    this.changePageNoOption(1);
+  };
 }

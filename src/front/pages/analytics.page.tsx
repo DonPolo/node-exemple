@@ -128,6 +128,49 @@ class BottomBar extends ParentComponent<IPBotBar, { selectedpage: number }> {
   }
 }
 
+class TopBar extends ParentComponent<{ controller: AnalyticsController }> {
+  constructor(props: any) {
+    super(props);
+    this.state = {
+      searchid: '',
+      conf: '1',
+    };
+  }
+
+  render() {
+    return (
+      <div className='top-bar'>
+        <div>
+          <label htmlFor='id-search'>Search by id </label>
+          <input
+            id='id-search'
+            type='text'
+            value={this.state.searchid}
+            onChange={event => this.props.controller.searchById(event, this)}
+          />
+        </div>
+        <div>
+          <label htmlFor='confidence'>Max confidence</label>
+          <input
+            type='range'
+            min='0'
+            max='1'
+            step='0.01'
+            value={this.state.conf}
+            onChange={event => this.props.controller.restrictConf(event, this)}
+          />
+          <input
+            type='text'
+            onChange={event => this.props.controller.restrictConf(event, this)}
+            value={this.state.conf}
+            className='little'
+          />
+        </div>
+      </div>
+    );
+  }
+}
+
 class Data extends ParentComponent<{
   data: AnalyticsData;
   controller: AnalyticsController;
@@ -342,6 +385,7 @@ class AnalyticsPage extends ParentComponent<{}, ISAnalytics> {
   render() {
     return (
       <>
+        <TopBar controller={this.controller} />
         <Analytics datas={this.state.realdatas} controller={this.controller} />
         <BottomBar
           nbpage={this.state.nbpage}

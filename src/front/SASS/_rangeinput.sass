@@ -1,0 +1,85 @@
+input[type=range]
+  -webkit-appearance: none
+  width: 100%
+  margin: 3.8px 0
+
+  &:focus
+    outline: none
+
+  &::-webkit-slider-runnable-track
+    width: 100%
+    height: 8.4px
+    cursor: pointer
+    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d
+    background: $firstcolor
+    border-radius: 0px
+    border: 0.1px solid #010101
+
+  &::-webkit-slider-thumb
+    box-shadow: 1px 1px 5px #000000, 0px 0px 1px #0d0d0d
+    border: 0px solid #ffffff
+    height: 16px
+    width: 16px
+    border-radius: 50px
+    background: #ffffff
+    cursor: pointer
+    -webkit-appearance: none
+    margin-top: -3.9px
+
+  &:focus::-webkit-slider-runnable-track
+    background: #417ebc
+
+  &::-moz-range-track
+    width: 100%
+    height: 8.4px
+    cursor: pointer
+    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d
+    background: $firstcolor
+    border-radius: 0px
+    border: 0.1px solid #010101
+
+  &::-moz-range-thumb
+    box-shadow: 1px 1px 5px #000000, 0px 0px 1px #0d0d0d
+    border: 0px solid #ffffff
+    height: 16px
+    width: 16px
+    border-radius: 50px
+    background: #ffffff
+    cursor: pointer
+
+  &::-ms-track
+    width: 100%
+    height: 8.4px
+    cursor: pointer
+    background: transparent
+    border-color: transparent
+    color: transparent
+
+  &::-ms-fill-lower
+    background: #336496
+    border: 0.1px solid #010101
+    border-radius: 0px
+    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d
+
+  &::-ms-fill-upper
+    background: $firstcolor
+    border: 0.1px solid #010101
+    border-radius: 0px
+    box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d
+
+  &::-ms-thumb
+    box-shadow: 1px 1px 5px #000000, 0px 0px 1px #0d0d0d
+    border: 0px solid #ffffff
+    height: 16px
+    width: 16px
+    border-radius: 50px
+    background: #ffffff
+    cursor: pointer
+    height: 8.4px
+
+  &:focus::-ms-fill-lower
+    background: $firstcolor
+
+  &:focus::-ms-fill-upper
+    background: $firstcolor
+

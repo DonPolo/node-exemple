@@ -9,7 +9,5 @@ import React from 'react';
 
 import App from './utils/app.util';
 
-window.addEventListener('load', () => {
-  const element = <App />;
-  ReactDOM.render(element, document.getElementById('app'));
-});
+const element = <App />;
+ReactDOM.render(element, document.getElementById('app'));
