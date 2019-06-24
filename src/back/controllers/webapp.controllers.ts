@@ -323,9 +323,11 @@ async function api(
       user = null;
     }
     if (user || query === 'user' || query === 'login') {
+      console.log('Query : ' + query);
       switch (query) {
         case 'home':
           const result = await getFiles();
+          console.log(result);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(result));
           break;
@@ -398,6 +400,16 @@ async function api(
         case 'user':
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(user));
+          break;
+        case 'file':
+          let fileres: any;
+          fileres = await trainingmanager.loadfile(req.query.intent);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              file: pyaml.stringify(fileres),
+            }),
+          );
           break;
         default:
           res.writeHead(404, { 'Content-Type': 'text/plain' });
