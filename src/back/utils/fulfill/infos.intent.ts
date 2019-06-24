@@ -1,14 +1,14 @@
-import responsemanager from '../responsemanager.util';
 import { IntentRequest, IntentResult } from '../../../types/types.util';
 import format from '../format.util';
 import { isEmpty } from '../func.util';
 import EasyWhere from '../../models/easywhere';
 import striptags from 'striptags';
+import Entities from 'html-entities';
 
 const easywhere = new EasyWhere();
 
 async function opentime(request: IntentRequest): Promise<IntentResult> {
-  let txt = await responsemanager.load('infos.schedule');
+  let txt = 'infos.schedule';
   if (request.contexts.site) {
     const precision = request.entities.filter(
       ex => ex.name === 'datetime' || ex.name === '##all##',
@@ -43,12 +43,12 @@ async function opentime(request: IntentRequest): Promise<IntentResult> {
           if (daysinfos && !isEmpty(daysinfos)) {
             // It's open
             if (close) {
-              txt = await responsemanager.load('infos.schedule_no_open');
+              txt = 'infos.schedule_no_open';
               request.contexts.site.horaires = `${format.horaires.writeHoraires(
                 format.horaires.groupByHoraires(daysinfos)[0],
               )}`;
             } else {
-              txt = await responsemanager.load('infos.schedule_yes_open');
+              txt = 'infos.schedule_yes_open';
               request.contexts.site.horaires = `${format.horaires.writeHoraires(
                 format.horaires.groupByHoraires(daysinfos)[0],
               )}`;
@@ -56,18 +56,18 @@ async function opentime(request: IntentRequest): Promise<IntentResult> {
           } else {
             // It's close
             if (close) {
-              txt = await responsemanager.load('infos.schedule_yes_close');
+              txt = 'infos.schedule_yes_close';
             } else {
-              txt = await responsemanager.load('infos.schedule_no_close');
+              txt = 'infos.schedule_no_close';
             }
           }
         }
       }, Promise.resolve());
     } else {
-      txt = await responsemanager.load('infos.schedule');
+      txt = 'infos.schedule';
     }
   } else {
-    txt = await responsemanager.load('infos.schedulenotfound');
+    txt = 'infos.schedulenotfound';
   }
   const res: IntentResult = {
     confidence: request.confidence,
@@ -78,9 +78,9 @@ async function opentime(request: IntentRequest): Promise<IntentResult> {
 }
 
 async function contact(request: IntentRequest): Promise<IntentResult> {
-  let txt = await responsemanager.load('infos.contactnotfound');
+  let txt = 'infos.contactnotfound';
   if (request.contexts.site) {
-    txt = await responsemanager.load('infos.contact');
+    txt = 'infos.contact';
   }
   const res: IntentResult = {
     confidence: request.confidence,
@@ -91,9 +91,9 @@ async function contact(request: IntentRequest): Promise<IntentResult> {
 }
 
 async function services(request: IntentRequest): Promise<IntentResult> {
-  let txt = await responsemanager.load('infos.servicesnotfound');
+  let txt = 'infos.servicesnotfound';
   if (request.contexts.site) {
-    txt = await responsemanager.load('infos.services');
+    txt = 'infos.services';
   }
   const res: IntentResult = {
     confidence: request.confidence,
@@ -104,9 +104,9 @@ async function services(request: IntentRequest): Promise<IntentResult> {
 }
 
 async function relaiscolis(request: IntentRequest): Promise<IntentResult> {
-  let txt = await responsemanager.load('infos.relaiscolisnotfound');
+  let txt = 'infos.relaiscolisnotfound';
   if (request.contexts.site) {
-    txt = await responsemanager.load('infos.relaiscolis');
+    txt = 'infos.relaiscolis';
   }
   const res: IntentResult = {
     confidence: request.confidence,
@@ -130,17 +130,34 @@ async function compopanier(request: IntentRequest): Promise<IntentResult> {
       panier,
       request.contexts.site.id,
     );
-    if (resu) {
-      const paniertxt = striptags(resu.desc);
+    if (resu && resu.length > 0 && resu[0].desc) {
+      const entities = new Entities.AllHtmlEntities();
+      let tx = resu[0].desc.replace(/\n/g, '');
+      tx = tx.replace(/\r/g, '');
+      tx = striptags(tx, ['p', 'li']);
+      if (tx.lastIndexOf('</p>') !== -1) {
+        tx = `${tx.substring(0, tx.lastIndexOf('</p>'))}${tx.substring(
+          tx.lastIndexOf('</p>') + 4,
+        )}`;
+      }
+      if (tx.lastIndexOf('</li>') !== -1) {
+        tx = `${tx.substring(0, tx.lastIndexOf('</li>'))}${tx.substring(
+          tx.lastIndexOf('</li>') + 5,
+        )}`;
+      }
+      tx = tx.split('</p>').join(', ');
+      tx = tx.split('</li>').join(', ');
+      tx = tx.replace(/&bull;/g, '');
+      const paniertxt = striptags(entities.decode(tx));
       if (!request.contexts.other) request.contexts.other = {};
       request.contexts.other.compopanier = paniertxt;
-      txt = await responsemanager.load('infos.compopanier');
+      txt = 'infos.compopanier';
     } else {
-      txt = await responsemanager.load('infos.paniernotexist');
+      txt = 'infos.paniernotexist';
     }
   } else {
     confidence = 0;
-    txt = await responsemanager.load('default.fallback');
+    txt = 'default.fallback';
   }
 
   const res: IntentResult = {
@@ -152,9 +169,9 @@ async function compopanier(request: IntentRequest): Promise<IntentResult> {
 }
 
 async function infos(request: IntentRequest): Promise<IntentResult> {
-  let txt = await responsemanager.load('infos.infosnotfound');
+  let txt = 'infos.infosnotfound';
   if (request.contexts.site) {
-    txt = await responsemanager.load('infos.infos');
+    txt = 'infos.infos';
   }
   const res: IntentResult = {
     confidence: request.confidence,

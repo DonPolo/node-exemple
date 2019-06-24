@@ -39,11 +39,7 @@ class App extends ParentComponent<{}, ISApp> {
         <BrowserRouter basename='/webapp'>
           <section className={this.state.pagename}>
             {this.state.showheader && this.state.user ? (
-              <Header
-                app={this.controller}
-                nav={this.state.nav}
-                user={this.state.user}
-              />
+              <Header nav={this.state.nav} user={this.state.user} />
             ) : null}
             <Switch>
               <Route exact path='/' component={Page.Home} />
@@ -53,12 +49,11 @@ class App extends ParentComponent<{}, ISApp> {
               <Route exact path='/login' component={Page.Login} />
               <Route
                 exact
-                path='/:cat/:type/:name'
+                path='/:cat/:intent'
                 render={props => {
                   const file: FileInfos = {
                     cat: props.match.params.cat,
-                    type: props.match.params.type,
-                    filename: props.match.params.name,
+                    intent: props.match.params.intent,
                   };
                   return <Page.File file={file} />;
                 }}

@@ -27,12 +27,15 @@ export default async function(
   res: express.Response,
   next: express.NextFunction,
 ) {
+  console.log('New slack request !');
+  console.log(req.body);
   if (
     req.body.event &&
     req.body.event.type === 'message' &&
     !req.body.event.bot_id &&
-    req.body.token === 'hvKeVxQcyXJ0DsnjGLfS617C'
+    req.body.token === config.SLACK.verifToken
   ) {
+    console.log('Everything in place');
     const msg = req.body.event.text;
     const from = await getEmail(req.body.event.user);
     const to = req.body.team_id;
@@ -45,10 +48,13 @@ export default async function(
       acceptedtypes: ['text', 'btn', 'dropdown', 'media', 'link'],
     };
     const response: ParsedResponse | null = await handlemessage(request);
+    console.log('Get a response');
     if (response) {
+      console.log('Send a response');
       await sendSlackResponse(response, req.body.event.channel);
     }
   }
+  console.log('Return the challenge');
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end(req.body.challenge);
 }
@@ -65,7 +71,7 @@ export async function events(
   next: express.NextFunction,
 ) {
   const payload = JSON.parse(req.body.payload);
-  if (payload.token === 'hvKeVxQcyXJ0DsnjGLfS617C') {
+  if (payload.token === config.SLACK.verifToken) {
     const to = payload.team.id;
     const from = await getEmail(payload.user.id);
     const intents: ResultIntent[] = [];
@@ -221,5 +227,7 @@ async function sendSlackResponse(res: ParsedResponse, channel: string) {
     }
   }, Promise.resolve());
   resu.blocks = JSON.stringify(blocks);
+  console.log(resu);
+  console.log(config.SLACK.apiToken);
   await sendMessage(resu);
 }

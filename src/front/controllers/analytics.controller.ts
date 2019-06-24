@@ -5,6 +5,7 @@ import AnalyticsPage, { ISAnalytics } from '../pages/analytics.page';
 import { AnalyticsData } from '../../types/types.util';
 import { FormEvent } from 'react';
 import ParentComponent from '../components/parent.component';
+import fetchit from '../utils/fetchit';
 
 export default class AnalyticsController extends ParentController {
   state: ISAnalytics;
@@ -34,8 +35,14 @@ export default class AnalyticsController extends ParentController {
   }
 
   fetch = () => {
-    fetch('/webapp/api?query=analytics')
-      .then(response => response.json())
+    fetchit.fetchIt('/webapp/api?query=analytics')
+      .then(response => {
+        if (response.status === 401) {
+          window.history.replaceState('', '', '/webapp/login');
+          return { error: true };
+        }
+        return response.json();
+      })
       .then(data => {
         datamanager.analytics.datas = data.datas;
         this.datas = data;

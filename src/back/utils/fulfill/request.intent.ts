@@ -6,7 +6,6 @@ import {
 import Ecl, { RequestType } from '../../models/ecl';
 import config from '../../config';
 import { sendMessage } from '../message.util';
-import responsemanager from '../responsemanager.util';
 import logger from '../../config/logger';
 
 const ecl = new Ecl();
@@ -142,7 +141,7 @@ async function recordGlobalRequest(
     }
   }
   const res: IntentResult = {
-    response: await responsemanager.load(respo),
+    response: respo,
     confidence: request.confidence,
     contexts: request.contexts,
   };
@@ -265,7 +264,7 @@ async function updateGlobalRequest(
   }
 
   const res: IntentResult = {
-    response: await responsemanager.load(respo),
+    response: respo,
     confidence: request.confidence,
     contexts: request.contexts,
   };
@@ -273,12 +272,12 @@ async function updateGlobalRequest(
 }
 
 async function global(request: IntentRequest): Promise<IntentResult> {
-  let response: Response;
+  let response: string;
   const confidence = request.confidence;
   if (!request.contexts.user.registered) {
     // Start registration
     request.contexts.fulfill.push(config.CONTEXTS.FULFILL.register);
-    response = await responsemanager.load('request.needregistration');
+    response = 'request.needregistration';
   } else {
     if (
       !request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.requestdetails)
@@ -299,7 +298,7 @@ async function global(request: IntentRequest): Promise<IntentResult> {
 }
 
 async function details(request: IntentRequest): Promise<IntentResult> {
-  let response: Response;
+  let response: string;
   let confidence = request.confidence;
   if (
     !request.contexts.fulfill.includes(
@@ -308,7 +307,7 @@ async function details(request: IntentRequest): Promise<IntentResult> {
     !request.contexts.user.request
   ) {
     confidence = 0;
-    response = await responsemanager.load('default.fallbback');
+    response = 'default.fallbback';
   } else {
     const result = await updateGlobalRequest(request);
     request.contexts.fulfill = request.contexts.fulfill.filter(

@@ -2,6 +2,7 @@ import ParentController from './parent.controller';
 import datamanager from '../utils/datamanager.util';
 import LoginPage, { ISLogin } from '../pages/login.page';
 import { FormEvent } from 'react';
+import fetchit from '../utils/fetchit';
 
 class LoginController extends ParentController {
   state: ISLogin;
@@ -25,10 +26,11 @@ class LoginController extends ParentController {
     const form = new URLSearchParams();
     form.append('pseudo', this.state.pseudo);
     form.append('pwd', this.state.pwd);
-    fetch('/webapp/api?query=login', {
-      method: 'POST',
-      body: form,
-    })
+    fetchit
+      .fetchIt('/webapp/api?query=login', {
+        method: 'POST',
+        body: form,
+      })
       .then(response => response.json())
       .then(data => {
         if (data.error) {

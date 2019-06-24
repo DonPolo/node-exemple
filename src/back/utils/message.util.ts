@@ -35,7 +35,7 @@ export const sendMessage = async (
   throwError: boolean = true,
 ) => {
   try {
-    if (config.MAIL.enable) {
+    if (config.MAIL.enable && process.env.NODE_ENV !== 'test') {
       const mailOptions = {
         ...options,
         to: config.MAIL.recipient || options.to,

@@ -34,18 +34,18 @@ export default class EasyWhere {
   async getInfosPanier(
     name: string,
     siteId: string,
-  ): Promise<CompoPanier | null> {
-    const panier: CompoPanier = await this.easywhere.query(
+  ): Promise<CompoPanier[] | null> {
+    const panier: CompoPanier[] = await this.easywhere.query(
       'SELECT p.title AS title, pc.price AS price, pc.description AS `desc` ' +
         'FROM `Conciergery` c ' +
         'JOIN `ProductConciergery` pc ON c.id = pc.conciergery_id ' +
         'JOIN Product p ON pc.product_id = p.id ' +
-        'WHERE LCASE(c.title) = LCASE(:siteId) AND p.type="baskets" AND pc.endDate > NOW() AND REPLACE(LCASE(p.title), " ", "") = REPLACE(LCASE(:panier), " ", "");',
+        'WHERE LCASE(c.title) = LCASE(:siteId) AND p.type="baskets" AND pc.endDate > NOW() AND REPLACE(LCASE(p.title), " ", "") LIKE REPLACE(LCASE(:panier), " ", "");',
       {
         type: Sequelize.QueryTypes.SELECT,
-        replacements: { siteId, panier: name },
+        replacements: { siteId, panier: `%${name}` },
       },
     );
-    return null;
+    return panier;
   }
 }

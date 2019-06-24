@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-dotenv.config({ debug: true });
+dotenv.config();
 const isDev = process.env.NODE_ENV === 'development';
 
 const defaultConfig = {
@@ -98,6 +98,7 @@ const defaultConfig = {
   },
   SLACK: {
     apiToken: process.env.SLACK_API_TOKEN || 'slack_token',
+    verifToken: process.env.SLACK_VERIF_TOKEN || '',
   },
   MAIL: {
     enable: process.env.MAIL_ENABLE === 'true' || false,

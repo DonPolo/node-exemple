@@ -12,9 +12,8 @@ export interface User {
 }
 
 export interface FileInfos {
-  filename: string;
+  intent: string;
   cat: 'training' | 'response';
-  type: string;
 }
 
 export interface ChatResponse {

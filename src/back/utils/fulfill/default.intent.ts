@@ -1,11 +1,10 @@
 import { IntentResult, IntentRequest } from '../../../types/types.util';
-import responsemanager from '../responsemanager.util';
 
 async function fallback(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
-    response: await responsemanager.load('default.fallback'),
+    response: 'default.fallback',
   };
   return res;
 }
@@ -14,7 +13,7 @@ async function welcome(request: IntentRequest): Promise<IntentResult> {
   const res: IntentResult = {
     confidence: request.confidence,
     contexts: request.contexts,
-    response: await responsemanager.load('default.welcome'),
+    response: 'default.welcome',
   };
   return res;
 }

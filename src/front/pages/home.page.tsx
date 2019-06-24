@@ -49,7 +49,6 @@ class File extends ParentComponent<{
       this.bubble = new Bubble(this.element.current);
     }
   }
-
   componentWillUnmount() {
     super.componentWillUnmount();
     if (this.bubble) {
@@ -65,18 +64,12 @@ class File extends ParentComponent<{
         <>
           <a
             onClick={() =>
-              this.props.controller.loadFile(f.name, f.type, 'training')
+              this.props.controller.loadFile(f.fullname, 'training')
             }
           >
-            {`${f.type}.${f.name}`}
+            {f.fullname.replace(/-/, '.')}
           </a>
-          <input
-            type='text'
-            name='name'
-            value={`${f.type}.${f.name}`}
-            disabled
-            readOnly
-          />
+          <input type='text' name='name' value={f.fullname} disabled readOnly />
           <div />
         </>
       );
@@ -87,19 +80,19 @@ class File extends ParentComponent<{
             // @ts-ignore
             <a
               ref={this.element}
-              bubble-name={`${f.type}.${f.beauty}`}
+              bubble-name={f.beautyname}
               bubble={f.desc}
               onClick={() =>
-                this.props.controller.loadFile(f.name, f.type, 'response')
+                this.props.controller.loadFile(f.intent, 'response')
               }
             >
-              {`${f.type}.${f.beauty}`}
+              {f.beautyname}
             </a>
           }
           <input
             type='text'
             name='name'
-            value={f.realname}
+            value={f.intent}
             onChange={event =>
               this.props.controller.inputName(event, 'response', index)
             }
@@ -208,10 +201,10 @@ class HomePage extends ParentComponent<{}, ISHome> {
             files={this.state.files ? this.state.files.response : null}
             controller={this.controller}
           />
-          {this.state.redirect ? (
-            <Redirect to={this.state.newpage} push={true} />
-          ) : null}
         </main>
+        {this.state.redirect ? (
+          <Redirect to={this.state.newpage} push={true} />
+        ) : null}
       </>
     );
   }

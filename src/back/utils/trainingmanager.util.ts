@@ -26,33 +26,18 @@ async function getIntents(): Promise<string[]> {
 }
 
 /**
- * Get the different intent types which are formed like 'type-intent'
- * @returns a list of types name : string []
+ * Get all the different intents name + type + fullname
+ * @returns a list of all the intents name + type + fullname : any[]
  */
-async function getTypes(): Promise<string[]> {
-  const intents = await getIntents();
-  const types: string[] = [];
-  intents.forEach((i: string) => {
-    types.push(i.split('-')[0]);
-  });
-  return types;
-}
-
-/**
- * Get all the intents name for one type without the type like 'type-intentname'
- * @param type name of a type : string
- * @returns a list of intents name : string[]
- */
-async function loadtype(type: string): Promise<string[]> {
+async function getFiles(): Promise<any[]> {
   const intents = await getIntents();
   const files: any[] = [];
   intents.forEach((i: string) => {
-    if (i.split('-')[0] === type) {
-      files.push({
-        type,
-        name: i.split('-')[1],
-      });
-    }
+    files.push({
+      type: i.split('-')[0],
+      name: i.split('-')[1],
+      fullname: i,
+    });
   });
   return files;
 }
@@ -259,8 +244,7 @@ async function getEntities() {
 
 export default {
   getIntents,
-  getTypes,
-  loadtype,
+  getFiles,
   loadfile,
   updatefile,
   getEntities,

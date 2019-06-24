@@ -1,20 +1,8 @@
-import Datastore from 'nedb';
 import { AnalyticsData } from '../../types/types.util';
+import dbmanagerUtil from './dbmanager.util';
 
 // Connect to a DB stored in DB/analytics
-const db = new Datastore({ filename: 'DB/analytics', autoload: true });
-
-const remove: any = async (query: any) => {
-  return new Promise((resolve, reject) => {
-    db.remove(query, (err, numRemoved) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(numRemoved);
-      }
-    });
-  });
-};
+const db = dbmanagerUtil.getAnalytics();
 
 const count = async (query: any): Promise<number> => {
   return new Promise((resolve, reject) => {
@@ -41,27 +29,6 @@ const insert: any = async (query: any) => {
         resolve(newDoc);
       }
     });
-  });
-};
-
-/**
- * Update datas in the database with promise
- * @param query a NoSQL query like with MongoDB
- */
-const update: any = async (query: any) => {
-  return new Promise((resolve, reject) => {
-    db.update(
-      { intent: query.intent },
-      query.all,
-      {},
-      (err: any, numReplaced: any) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(numReplaced);
-        }
-      },
-    );
   });
 };
 
@@ -96,22 +63,6 @@ const recovery: any = async (query: any) => {
         }
       },
     );
-  });
-};
-
-/**
- * Find one row in the database with promise
- * @param query a NoSQL query like with MongoDB
- */
-const findone: any = async (query: any) => {
-  return new Promise((resolve, reject) => {
-    db.findOne(query, (err: any, doc: any) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(doc);
-      }
-    });
   });
 };
 

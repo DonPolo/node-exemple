@@ -117,7 +117,7 @@ export interface IntentRequest {
   query: string;
 }
 export interface IntentResult {
-  response: Response;
+  response: string;
   contexts: Contexts;
   confidence: number;
 }
@@ -126,6 +126,8 @@ export interface Response {
   intent: string;
   type: string;
   beautyname: string;
+
+  big_intent: string;
   desc: string;
   // tslint:disable-next-line: prefer-array-literal
   responses: Array<
@@ -146,6 +148,7 @@ export interface ParsedResponse {
     | ParsedResponseMedia
     | ParsedResponseText
   >;
+  intent: string;
 }
 
 /* Parse Response */
@@ -253,3 +256,39 @@ export interface AnalyticsData {
   results: IntentResult[];
   request: FulfillRequest;
 }
+
+export const getEmptyAnalyticsData = () => {
+  const contexts: Contexts = {
+    fulfill: [],
+    service: '',
+    site: getEmptySiteContexts(),
+    user: getEmptyUserContexts(),
+    other: null,
+  };
+  const data: AnalyticsData = {
+    date: 0,
+    archived: false,
+    parsedResponse: {
+      intent: '',
+      responses: [],
+    },
+    result: {
+      contexts,
+      response: 'toto',
+      confidence: 0,
+    },
+    results: [],
+    request: {
+      result: {
+        contexts,
+        response: '',
+        intents: [],
+        entities: [],
+        query: '',
+      },
+      acceptedtypes: [],
+      lang: '',
+    },
+  };
+  return data;
+};

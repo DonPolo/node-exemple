@@ -16,3 +16,10 @@ DB/
 types.ts
 bfg.jar
 assets/js/
+
+# Test coverage
+src/back/_tests/__coverage__/
+src/front/_tests/__coverage__/
+# Test cache
+src/back/_tests/cache/
+src/front/_tests/cache/

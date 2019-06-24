@@ -1,0 +1,65 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Header style testing No regression 1`] = `
+<header>
+  <div>
+    <img
+      src="/pic/lifee.png"
+    />
+    <h1>
+      Lifee Admin
+    </h1>
+  </div>
+  <ul>
+    <a
+      className=""
+      href="/chat"
+      onClick={[Function]}
+    >
+      <li>
+        Chat
+      </li>
+    </a>
+    <a
+      className="selected"
+      href="/"
+      onClick={[Function]}
+    >
+      <li>
+        Training & Responses
+      </li>
+    </a>
+    <a
+      className=""
+      href="/addresponse"
+      onClick={[Function]}
+    >
+      <li>
+        Add response
+      </li>
+    </a>
+    <a
+      className=""
+      href="/analytics"
+      onClick={[Function]}
+    >
+      <li>
+        Analytics
+      </li>
+    </a>
+    <a
+      className=""
+      href="/webapp/disconnect"
+    >
+      <li>
+        Disconnect
+      </li>
+    </a>
+  </ul>
+  <span>
+    <h2>
+      Admin
+    </h2>
+  </span>
+</header>
+`;

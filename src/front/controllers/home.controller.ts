@@ -2,12 +2,14 @@ import $ from 'jquery';
 import datamanager from '../utils/datamanager.util';
 import ParentController from './parent.controller';
 import { simplesearch } from '../utils/search';
-import HomePage, { ISHome } from '../pages/home.page';
+import { ISHome } from '../pages/home.page';
 import { FormEvent } from 'react';
+import ParentComponent from '../components/parent.component';
+import fetchit from '../utils/fetchit';
 
 export default class HomeController extends ParentController {
   state: ISHome;
-  constructor(render: HomePage) {
+  constructor(render: ParentComponent) {
     super('home', 2, render);
     this.state = {
       files: datamanager.home.files,
@@ -25,8 +27,15 @@ export default class HomeController extends ParentController {
   }
 
   fetch = () => {
-    fetch('/webapp/api?query=home')
-      .then(response => response.json())
+    fetchit
+      .fetchIt('/webapp/api?query=home')
+      .then(response => {
+        if (response.status === 401) {
+          window.history.replaceState('', '', '/webapp/login');
+          return { error: true };
+        }
+        return response.json();
+      })
       .then(data => {
         datamanager.home.files = data;
         this.state.files = data;
@@ -133,9 +142,9 @@ export default class HomeController extends ParentController {
       });
   };
 
-  loadFile = (filename: string, type: string, cat: string) => {
+  loadFile = (filename: string, cat: string) => {
     this.state.redirect = true;
-    this.state.newpage = `/${cat}/${type}/${filename}`;
+    this.state.newpage = `/${cat}/${filename}`;
     this.changeState();
   };
 }

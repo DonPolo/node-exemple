@@ -23,6 +23,7 @@ import analyticsmanager from './analytics.util';
 import { clone } from './func.util';
 import twig, { Template } from 'twig';
 import { sendMessage } from './message.util';
+import responsemanagerUtil from './responsemanager.util';
 
 /**
  * Find and return the most probable response
@@ -46,25 +47,6 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
     await previous;
     let res: IntentResult;
     if (!intentMap.has(e.name)) {
-      if (request.result.response) {
-        res = {
-          response: {
-            intent: '',
-            type: '',
-            beautyname: '',
-            desc: '',
-            responses: [
-              {
-                text: {
-                  fr: [request.result.response],
-                },
-              },
-            ],
-          },
-          contexts: request.result.contexts,
-          confidence: 0.01,
-        };
-      }
       res = await intentDefault.fallback({
         entities: request.result.entities,
         contexts: clone(request.result.contexts),
@@ -103,7 +85,6 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
       intentResult = e;
     }
   });
-
   // Parse the response
   const parseResponseRequest: ParseResponseRequest = {
     intentResult,
@@ -134,10 +115,7 @@ export default async function(request: FulfillRequest): Promise<FulfillResult> {
   const id = await analyticsmanager.addEntry(analytics);
 
   // Send a mail if it's fallback
-  if (
-    intentResult.response.intent === 'default.fallback' &&
-    config.FALLBACK_MAIL
-  ) {
+  if (response.intent === 'default.fallback' && config.FALLBACK_MAIL) {
     await sendMessage({
       from: config.FALLBACK_MAIL,
       to: config.FALLBACK_MAIL,
@@ -280,16 +258,18 @@ function getConfig(): Intent[] {
  * @param types the accepted types
  * @param lang the level of language
  */
-async function parseResponse(
+export async function parseResponse(
   request: ParseResponseRequest,
 ): Promise<ParsedResponse> {
   // Get the responses array
-  const res = request.intentResult.response.responses;
+  const resu = await responsemanagerUtil.load(request.intentResult.response);
+  const res = resu.responses;
   const types = request.acceptedtypes;
   const lang = request.lang;
   // Create parsed response
   const newres: ParsedResponse = {
     responses: [],
+    intent: resu.intent,
   };
   // Build it
   await res.reduce(async (previous: any, r: any) => {
@@ -589,40 +569,22 @@ async function formatBtnDDList(
   let txt = getFromLang(list.text, lang);
   if (!txt) return [];
   txt = formatGenPlur(txt, list.text, contexts);
-  let a = txt.indexOf('{{');
-  let b = txt.indexOf('}}');
+  const a = txt.indexOf('{{');
+  const b = txt.indexOf('}}');
   let thevar = null;
   if (a === -1 || b === -1) {
-    a = list.value.indexOf('{{');
-    b = list.value.indexOf('}}');
-    if (a === -1 || b === -1) {
-      a = list.followupintent.indexOf('{{');
-      b = list.followupintent.indexOf('}}');
-      if (a === -1 || b === -1) {
-        return [
-          {
-            text: txt,
-            value: list.value,
-            followupintent: list.followupintent,
-          },
-        ];
-      }
-      thevar = list.followupintent
-        .substring(a + 2, b)
-        .trim()
-        .split('.');
-    } else {
-      thevar = list.value
-        .substring(a + 2, b)
-        .trim()
-        .split('.');
-    }
-  } else {
-    thevar = txt
-      .substring(a + 2, b)
-      .trim()
-      .split('.');
+    return [
+      {
+        text: txt,
+        value: list.value,
+        followupintent: list.followupintent,
+      },
+    ];
   }
+  thevar = txt
+    .substring(a + 2, b)
+    .trim()
+    .split('.');
   let obj = contexts;
   for (let i = 0; i < thevar.length - 1; i += 1) {
     obj = obj[thevar[i]];

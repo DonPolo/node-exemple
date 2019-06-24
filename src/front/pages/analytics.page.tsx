@@ -225,7 +225,7 @@ class Data extends ParentComponent<{
 
     const results = data.results.map((i: IntentResult, index: number) => (
       <tr key={index}>
-        <td>{i.response.intent}</td>
+        <td>{i.response}</td>
         <td>{i.confidence}</td>
       </tr>
     ));
@@ -244,7 +244,7 @@ class Data extends ParentComponent<{
               <span>
                 Query: <i>"{this.props.data.request.result.query}"</i>
               </span>
-              <span>Intent: {this.props.data.result.response.intent}</span>
+              <span>Intent: {this.props.data.result.response}</span>
               <span>Confidence: {this.props.data.result.confidence}</span>
               <span>Date: {prettyDate(this.props.data.date)}</span>
               {action}

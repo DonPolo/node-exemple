@@ -1,8 +1,11 @@
 import Datastore from 'nedb';
 import { Response } from '../../types/types.util';
+import yaml from 'yamljs';
+import json2pyaml from 'json-to-pretty-yaml';
+import dbmanagerUtil from './dbmanager.util';
 
 // Connect to a DB stored in DB/responses
-const db = new Datastore({ filename: 'DB/responses', autoload: true });
+const db = dbmanagerUtil.getResponse();
 
 const remove: any = async (query: any) => {
   return new Promise((resolve, reject) => {
@@ -63,7 +66,9 @@ const findone: any = async (query: any) => {
       if (err) {
         reject(err);
       } else {
-        resolve(doc);
+        const newdoc = yaml.parse(doc.data);
+        newdoc.yaml = doc.data;
+        resolve(newdoc);
       }
     });
   });
@@ -79,7 +84,13 @@ const find: any = async (query: any) => {
       if (err) {
         reject(err);
       } else {
-        resolve(docs);
+        const res: any[] = [];
+        docs.forEach((doc: any) => {
+          const newdoc = yaml.parse(doc.data);
+          newdoc.yaml = doc.data;
+          res.push(newdoc);
+        });
+        resolve(res);
       }
     });
   });
@@ -89,8 +100,8 @@ const find: any = async (query: any) => {
  * Save an intent response in the DB, the intent must already exists
  * @param response the response object
  */
-async function save(response: any) {
-  await update({ intent: response.intent, all: response });
+async function save(response: string, infos: any) {
+  await update({ intent: infos.intent, all: { data: response } });
 }
 
 /**
@@ -108,81 +119,51 @@ async function load(intent: string): Promise<Response> {
   return response;
 }
 
-/**
- * Get the different intents for a given type
- * @param type the intent type like 'type.intent'
- */
-async function loadtype(type: string): Promise<any> {
-  const files = await find({ type });
-  if (files) {
-    const realfiles: any[] = [];
-    files.forEach((f: any) => {
-      realfiles.push({
-        type,
-        realname: f.intent,
-        name: f.intent.split('.')[1],
-        beauty: f.beautyname.split('.')[1],
-        desc: f.desc,
-      });
-    });
-    return realfiles;
-  }
-  return [];
-}
-
-/**
- * Get the different types
- */
-async function gettypes(): Promise<any> {
-  const response = await find({});
-  if (response) {
-    const res: string[] = [];
-    response.forEach((r: any) => {
-      if (!res.includes(r.type)) {
-        res.push(r.type);
-      }
-    });
-    return res;
-  }
-  return [];
+async function getAll(): Promise<any> {
+  return await find({});
 }
 
 /**
  * Load an intent response and return the object
  * @param intent intent name with the type like 'type.intent'
  */
-async function loadfile(intent: string): Promise<any> {
+async function loadFile(intent: string): Promise<any> {
   let response = await findone({ intent });
   if (!response) {
     response = await findone({ intent: 'default.fallback' });
   }
-  delete response._id;
-  return response;
+  return response.data;
 }
 
 async function addResponse(obj: any) {
-  await insert(obj);
-  return await loadfile(obj.intent);
+  const yamlinf = obj;
+  const intent = obj.intent;
+  delete yamlinf.intent;
+  const realdoc = {
+    intent,
+    data: json2pyaml.stringify(yamlinf),
+  };
+  await insert(realdoc);
+  return await loadFile(intent);
 }
 
-async function removefile(file: string) {
+async function removeFile(file: string) {
   await remove({ intent: file });
 }
 
-async function modif(file: string, newtype: string, newname: string) {
+async function modifFile(file: string, newtype: string, newname: string) {
   await update({
     intent: file,
-    all: { $set: { type: newtype, intent: newname } },
+    all: { $set: { intent: newname } },
   });
 }
 
 export default {
   save,
   load,
-  loadtype,
-  gettypes,
-  loadfile,
+  getAll,
+  loadFile,
   addResponse,
-  modif,
-  delete: removefile,
+  modifFile,
+  delete: removeFile,
 };

@@ -2,6 +2,7 @@ import ParentController from './parent.controller';
 import datamanager from '../utils/datamanager.util';
 import AddResponsePage, { ISAddResponse } from '../pages/addresponse.page';
 import { FormEvent } from 'react';
+import fetch from '../utils/fetchit';
 
 class AddresponseController extends ParentController {
   state: ISAddResponse;
@@ -26,11 +27,18 @@ class AddresponseController extends ParentController {
     this.state.error = null;
     this.state.success = null;
     this.changeState();
-    fetch('/webapp/api?query=addresponse', {
-      method: 'POST',
-      body: form,
-    })
-      .then(response => response.json())
+    fetch
+      .fetchIt('/webapp/api?query=addresponse', {
+        method: 'POST',
+        body: form,
+      })
+      .then(response => {
+        if (response.status === 401) {
+          window.history.replaceState('', '', '/webapp/login');
+          return { error: true };
+        }
+        return response.json();
+      })
       .then(data => {
         if (data.error) {
           this.state.error = data.msg;

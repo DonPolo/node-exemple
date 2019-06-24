@@ -126,8 +126,10 @@ export default class Ecl {
           replacements: { codesite: sites[0].id },
         },
       );
-      site.horaires = format.horaires.formatHoraires(horairesplus);
-      site.horairesplus = horairesplus;
+      if (horairesplus && horairesplus.length > 0) {
+        site.horaires = format.horaires.formatHoraires(horairesplus);
+        site.horairesplus = horairesplus;
+      }
       return site;
     }
     return Promise.resolve(null);

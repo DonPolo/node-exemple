@@ -1,13 +1,13 @@
-import Datastore from 'nedb';
 import {
   Contexts,
   getEmptySiteContexts,
   getEmptyUserContexts,
 } from '../../types/types.util';
 import config from '../config';
+import dbmanagerUtil from './dbmanager.util';
 
 // Connect to ad db stored in DB/contexts
-const db = new Datastore({ filename: 'DB/contexts', autoload: true });
+const db = dbmanagerUtil.getContext();
 
 /**
  * Delete old contexts (date expired)
@@ -16,22 +16,6 @@ async function deleteOld() {
   const ttl = Date.now() - config.NEDB.ttl * 86400000;
   await db.remove({ createTime: { $lt: ttl } }, { multi: true });
 }
-
-/**
- * Count the occurences in db
- * @param query a mongodb query
- */
-const count: any = async (query: any) => {
-  return new Promise((resolve, reject) => {
-    db.count(query, (err: any, nb: any) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(nb);
-      }
-    });
-  });
-};
 
 /**
  * Insert datas in db

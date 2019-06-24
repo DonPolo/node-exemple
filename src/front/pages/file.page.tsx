@@ -44,11 +44,11 @@ class File extends ParentComponent<IPSingleFile> {
         <a
           className={this.props.cur ? 'selected' : ''}
           onClick={() =>
-            this.props.controller.changeFile(f.name, f.type, 'training')
+            this.props.controller.changeFile(f.fullname, 'training')
           }
-          s-val={`${f.type}.${f.name}`}
+          s-val={f.fullname.replace(/-/, '.')}
         >
-          {`${capitalize(f.type)}.${capitalize(f.name)}`}
+          {f.fullname}
         </a>
       );
     } else {
@@ -57,14 +57,12 @@ class File extends ParentComponent<IPSingleFile> {
         <a
           ref={this.element}
           className={this.props.cur ? 'selected' : ''}
-          bubble-name={`${capitalize(f.type)}.${capitalize(f.beauty)}`}
+          bubble-name={f.beautyname}
           bubble={f.desc}
-          onClick={() =>
-            this.props.controller.changeFile(f.name, f.type, 'response')
-          }
-          s-val={`${f.type}.${f.name}`}
+          onClick={() => this.props.controller.changeFile(f.intent, 'response')}
+          s-val={f.intent}
         >
-          {`${capitalize(f.type)}.${capitalize(f.beauty)}`}
+          {f.beautyname}
         </a>
       );
     }
@@ -165,8 +163,7 @@ class TopBar extends ParentComponent<IPTopBar> {
       <div className='topbar'>
         <div>
           <h2>{capitalize(this.props.cat)}</h2>
-          <h2>{capitalize(this.props.filename.split('.')[0])}</h2>
-          <h2>{capitalize(this.props.filename.split('.')[1])}</h2>
+          <h2>{capitalize(this.props.filename)}</h2>
         </div>
         <div>
           <strong>Auto save</strong>

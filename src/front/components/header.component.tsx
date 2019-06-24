@@ -1,13 +1,11 @@
 import React from 'react';
 import ParentComponent from './parent.component';
-import AppController from '../controllers/app.controller';
 import { Link } from 'react-router-dom';
 import { User } from '../../types/front';
 
 // tslint:disable: max-classes-per-file
 
 interface IPHeader {
-  app: AppController;
   nav: number;
   user: User;
 }

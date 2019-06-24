@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test Login page Render the page correctly 1`] = `
+<BrowserRouter>
+  <Router
+    history={
+      Object {
+        "action": "POP",
+        "block": [Function],
+        "createHref": [Function],
+        "go": [Function],
+        "goBack": [Function],
+        "goForward": [Function],
+        "length": 1,
+        "listen": [Function],
+        "location": Object {
+          "hash": "",
+          "pathname": "/",
+          "search": "",
+          "state": undefined,
+        },
+        "push": [Function],
+        "replace": [Function],
+      }
+    }
+  >
+    <LoginPage>
+      <main>
+        <form
+          method="post"
+          onSubmit={[Function]}
+        >
+          <h2>
+            Log In
+          </h2>
+          <label
+            className="label"
+            htmlFor="pseudo"
+          >
+            Pseudo
+            <input
+              className="input"
+              id="pseudo"
+              name="pseudo"
+              onChange={[Function]}
+              type="text"
+              value=""
+            />
+          </label>
+          <label
+            className="label"
+            htmlFor="pwd"
+          >
+            Password
+            <input
+              className="input"
+              id="pwd"
+              name="pwd"
+              onChange={[Function]}
+              type="password"
+              value=""
+            />
+          </label>
+          <button
+            className="btn"
+            type="submit"
+          >
+            Continue
+          </button>
+        </form>
+      </main>
+    </LoginPage>
+  </Router>
+</BrowserRouter>
+`;

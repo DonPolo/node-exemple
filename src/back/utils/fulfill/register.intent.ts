@@ -4,7 +4,6 @@ import {
   IntentResult,
   Response,
 } from '../../../types/types.util';
-import responsemanager from '../responsemanager.util';
 import config from '../../config';
 import Ecl, { SiteGroup, User } from '../../models/ecl';
 import { sendMessage } from '../message.util';
@@ -107,7 +106,7 @@ async function checkUserByMail(request: IntentRequest) {
 }
 
 async function register(request: IntentRequest): Promise<IntentResult> {
-  let txt: Response;
+  let txt: string;
   let confidence = request.confidence;
   if (!checkAlreadyRegistered(request)) {
     if (
@@ -126,26 +125,26 @@ async function register(request: IntentRequest): Promise<IntentResult> {
         if (user) {
           // User already exists
           request.contexts.fulfill = [];
-          txt = await responsemanager.load('register.already');
+          txt = 'register.already';
         } else {
           // Ask his name
           request.contexts.user.email = request.entities.filter(
             e => e.name === 'email',
           )[0].value;
           request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
-          txt = await responsemanager.load('register.askfirstname');
+          txt = 'register.askfirstname';
         }
       } else {
         // Normal registration
         request.contexts.fulfill = [config.CONTEXTS.FULFILL.register];
-        txt = await responsemanager.load('register.askmail');
+        txt = 'register.askmail';
       }
     } else {
       confidence = 0.2;
-      txt = await responsemanager.load('register.registering');
+      txt = 'register.registering';
     }
   } else {
-    txt = await responsemanager.load('register.already');
+    txt = 'register.already';
   }
   const res: IntentResult = {
     confidence,
@@ -157,7 +156,7 @@ async function register(request: IntentRequest): Promise<IntentResult> {
 
 async function registerMail(request: IntentRequest): Promise<IntentResult> {
   let conf = request.confidence;
-  let txt: Response;
+  let txt: string;
   if (
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.register) &&
     request.entities.filter(e => e.name === 'email' || e.name === '##all##')
@@ -167,17 +166,17 @@ async function registerMail(request: IntentRequest): Promise<IntentResult> {
     const user = await checkUserByMail(request);
     if (user) {
       request.contexts.fulfill = [];
-      txt = await responsemanager.load('register.already');
+      txt = 'register.already';
     } else {
       request.contexts.user.email = request.entities.filter(
         e => e.name === 'email',
       )[0].value;
       request.contexts.fulfill = [config.CONTEXTS.FULFILL.registermail];
-      txt = await responsemanager.load('register.askfirstname');
+      txt = 'register.askfirstname';
     }
   } else {
     conf = 0;
-    txt = await responsemanager.load('register.askfirstname');
+    txt = 'register.askfirstname';
   }
   const res: IntentResult = {
     contexts: request.contexts,
@@ -192,7 +191,7 @@ async function registerName(request: IntentRequest): Promise<IntentResult> {
   const names = request.entities.filter(
     e => e.name === 'name' || e.name === '##all##',
   );
-  let text = await responsemanager.load('default.fallback');
+  let text = 'default.fallback';
   let name = null;
   if (names.length > 0) {
     name = names[0].value;
@@ -213,25 +212,25 @@ async function registerName(request: IntentRequest): Promise<IntentResult> {
         const groups = await ecl.getSiteGroups(request.contexts.site.id);
         if (groups.length > 1) {
           request.contexts.fulfill = [config.CONTEXTS.FULFILL.registercode];
-          text = await responsemanager.load('register.askcode');
+          text = 'register.askcode';
         } else {
           request.contexts.fulfill = [];
           request.contexts.user.registered = true;
           if (
             registration(request.contexts, groups.length ? groups[0] : null)
           ) {
-            text = await responsemanager.load('register.done_after_validation');
+            text = 'register.done_after_validation';
           } else {
-            text = await responsemanager.load('register.done');
+            text = 'register.done';
           }
         }
       } else {
         request.contexts.fulfill = [config.CONTEXTS.FULFILL.registercode];
-        text = await responsemanager.load('register.askcode');
+        text = 'register.askcode';
       }
     } else {
       request.contexts.user.firstname = name;
-      text = await responsemanager.load('register.asklastname');
+      text = 'register.asklastname';
     }
     conf = 0.9;
   } else {
@@ -247,7 +246,7 @@ async function registerName(request: IntentRequest): Promise<IntentResult> {
 
 async function registerCode(request: IntentRequest): Promise<IntentResult> {
   let conf = request.confidence;
-  let txt = await responsemanager.load('default.fallback');
+  let txt = 'default.fallback';
   if (
     request.contexts.fulfill.includes(config.CONTEXTS.FULFILL.registercode) &&
     request.entities.filter(e => e.name === 'number' || e.name === '##all##')
@@ -268,15 +267,15 @@ async function registerCode(request: IntentRequest): Promise<IntentResult> {
         ? groups[siteGroupNumber - 1]
         : undefined;
     if (!siteGroup) {
-      txt = await responsemanager.load('register.ask_site_group_again');
+      txt = 'register.ask_site_group_again';
     } else {
       request.contexts.fulfill = [];
       request.contexts.user.siteGroup = siteGroupNumber;
       request.contexts.user.registered = true;
       if (registration(request.contexts, siteGroup)) {
-        txt = await responsemanager.load('register.done_after_validation');
+        txt = 'register.done_after_validation';
       } else {
-        txt = await responsemanager.load('register.done');
+        txt = 'register.done';
       }
     }
     conf = 0.9;

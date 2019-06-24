@@ -8,7 +8,7 @@ import config from '../config';
 import twilio from 'twilio';
 const { MessagingResponse } = twilio.twiml;
 // Nexmo
-import Nexmo from 'nexmo';
+import nexmo from '../utils/nexmo.util';
 import logger from '../config/logger';
 
 async function process(
@@ -73,19 +73,15 @@ async function nexmowebhook(
 ) {
   try {
     if (req.body.msisdn && req.body.text && req.body.to) {
-      const telFrom: string = req.body.msisdn;
+      const telFrom = `+${req.body.msisdn}`;
       const query: string = req.body.text;
-      const telTo: string = req.body.to;
+      const telTo = `+${req.body.to}`;
 
       const result = await process(query, telFrom, telTo);
 
       if (result) {
         // Answer with Nexmo
-        const nexmo = new Nexmo({
-          apiKey: config.NEXMO.apiKey,
-          apiSecret: config.NEXMO.apiSecret,
-        });
-        nexmo.message.sendSms(telTo, telFrom, result);
+        nexmo.sendSms(telTo, telFrom, result, { type: 'unicode' });
         res.writeHead(HTTPStatus.OK, { 'Content-Type': 'text/xml' });
         return res.end();
       }

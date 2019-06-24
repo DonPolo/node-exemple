@@ -26,6 +26,7 @@ import FilePage, { ISFile, IPFile } from '../pages/file.page';
 import { FileInfos } from '../../types/front';
 import datas from '../utils/datamanager.util';
 import { FormEvent } from 'react';
+import fetchit from '../utils/fetchit';
 
 let filecat = '';
 export const cat = () => {
@@ -52,7 +53,7 @@ export default class FileController extends ParentController {
       params: datas.file.parameters,
       fileloaded: false,
       files: datas.home.files,
-      fullfilename: `${props.file.type}.${props.file.filename}`,
+      fullfilename: props.file.intent,
       showDoc: false,
       redirect: false,
     };
@@ -75,9 +76,10 @@ export default class FileController extends ParentController {
 
     if (!datas.home.files) {
       this.fetchFiles();
+    } else {
+      this.loadFile(filecat, props.file.intent);
     }
 
-    this.fetchFile();
     this.changeState();
 
     if (datas.app) {
@@ -87,8 +89,15 @@ export default class FileController extends ParentController {
   }
 
   fetchEntities = () => {
-    fetch('/webapp/api?query=entities')
-      .then(response => response.json())
+    fetchit
+      .fetchIt('/webapp/api?query=entities')
+      .then(response => {
+        if (response.status === 401) {
+          window.history.replaceState('', '', '/webapp/login');
+          return { error: true };
+        }
+        return response.json();
+      })
       .then(data => {
         datas.file.entities = data;
         this.state.entities = data;
@@ -101,8 +110,15 @@ export default class FileController extends ParentController {
   };
 
   fetchParameters = () => {
-    fetch('/webapp/api?query=params')
-      .then(response => response.json())
+    fetchit
+      .fetchIt('/webapp/api?query=params')
+      .then(response => {
+        if (response.status === 401) {
+          window.history.replaceState('', '', '/webapp/login');
+          return { error: true };
+        }
+        return response.json();
+      })
       .then(data => {
         datas.file.parameters = data;
         this.state.params = data;
@@ -115,25 +131,45 @@ export default class FileController extends ParentController {
   };
 
   fetchFiles = () => {
-    fetch('/webapp/api?query=home')
-      .then(response => response.json())
+    fetchit
+      .fetchIt('/webapp/api?query=home')
+      .then(response => {
+        if (response.status === 401) {
+          window.history.replaceState('', '', '/webapp/login');
+          return { error: true };
+        }
+        return response.json();
+      })
       .then(data => {
         datas.home.files = data;
         this.state.files = data;
         this.changeState();
+        this.loadFile(filecat, this.state.fileinfos.intent);
       });
   };
 
   fetchFile = () => {
     const query = `/webapp/api?query=file&cat=${
       this.state.fileinfos.cat
-    }&type=${this.state.fileinfos.type}&name=${this.state.fileinfos.filename}`;
-    fetch(query)
+    }&intent=${this.state.fileinfos.intent}`;
+    fetchit
+      .fetchIt(query)
       .then(response => response.json())
       .then(data => {
         this.file = data.file;
         this.editorChange();
       });
+  };
+
+  loadFile = (thecat: string, intent: string) => {
+    if (thecat === 'training') {
+      this.fetchFile();
+    } else {
+      this.file = datas.home.files.response.filter(
+        (u: any) => u.intent === intent,
+      )[0].yaml;
+      this.editorChange();
+    }
   };
 
   windowClick = (event: React.MouseEvent) => {
@@ -175,25 +211,24 @@ export default class FileController extends ParentController {
     this.changeState();
   };
 
-  changeFile = (name: string, type: string, cati: 'training' | 'response') => {
+  changeFile = (intent: string, cati: 'training' | 'response') => {
     if (this.unsave) {
       const r = confirm('You have unsaved change ! Continue ?');
       if (!r) return;
     }
     const inf: FileInfos = {
-      type,
-      filename: name,
+      intent,
       cat: cati,
     };
     this.unsave = false;
     this.source.setValue('');
     filecat = cati;
-    window.history.pushState('', '', `/webapp/${cati}/${type}/${name}`);
+    window.history.pushState('', '', `/webapp/${cati}/${intent}`);
     this.state.fileinfos = inf;
-    this.state.fullfilename = `${type}.${name}`;
+    this.state.fullfilename = intent;
     this.state.fileloaded = false;
     this.changeState();
-    this.fetchFile();
+    this.loadFile(cati, intent);
   };
 
   backToHome = () => {
@@ -217,9 +252,7 @@ export default class FileController extends ParentController {
         .split(':')[1]
         .trim()
         .replace(/"/g, '');
-      const fold = place.split('.')[0];
-      const file = place.split('.')[1];
-      this.changeFile(file, fold, 'response');
+      this.changeFile(place, 'response');
     }
   };
 
@@ -274,7 +307,7 @@ export default class FileController extends ParentController {
       dataType: 'json',
       data: {
         code: this.source.getValue().replace(/\t/g, '  '),
-        file: this.state.fileinfos.filename,
+        file: this.state.fileinfos.intent,
         cat: this.state.fileinfos.cat,
         oldcode: this.file,
       },

@@ -1,9 +1,9 @@
 import express from 'express';
+import pyaml from 'json-to-pretty-yaml';
 import responsemanager from '../utils/responsemanager.util';
 import trainingmanager from '../utils/trainingmanager.util';
 import analyticsmanager from '../utils/analytics.util';
 import config from '../config';
-import json2pyaml from 'json-to-pretty-yaml';
 import yaml from 'yamljs';
 import {
   ResultIntent,
@@ -20,7 +20,7 @@ import logger from '../config/logger';
 import template from '../templates/app.html';
 
 function checkConnection(req: express.Request) {
-  if (req.session) {
+  if (req.session && req.session.user) {
     return req.session.user;
   }
   return null;
@@ -31,33 +31,13 @@ function checkConnection(req: express.Request) {
  * @returns response files array
  */
 async function getFiles() {
-  const restypes = await responsemanager.gettypes();
-  const traintypes = await trainingmanager.getTypes();
-  const types = restypes;
-  traintypes.forEach((t: any) => {
-    if (!types.includes(t)) {
-      types.push(t);
-    }
-  });
-  types.sort();
   const result: {
     response: any[];
     training: any[];
   } = {
-    response: [],
-    training: [],
+    response: await responsemanager.getAll(),
+    training: await trainingmanager.getFiles(),
   };
-  await types.reduce(async (previous: any, e: any) => {
-    await previous;
-    const responsefiles = await responsemanager.loadtype(e);
-    const trainfiles = await trainingmanager.loadtype(e);
-    result.response.push(
-      ...responsefiles.sort((a: any, b: any) => {
-        return a.beauty.localeCompare(b.beauty);
-      }),
-    );
-    result.training.push(...trainfiles.sort());
-  }, Promise.resolve());
   return result;
 }
 
@@ -93,7 +73,7 @@ async function disconnect(
   res: express.Response,
   next: express.NextFunction,
 ) {
-  if (req.session) {
+  if (req.session && req.session.user) {
     delete req.session.user;
     req.session.save(() => res.redirect('/webapp/login'));
   } else {
@@ -154,7 +134,7 @@ async function sendmessage(
       const request: Request = {
         msg,
         from,
-        to: '+33755536910',
+        to: '+33757916905',
         service: 'sap',
         platform: 'tel',
         acceptedtypes: types,
@@ -218,7 +198,7 @@ async function sendevent(
         from,
         result,
         msg: '',
-        to: '+33755536910',
+        to: '+33757916905',
         service: 'sap',
         platform: 'tel',
         acceptedtypes: types,
@@ -253,7 +233,7 @@ async function save(
   try {
     const json = yaml.parse(req.body.code);
     if (req.body.cat === 'response') {
-      await responsemanager.save(json);
+      await responsemanager.save(req.body.code, json);
     } else if (req.body.cat === 'training') {
       const oldjson = yaml.parse(req.body.oldcode);
       let todelete: string[] = [];
@@ -316,7 +296,7 @@ async function modif(
   if (!user) return;
   try {
     if (req.body.cat === 'response') {
-      await responsemanager.modif(
+      await responsemanager.modifFile(
         `${req.body.type}.${req.body.name}`,
         req.body.newtype,
         req.body.newname,
@@ -364,10 +344,12 @@ async function api(
           const intent = req.body.name;
           const type = req.body.type;
           const beautyname = req.body.beauty;
+          const big_intent = req.body.big_intent;
           const response = await responsemanager.addResponse({
             intent,
             type,
             beautyname,
+            big_intent,
             desc: '',
             responses: {},
           });
@@ -379,24 +361,6 @@ async function api(
           const datas: AnalyticsData[] = await analyticsmanager.getAll();
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ nb, datas }));
-          break;
-        case 'file':
-          let fileres: any;
-          if (req.query.cat === 'response') {
-            fileres = await responsemanager.loadfile(
-              `${req.query.type}.${req.query.name}`,
-            );
-          } else {
-            fileres = await trainingmanager.loadfile(
-              `${req.query.type}-${req.query.name}`,
-            );
-          }
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(
-            JSON.stringify({
-              file: json2pyaml.stringify(fileres),
-            }),
-          );
           break;
         case 'entities':
           const entities = await trainingmanager.getEntities();

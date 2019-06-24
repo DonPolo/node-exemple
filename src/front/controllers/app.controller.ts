@@ -2,6 +2,7 @@ import App, { ISApp } from '../utils/app.util';
 
 import datamanager from '../utils/datamanager.util';
 import ParentController from './parent.controller';
+import fetchit from '../utils/fetchit';
 
 export default class AppController extends ParentController {
   state: ISApp;
@@ -36,7 +37,8 @@ export default class AppController extends ParentController {
   };
 
   getUser() {
-    fetch('/webapp/api?query=user')
+    fetchit
+      .fetchIt('/webapp/api?query=user')
       .then(response => response.json())
       .then(data => {
         datamanager.user = data;
