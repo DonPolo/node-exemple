@@ -165,9 +165,13 @@ export default class FileController extends ParentController {
     if (thecat === 'training') {
       this.fetchFile();
     } else {
-      this.file = datas.home.files.response.filter(
-        (u: any) => u.intent === intent,
-      )[0].yaml;
+      if (intent === '') {
+        this.file = '';
+      } else {
+        this.file = datas.home.files.filter(
+          (u: any) => u.intent === intent,
+        )[0].yaml;
+      }
       this.editorChange();
     }
   };
@@ -204,7 +208,7 @@ export default class FileController extends ParentController {
   };
 
   editorChange = () => {
-    if (!this.source || !this.file) return;
+    if (!this.source || this.file === null) return;
     this.state.fileloaded = true;
     const txt = escapeNewLine(this.file.replace(/  /g, '\t'));
     this.source.setValue(txt);

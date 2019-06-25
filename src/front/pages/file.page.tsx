@@ -81,39 +81,53 @@ class LeftMenu extends ParentComponent<IPLeftMenu> {
     let files = null;
     if (this.props.files) {
       let i = 0;
-      files = [<h2 key={i}>Training</h2>];
+      files = [<h2 key={i}>Intents</h2>];
       i += 1;
-      this.props.files.training.forEach((f: any) => {
-        let cur = false;
-        if (`${f.type}.${f.name}` === this.props.filename) {
-          cur = true;
+      let current: string | any = null;
+      const types: any[] = [];
+      this.props.files.forEach((f: any) => {
+        let type = f.big_intent || f.type;
+        if (type.split('.').length > 1) type = type.split('.')[0];
+        if (!current || type !== current) {
+          current = type;
+          types.push({
+            name: type,
+            vals: [],
+          });
         }
-        files.push(
-          <File
-            controller={this.props.controller}
-            cur={cur}
-            file={f}
-            type={'training'}
-            key={i}
-          />,
-        );
-        i += 1;
+        types[types.length - 1].vals.push(f);
       });
-      files.push(<h2 key={i}>Responses</h2>);
-      i += 1;
-      this.props.files.response.forEach((f: any) => {
-        let cur = false;
-        if (`${f.type}.${f.name}` === this.props.filename) {
-          cur = true;
+      types.forEach((t: any) => {
+        t.vals.sort((a: any, b: any) => {
+          if (b.big_intent) return -1;
+          return 0;
+        });
+        const content: any[] = [];
+        let j = 0;
+        if (t.vals.length > 1 && !t.vals[0].big_intent) {
+          content.push(<h3 key={j}>Training</h3>);
+          j += 1;
         }
+        let responses = false;
+        t.vals.forEach((v: any) => {
+          if (!responses && typeof v.big_intent !== 'undefined') {
+            responses = true;
+            content.push(<h3 key={j}>Responses</h3>);
+            j += 1;
+          }
+          content.push(
+            <File
+              controller={this.props.controller}
+              cur={false}
+              file={v}
+              type={responses ? 'response' : 'training'}
+              key={j}
+            />,
+          );
+          j += 1;
+        });
         files.push(
-          <File
-            controller={this.props.controller}
-            cur={cur}
-            file={f}
-            type={'response'}
-            key={i}
-          />,
+          <Accordion key={i} name={t.name} content={content} anim={true} />,
         );
         i += 1;
       });
@@ -199,12 +213,12 @@ class Editor extends ParentComponent<{
         >
           <i className='fas fa-info' />
         </span>
-        <span className='back-but'>
+        {/*<span className='back-but'>
           <a
             onClick={this.props.controller.backToHome}
             className='fas fa-chevron-left'
           />
-        </span>
+        </span>*/}
         {!this.props.isLoaded ? (
           <span className='loader abs'>
             <img src='/pic/load.gif' />

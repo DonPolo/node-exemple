@@ -31,13 +31,17 @@ function checkConnection(req: express.Request) {
  * @returns response files array
  */
 async function getFiles() {
-  const result: {
-    response: any[];
-    training: any[];
-  } = {
-    response: await responsemanager.getAll(),
-    training: await trainingmanager.getFiles(),
-  };
+  let result: any[] = await trainingmanager.getFiles();
+  result = result.concat(await responsemanager.getAll());
+  result.sort((a: any, b: any) => {
+    let vala;
+    if (a.big_intent) vala = a.big_intent;
+    else vala = a.type;
+    let valb;
+    if (b.big_intent) valb = b.big_intent;
+    else valb = b.type;
+    return vala.localeCompare(valb);
+  });
   return result;
 }
 
@@ -351,7 +355,7 @@ async function api(
             beautyname,
             big_intent,
             desc: '',
-            responses: {},
+            responses: '',
           });
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(response));

@@ -47,7 +47,17 @@ class App extends ParentComponent<{}, ISApp> {
                 <Redirect to={this.state.newpage} push={false} />
               ) : (
                 <Switch>
-                  <Route exact path='/' component={Page.Home} />
+                  <Route
+                    exact
+                    path='/'
+                    render={() => {
+                      const file: FileInfos = {
+                        cat: 'response',
+                        intent: '',
+                      };
+                      return <Page.File file={file} />;
+                    }}
+                  />
                   <Route exact path='/analytics' component={Page.Analytics} />
                   <Route exact path='/chat' component={Page.Chat} />
                   <Route

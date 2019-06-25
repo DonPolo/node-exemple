@@ -43,7 +43,7 @@ const update: any = async (query: any) => {
   return new Promise((resolve, reject) => {
     db.update(
       { intent: query.intent },
-      query.all,
+      { $set: query.all },
       {},
       (err: any, numReplaced: any) => {
         if (err) {
@@ -66,6 +66,7 @@ const findone: any = async (query: any) => {
       if (err) {
         reject(err);
       } else {
+        if (!doc) return resolve(doc);
         const newdoc = yaml.parse(doc.data);
         newdoc.yaml = doc.data;
         resolve(newdoc);
@@ -109,6 +110,7 @@ async function save(response: string, infos: any) {
  * @param intent the intent name with the type like 'type.intent'
  */
 async function load(intent: string): Promise<Response> {
+  console.log(intent);
   let response = await findone({ intent });
   if (response && response.clone) {
     response = await load(response.clone);
@@ -128,6 +130,7 @@ async function getAll(): Promise<any> {
  * @param intent intent name with the type like 'type.intent'
  */
 async function loadFile(intent: string): Promise<any> {
+  console.log(intent);
   let response = await findone({ intent });
   if (!response) {
     response = await findone({ intent: 'default.fallback' });
@@ -138,7 +141,6 @@ async function loadFile(intent: string): Promise<any> {
 async function addResponse(obj: any) {
   const yamlinf = obj;
   const intent = obj.intent;
-  delete yamlinf.intent;
   const realdoc = {
     intent,
     data: json2pyaml.stringify(yamlinf),
