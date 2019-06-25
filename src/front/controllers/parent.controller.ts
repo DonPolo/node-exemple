@@ -34,4 +34,8 @@ export default class ParentController {
   renderIsUnMount() {
     // Do nothing
   }
+
+  renderUpdate() {
+    // Do nothing
+  }
 }

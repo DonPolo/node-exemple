@@ -12,6 +12,7 @@ export default class AppController extends ParentController {
   onWindowClick: Array<(event: React.MouseEvent) => void>;
   // tslint:disable-next-line: prefer-array-literal
   onWindowKeyPress: Array<(event: React.KeyboardEvent) => void>;
+  shouldRedirect: boolean;
   constructor(render: App) {
     super('', 0, render);
     this.state = {
@@ -22,17 +23,19 @@ export default class AppController extends ParentController {
       showheader: false,
       redirect: false,
       newpage: '',
+      isLoad: false,
     };
+    this.shouldRedirect = false;
     this.onWindowClick = [];
     this.onWindowKeyPress = [];
     datamanager.app = this;
     this.changeState();
-    this.getUser();
   }
 
   redirect = (page: string) => {
     this.state.redirect = true;
     this.state.newpage = `${page}`;
+    this.shouldRedirect = true;
     this.changeState();
   };
 
@@ -43,7 +46,12 @@ export default class AppController extends ParentController {
       .then(data => {
         datamanager.user = data;
         this.state.user = data;
-        this.changePage(this.newpage, this.newnav);
+        this.state.isLoad = true;
+        if (!this.state.user) {
+          this.redirect('/login');
+        } else {
+          this.changeState();
+        }
       });
   }
 
@@ -58,10 +66,11 @@ export default class AppController extends ParentController {
       this.newpage = pagename;
       this.newnav = nav;
       this.redirect('/login');
-    } else {
-      this.state.pagename = pagename;
-      this.state.nav = nav;
+      return;
     }
+    this.state.pagename = pagename;
+    this.state.nav = nav;
+
     this.changeState();
   };
   windowClick = (event: React.MouseEvent) => {
@@ -70,5 +79,18 @@ export default class AppController extends ParentController {
 
   windowKeyPress = (event: React.KeyboardEvent) => {
     this.onWindowKeyPress.forEach(e => e(event));
+  };
+
+  renderIsMount = () => {
+    this.state.redirect = false;
+    if (!this.state.user) {
+      this.getUser();
+    }
+  };
+
+  renderUpdate = () => {
+    if (!this.state.redirect) return;
+    this.state.redirect = false;
+    this.changeState();
   };
 }

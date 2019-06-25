@@ -20,6 +20,7 @@ export interface ISApp {
   page: ParentComponent | null;
   redirect: boolean;
   newpage: string;
+  isLoad: boolean;
 }
 
 class App extends ParentComponent<{}, ISApp> {
@@ -36,35 +37,42 @@ class App extends ParentComponent<{}, ISApp> {
         onClick={this.controller.windowClick}
         onKeyPress={this.controller.windowKeyPress}
       >
-        <BrowserRouter basename='/webapp'>
-          <section className={this.state.pagename}>
-            {this.state.showheader && this.state.user ? (
-              <Header nav={this.state.nav} user={this.state.user} />
-            ) : null}
-            <Switch>
-              <Route exact path='/' component={Page.Home} />
-              <Route exact path='/analytics' component={Page.Analytics} />
-              <Route exact path='/chat' component={Page.Chat} />
-              <Route exact path='/addresponse' component={Page.Addresponse} />
-              <Route exact path='/login' component={Page.Login} />
-              <Route
-                exact
-                path='/:cat/:intent'
-                render={props => {
-                  const file: FileInfos = {
-                    cat: props.match.params.cat,
-                    intent: props.match.params.intent,
-                  };
-                  return <Page.File file={file} />;
-                }}
-              />
-              <Route component={Page.Notfound} />
-            </Switch>
-          </section>
-          {this.state.redirect ? (
-            <Redirect to={this.state.newpage} push={false} />
-          ) : null}
-        </BrowserRouter>
+        {this.state.isLoad ? (
+          <BrowserRouter basename='/webapp'>
+            <section className={this.state.pagename}>
+              {this.state.showheader && this.state.user ? (
+                <Header nav={this.state.nav} user={this.state.user} />
+              ) : null}
+              {this.state.redirect ? (
+                <Redirect to={this.state.newpage} push={false} />
+              ) : (
+                <Switch>
+                  <Route exact path='/' component={Page.Home} />
+                  <Route exact path='/analytics' component={Page.Analytics} />
+                  <Route exact path='/chat' component={Page.Chat} />
+                  <Route
+                    exact
+                    path='/addresponse'
+                    component={Page.Addresponse}
+                  />
+                  <Route exact path='/login' component={Page.Login} />
+                  <Route
+                    exact
+                    path='/:cat/:intent'
+                    render={props => {
+                      const file: FileInfos = {
+                        cat: props.match.params.cat,
+                        intent: props.match.params.intent,
+                      };
+                      return <Page.File file={file} />;
+                    }}
+                  />
+                  <Route component={Page.Notfound} />
+                </Switch>
+              )}
+            </section>
+          </BrowserRouter>
+        ) : null}
       </section>
     );
   }

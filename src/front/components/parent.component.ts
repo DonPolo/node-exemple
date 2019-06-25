@@ -27,6 +27,12 @@ export default class ParentComponent<U = {}, V = {}> extends React.Component<
     }
   }
 
+  componentDidUpdate() {
+    if (this.controller) {
+      this.controller.renderUpdate();
+    }
+  }
+
   stopProp(event: SyntheticEvent) {
     event.stopPropagation();
   }

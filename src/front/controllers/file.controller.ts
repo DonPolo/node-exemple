@@ -212,7 +212,6 @@ export default class FileController extends ParentController {
   };
 
   changeFile = (intent: string, cati: 'training' | 'response') => {
-    console.log(intent);
     if (this.unsave) {
       const r = confirm('You have unsaved change ! Continue ?');
       if (!r) return;

@@ -323,11 +323,9 @@ async function api(
       user = null;
     }
     if (user || query === 'user' || query === 'login') {
-      console.log('Query : ' + query);
       switch (query) {
         case 'home':
           const result = await getFiles();
-          console.log(result);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(result));
           break;

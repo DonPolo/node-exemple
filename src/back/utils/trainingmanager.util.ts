@@ -69,7 +69,6 @@ async function loadexpressions(file: string): Promise<any[]> {
  * @returns a list of sentences : string[]
  */
 async function loadfile(file: string): Promise<string[]> {
-  console.log(file);
   const res = await loadexpressions(file);
   const expressions: any[] = [];
   await res.reduce(async (previous: any, e: any) => {
